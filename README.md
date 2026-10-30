@@ -31,6 +31,7 @@ All tools run in the NIELIT ChipCraft Virtual Lab; the OSU018 kit is read from
 | `step1_flowcheck/` | End-to-end flow check on one inverter |
 | `rtl/`, `tb/` | ALU Verilog models (behavioural and bit-sliced) and the exhaustive testbench |
 | `step2_rtl_baseline/` | RTL verification and the automated OSU018 baseline (Yosys, Qflow, OpenSTA) |
+| `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates) and their Ngspice comparison |
 
 ## Cell template
 
