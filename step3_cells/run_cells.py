@@ -122,9 +122,9 @@ def parse_meas(text):
     return vals
 
 
-def evaluate(cell, vdd, period, workdir):
+def evaluate(cell, vdd, period, workdir, k=1.0, r=2.0):
     tb, meta, levels, twin = build_tb(cell, vdd, period)
-    path = os.path.join(workdir, "tb_%s_%dmV.sp" % (cell.name, round(vdd * 1000)))
+    path = os.path.join(workdir, "tb_%s_%dmV_k%g_r%g.sp" % (cell.name, round(vdd * 1000), k, r))
     with open(path, "w") as f:
         f.write(tb)
     res = subprocess.run(["ngspice", "-b", path], capture_output=True, text=True,
@@ -168,14 +168,99 @@ def evaluate(cell, vdd, period, workdir):
     p_tot = p_cut + p_drv
     return {
         "cell": cell.name, "family": cell.family, "note": cell.note,
-        "transistors": cell.count, "vdd": vdd,
+        "transistors": cell.count, "vdd": vdd, "k": k, "r": r,
         "t_max_ps": tmax * 1e12, "t_avg_ps": tavg * 1e12,
         "p_cell_uW": p_cut * 1e6, "p_total_uW": p_tot * 1e6,
         "pdp_fJ": p_tot * tmax * 1e15,
+        "edp_fJps": p_tot * tmax * tmax * 1e27,
+        "width_um": sum(d[5] for d in cell.devs),
         "vout_hi_min": vmin_hi, "vout_lo_max": vmax_lo,
         "wrong_levels": wrong, "weak_levels": weak, "missing_delays": missing,
         "transitions": len(meta),
     }
+
+
+CONVENTIONAL = {"INV": "inv_cmos", "NAND2": "nand2_cmos", "NOR2": "nor2_cmos",
+                "XOR2": "xor_cmos12", "MUX2": "mux_cmos12", "MUX2I": "muxi_cmos10",
+                "FA": "fa_cmos28"}
+K_LIST = [0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0]
+R_LIST = [1.0, 1.5, 2.0, 2.5]
+
+
+def _job(job):
+    name, k, r, vdd, period, workdir = job
+    fn = getattr(cellnet, name)
+    return evaluate(fn(k, r), vdd, period, workdir, k, r)
+
+
+def good(row):
+    return row["wrong_levels"] == 0 and row["missing_delays"] == 0 and row["weak_levels"] == 0 \
+        and row["pdp_fJ"] == row["pdp_fJ"]
+
+
+def sweep(args, workdir):
+    import multiprocessing as mp
+    names = [fn.__name__ for fn in cellnet.CANDIDATES]
+    if args.only:
+        names = [n for n in names if n in args.only.split(",")]
+    jobs = [(n, k, r, args.vdd, args.period, workdir) for n in names for k in K_LIST for r in R_LIST]
+    workers = max(1, min(8, os.cpu_count() or 2))
+    print("sizing sweep: %d candidates x %d sizes = %d simulations on %d cores"
+          % (len(names), len(K_LIST) * len(R_LIST), len(jobs), workers), flush=True)
+    rows = []
+    with mp.Pool(workers) as pool:
+        for i, row in enumerate(pool.imap_unordered(_job, jobs), 1):
+            rows.append(row)
+            if i % 28 == 0 or i == len(jobs):
+                print("  %d / %d done" % (i, len(jobs)), flush=True)
+    rows.sort(key=lambda r: (names.index(r["cell"]), r["k"], r["r"]))
+    with open(os.path.join(workdir, "sweep_%dmV.csv" % round(args.vdd * 1000)), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader()
+        w.writerows(rows)
+
+    print()
+    print("Best size of every candidate (minimum PDP, full swing, all transitions correct)")
+    print("%.2f V, 27 C, FO4 load; conventional = static CMOS at k = 1, r = 2" % args.vdd)
+    hdr = "%-12s %3s %5s %4s %8s %9s %8s %9s %8s" % ("cell", "T", "k", "r", "tmax", "Ptot(uW)",
+                                                   "PDP(fJ)", "EDP", "W(um)")
+    families = []
+    for n in names:
+        fam = getattr(cellnet, n)().family
+        if fam not in families:
+            families.append(fam)
+    selected = {}
+    for fam in families:
+        print("-" * len(hdr))
+        print(hdr if fam == families[0] else "%s" % fam)
+        if fam == families[0]:
+            print("%s" % fam)
+        conv = [r for r in rows if r["cell"] == CONVENTIONAL.get(fam) and r["k"] == 1.0 and r["r"] == 2.0]
+        if conv:
+            c = conv[0]
+            print("  %-12s %3d %5s %4s %8.1f %9.2f %8.2f %9.0f %8.1f   (conventional)" % (
+                c["cell"], c["transistors"], "1", "2", c["t_max_ps"], c["p_total_uW"],
+                c["pdp_fJ"], c["edp_fJps"], c["width_um"]))
+        best_fam = None
+        for n in names:
+            cand = [r for r in rows if r["cell"] == n and r["family"] == fam and good(r)]
+            if not cand:
+                if any(r["cell"] == n and r["family"] == fam for r in rows):
+                    print("  %-12s no size passes all checks" % n)
+                continue
+            b = min(cand, key=lambda r: r["pdp_fJ"])
+            print("  %-12s %3d %5g %4g %8.1f %9.2f %8.2f %9.0f %8.1f" % (
+                b["cell"], b["transistors"], b["k"], b["r"], b["t_max_ps"], b["p_total_uW"],
+                b["pdp_fJ"], b["edp_fJps"], b["width_um"]))
+            if best_fam is None or b["pdp_fJ"] < best_fam["pdp_fJ"]:
+                best_fam = b
+        if best_fam and conv:
+            selected[fam] = best_fam
+            gain = 100 * (1 - best_fam["pdp_fJ"] / conv[0]["pdp_fJ"])
+            print("  => selected %s (k %g, r %g): PDP %.1f %% lower than conventional, delay %+.1f %%"
+                  % (best_fam["cell"], best_fam["k"], best_fam["r"], gain,
+                     100 * (best_fam["t_max_ps"] / conv[0]["t_max_ps"] - 1)))
+    return rows
 
 
 def main():
@@ -185,10 +270,14 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--k", type=float, default=1.0, help="width scale factor")
     ap.add_argument("--tag", default="")
+    ap.add_argument("--sweep", action="store_true", help="size every candidate (k x r grid)")
     args = ap.parse_args()
 
     workdir = os.path.join(HERE, "out")
     os.makedirs(workdir, exist_ok=True)
+    if args.sweep:
+        sweep(args, workdir)
+        return
     only = [s for s in args.only.split(",") if s]
     rows = []
     for fn in cellnet.CANDIDATES:
@@ -196,7 +285,7 @@ def main():
         if only and cell.name not in only:
             continue
         print("  simulating %-12s (%2d transistors) ..." % (cell.name, cell.count), flush=True)
-        rows.append(evaluate(cell, args.vdd, args.period, workdir))
+        rows.append(evaluate(cell, args.vdd, args.period, workdir, args.k))
 
     tag = args.tag or "cells_%dmV_k%g" % (round(args.vdd * 1000), args.k)
     with open(os.path.join(workdir, tag + ".csv"), "w", newline="") as f:

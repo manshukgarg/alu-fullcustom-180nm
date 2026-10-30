@@ -9,11 +9,13 @@ convention as the inverter of Step 1, so pre-layout numbers stay comparable.
 
 L = 0.2          # drawn channel length, um
 DIFF = 0.5       # source/drain diffusion length used for junction estimates, um
+WMIN = 0.4       # minimum contacted transistor width (4 lambda), um
 
 
 class Cell:
-    def __init__(self, name, inputs, outputs, func, family, note=""):
+    def __init__(self, name, inputs, outputs, func, family, note="", r=2.0):
         self.name = name
+        self.pscale = r / 2.0       # PMOS widths in the code assume a P/N ratio of 2
         self.inputs = inputs
         self.outputs = outputs
         self.func = func            # function: dict(input -> 0/1) -> dict(output -> 0/1)
@@ -21,11 +23,17 @@ class Cell:
         self.note = note
         self.devs = []
 
-    def n(self, d, g, s, w):
-        self.devs.append(("nfet", d, g, s, "gnd", w))
+    @staticmethod
+    def _grid(w):
+        """Round to the 0.1 um layout grid; 0.4 um is the minimum contacted width."""
+        return max(WMIN, round(w * 10) / 10)
 
-    def p(self, d, g, s, w):
-        self.devs.append(("pfet", d, g, s, "vdd", w))
+    def n(self, d, g, s, w):
+        self.devs.append(("nfet", d, g, s, "gnd", self._grid(w)))
+
+    def p(self, d, g, s, w, fixed=False):
+        w = w if fixed else w * self.pscale
+        self.devs.append(("pfet", d, g, s, "vdd", self._grid(w)))
 
     def inv(self, a, y, wn, wp):
         self.n(y, a, "gnd", wn)
@@ -68,15 +76,15 @@ def inv_x1():
 # --------------------------------------------------------------------------
 # basic gates
 # --------------------------------------------------------------------------
-def inv_cmos(k=1.0):
-    c = Cell("inv_cmos", ["A"], ["Y"], lambda v: {"Y": 1 - v["A"]}, "INV", "static CMOS")
+def inv_cmos(k=1.0, r=2.0):
+    c = Cell("inv_cmos", ["A"], ["Y"], lambda v: {"Y": 1 - v["A"]}, "INV", "static CMOS", r=r)
     c.inv("A", "Y", 1.0 * k, 2.0 * k)
     return c
 
 
-def nand2_cmos(k=1.0):
+def nand2_cmos(k=1.0, r=2.0):
     c = Cell("nand2_cmos", ["A", "B"], ["Y"], lambda v: {"Y": 1 - (v["A"] & v["B"])},
-             "NAND2", "static CMOS")
+             "NAND2", "static CMOS", r=r)
     c.n("Y", "A", "x", 2.0 * k)
     c.n("x", "B", "gnd", 2.0 * k)
     c.p("Y", "A", "vdd", 2.0 * k)
@@ -84,9 +92,9 @@ def nand2_cmos(k=1.0):
     return c
 
 
-def nor2_cmos(k=1.0):
+def nor2_cmos(k=1.0, r=2.0):
     c = Cell("nor2_cmos", ["A", "B"], ["Y"], lambda v: {"Y": 1 - (v["A"] | v["B"])},
-             "NOR2", "static CMOS")
+             "NOR2", "static CMOS", r=r)
     c.n("Y", "A", "gnd", 1.0 * k)
     c.n("Y", "B", "gnd", 1.0 * k)
     c.p("Y", "A", "x", 4.0 * k)
@@ -101,8 +109,8 @@ def fxor(v):
     return {"Y": X(v["A"], v["B"])}
 
 
-def xor_cmos12(k=1.0):
-    c = Cell("xor_cmos12", ["A", "B"], ["Y"], fxor, "XOR2", "static CMOS, input inverters")
+def xor_cmos12(k=1.0, r=2.0):
+    c = Cell("xor_cmos12", ["A", "B"], ["Y"], fxor, "XOR2", "static CMOS, input inverters", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.n("Y", "A", "n1", 2.0 * k)
@@ -116,8 +124,8 @@ def xor_cmos12(k=1.0):
     return c
 
 
-def xor_tg8(k=1.0):
-    c = Cell("xor_tg8", ["A", "B"], ["Y"], fxor, "XOR2", "transmission gate, unbuffered")
+def xor_tg8(k=1.0, r=2.0):
+    c = Cell("xor_tg8", ["A", "B"], ["Y"], fxor, "XOR2", "transmission gate, unbuffered", r=r)
     c.inv("A", "An", 1.0 * k, 2.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.tg("A", "Y", "Bn", "B", 1.0 * k, 2.0 * k)
@@ -125,8 +133,8 @@ def xor_tg8(k=1.0):
     return c
 
 
-def xor_tgb10(k=1.0):
-    c = Cell("xor_tgb10", ["A", "B"], ["Y"], fxor, "XOR2", "transmission gate + output inverter")
+def xor_tgb10(k=1.0, r=2.0):
+    c = Cell("xor_tgb10", ["A", "B"], ["Y"], fxor, "XOR2", "transmission gate + output inverter", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.tg("An", "Xn", "Bn", "B", 0.5 * k, 1.0 * k)      # Xn = A xnor B
@@ -135,8 +143,8 @@ def xor_tgb10(k=1.0):
     return c
 
 
-def xor_cpl14(k=1.0):
-    c = Cell("xor_cpl14", ["A", "B"], ["Y"], fxor, "XOR2", "CPL, NMOS pass + restoring inverters")
+def xor_cpl14(k=1.0, r=2.0):
+    c = Cell("xor_cpl14", ["A", "B"], ["Y"], fxor, "XOR2", "CPL, NMOS pass + restoring inverters", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.n("A", "Bn", "Yi", 1.0 * k)          # Yi  = A xor B  (NMOS pass)
@@ -145,8 +153,8 @@ def xor_cpl14(k=1.0):
     c.n("A", "B", "Yni", 1.0 * k)
     c.inv("Yni", "Y", 1.0 * k, 2.0 * k)
     c.inv("Yi", "Yn", 0.5 * k, 1.0 * k)
-    c.p("Yni", "Y", "vdd", 0.4)            # weak level restorers
-    c.p("Yi", "Yn", "vdd", 0.4)
+    c.p("Yni", "Y", "vdd", 0.4, fixed=True)   # weak level restorers
+    c.p("Yi", "Yn", "vdd", 0.4, fixed=True)
     return c
 
 
@@ -161,8 +169,8 @@ def fmuxi(v):
     return {"Y": 1 - (v["B"] if v["S"] else v["A"])}
 
 
-def mux_cmos12(k=1.0):
-    c = Cell("mux_cmos12", ["A", "B", "S"], ["Y"], fmux, "MUX2", "static CMOS, AOI22 + inverter")
+def mux_cmos12(k=1.0, r=2.0):
+    c = Cell("mux_cmos12", ["A", "B", "S"], ["Y"], fmux, "MUX2", "static CMOS, AOI22 + inverter", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.n("Yb", "A", "n1", 2.0 * k)
     c.n("n1", "Sn", "gnd", 2.0 * k)
@@ -176,16 +184,16 @@ def mux_cmos12(k=1.0):
     return c
 
 
-def mux_tg6(k=1.0):
-    c = Cell("mux_tg6", ["A", "B", "S"], ["Y"], fmux, "MUX2", "transmission gate, unbuffered")
+def mux_tg6(k=1.0, r=2.0):
+    c = Cell("mux_tg6", ["A", "B", "S"], ["Y"], fmux, "MUX2", "transmission gate, unbuffered", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.tg("A", "Y", "Sn", "S", 1.0 * k, 2.0 * k)
     c.tg("B", "Y", "S", "Sn", 1.0 * k, 2.0 * k)
     return c
 
 
-def mux_tgb10(k=1.0):
-    c = Cell("mux_tgb10", ["A", "B", "S"], ["Y"], fmux, "MUX2", "transmission gate + two inverters")
+def mux_tgb10(k=1.0, r=2.0):
+    c = Cell("mux_tgb10", ["A", "B", "S"], ["Y"], fmux, "MUX2", "transmission gate + two inverters", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.tg("A", "M", "Sn", "S", 0.5 * k, 1.0 * k)
     c.tg("B", "M", "S", "Sn", 0.5 * k, 1.0 * k)
@@ -194,8 +202,8 @@ def mux_tgb10(k=1.0):
     return c
 
 
-def muxi_cmos10(k=1.0):
-    c = Cell("muxi_cmos10", ["A", "B", "S"], ["Y"], fmuxi, "MUX2I", "static CMOS AOI22")
+def muxi_cmos10(k=1.0, r=2.0):
+    c = Cell("muxi_cmos10", ["A", "B", "S"], ["Y"], fmuxi, "MUX2I", "static CMOS AOI22", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.n("Y", "A", "n1", 2.0 * k)
     c.n("n1", "Sn", "gnd", 2.0 * k)
@@ -208,8 +216,8 @@ def muxi_cmos10(k=1.0):
     return c
 
 
-def muxi_tg8(k=1.0):
-    c = Cell("muxi_tg8", ["A", "B", "S"], ["Y"], fmuxi, "MUX2I", "transmission gate + output inverter")
+def muxi_tg8(k=1.0, r=2.0):
+    c = Cell("muxi_tg8", ["A", "B", "S"], ["Y"], fmuxi, "MUX2I", "transmission gate + output inverter", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.tg("A", "M", "Sn", "S", 0.5 * k, 1.0 * k)
     c.tg("B", "M", "S", "Sn", 0.5 * k, 1.0 * k)
@@ -217,14 +225,14 @@ def muxi_tg8(k=1.0):
     return c
 
 
-def muxi_npt7(k=1.0):
+def muxi_npt7(k=1.0, r=2.0):
     c = Cell("muxi_npt7", ["A", "B", "S"], ["Y"], fmuxi, "MUX2I",
-             "NMOS pass + level restorer + inverter")
+             "NMOS pass + level restorer + inverter", r=r)
     c.inv("S", "Sn", 0.5 * k, 1.0 * k)
     c.n("A", "Sn", "M", 1.0 * k)
     c.n("B", "S", "M", 1.0 * k)
     c.inv("M", "Y", 1.0 * k, 2.0 * k)
-    c.p("M", "Y", "vdd", 0.4)              # weak restorer pulls M to full VDD
+    c.p("M", "Y", "vdd", 0.4, fixed=True)    # weak restorer pulls M to full VDD
     return c
 
 
@@ -236,8 +244,8 @@ def ffa(v):
     return {"S": a ^ b ^ c, "CO": (a & b) | (c & (a | b))}
 
 
-def fa_cmos28(k=1.0):
-    c = Cell("fa_cmos28", ["A", "B", "C"], ["S", "CO"], ffa, "FA", "mirror adder (static CMOS)")
+def fa_cmos28(k=1.0, r=2.0):
+    c = Cell("fa_cmos28", ["A", "B", "C"], ["S", "CO"], ffa, "FA", "mirror adder (static CMOS)", r=r)
     # carry stage: COn = not(AB + C(A + B)), identical pull-up and pull-down topology
     c.n("COn", "A", "n1", 2.0 * k); c.n("n1", "B", "gnd", 2.0 * k)
     c.n("COn", "C", "n2", 2.0 * k); c.n("n2", "A", "gnd", 2.0 * k); c.n("n2", "B", "gnd", 2.0 * k)
@@ -255,8 +263,8 @@ def fa_cmos28(k=1.0):
     return c
 
 
-def fa_tga20(k=1.0):
-    c = Cell("fa_tga20", ["A", "B", "C"], ["S", "CO"], ffa, "FA", "transmission-gate adder, unbuffered")
+def fa_tga20(k=1.0, r=2.0):
+    c = Cell("fa_tga20", ["A", "B", "C"], ["S", "CO"], ffa, "FA", "transmission-gate adder, unbuffered", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.tg("A", "P", "Bn", "B", 0.5 * k, 1.0 * k)       # P = A xor B
@@ -270,9 +278,9 @@ def fa_tga20(k=1.0):
     return c
 
 
-def fa_tgab24(k=1.0):
+def fa_tgab24(k=1.0, r=2.0):
     c = Cell("fa_tgab24", ["A", "B", "C"], ["S", "CO"], ffa, "FA",
-             "transmission-gate adder, inverted internals, buffered outputs")
+             "transmission-gate adder, inverted internals, buffered outputs", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
     c.inv("B", "Bn", 0.5 * k, 1.0 * k)
     c.tg("A", "P", "Bn", "B", 0.5 * k, 1.0 * k)       # P = A xor B
