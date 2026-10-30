@@ -38,6 +38,8 @@ meas() {
     echo "================================================================"
     echo "STEP 1 SUMMARY  inverter Wn 1.0 um / Wp 2.0 um / L 0.2 um, 1.8 V, 27 C"
     echo "================================================================"
+    echo "Layout     : bounding box $(awk '/^CELL_BBOX/ {print $2, $3, $4, $5}' out/magic.log) (lambda)"
+    grep '^ERROR' out/magic.log
     echo "DRC errors : $(awk '/^DRC_ERRORS/ {print $2}' out/magic.log)"
     grep '^DRC:' out/magic.log
     echo "LVS        : $(grep -ihE 'final result|circuits match|do not match' out/lvs.out out/netgen.log 2>/dev/null | tail -1)"

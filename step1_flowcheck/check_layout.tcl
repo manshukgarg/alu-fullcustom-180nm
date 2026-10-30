@@ -3,10 +3,18 @@
 #   magic -dnull -noconsole -rcfile ../tech/magicrc check_layout.tcl
 
 set cell inv
-load ../mag/$cell
+load ../mag/$cell -force
+
+# stop if the layout did not load (an empty cell would pass every check)
+select top cell
+set bbox [box values]
+puts "CELL_BBOX $bbox"
+if {[lindex $bbox 2] <= [lindex $bbox 0] || [lindex $bbox 3] <= [lindex $bbox 1]} {
+    puts "ERROR: cell $cell is empty or did not load"
+    quit -noprompt
+}
 
 # full design-rule check of the top cell
-select top cell
 drc euclidean on
 drc on
 drc check

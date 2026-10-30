@@ -150,7 +150,7 @@ class Layout:
         return sorted(out, key=lambda r: (r[1], r[0]))
 
     def mag_text(self):
-        lines = ["magic", "tech SCN6M_SUBM.10", "timestamp 1730000000"]
+        lines = ["magic", "tech scmos", "timestamp 1730000000"]   # name declared inside SCN6M_SUBM.10.tech
         for t in WRITE_ORDER:
             cells = self.cells_of(t)
             if not cells:
@@ -161,7 +161,8 @@ class Layout:
         if self.labels:
             lines.append("<< labels >>")
             for i, (layer, r, text, use, cls) in enumerate(self.labels, 1):
-                lines.append("flabel %s s %d %d %d %d 0 FreeSans 8 0 0 0 %s"
+                # rlabel layer sticky xbot ybot xtop ytop position(0 = centre) text
+                lines.append("rlabel %s s %d %d %d %d 0 %s"
                              % ((TYPES[layer][0],) + tuple(r) + (text,)))
                 lines.append("port %d nsew %s %s" % (i, use, cls))
         if self.bbox:

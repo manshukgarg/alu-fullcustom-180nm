@@ -1,5 +1,5 @@
 magic
-tech SCN6M_SUBM.10
+tech scmos
 timestamp 1730000000
 << nwell >>
 rect -6 36 22 85
@@ -45,13 +45,13 @@ rect 0 78 6 82
 rect 10 78 16 82
 rect 0 82 16 83
 << labels >>
-flabel metal1 s 4 37 8 40 0 FreeSans 8 0 0 0 A
+rlabel metal1 s 4 37 8 40 0 A
 port 1 nsew signal input
-flabel metal1 s 11 40 14 44 0 FreeSans 8 0 0 0 Y
+rlabel metal1 s 11 40 14 44 0 Y
 port 2 nsew signal output
-flabel metal1 s 0 77 2 83 0 FreeSans 8 0 0 0 vdd
+rlabel metal1 s 0 77 2 83 0 vdd
 port 3 nsew power bidirectional
-flabel metal1 s 0 -3 2 3 0 FreeSans 8 0 0 0 gnd
+rlabel metal1 s 0 -3 2 3 0 gnd
 port 4 nsew ground bidirectional
 << properties >>
 string FIXED_BBOX 0 0 16 80
