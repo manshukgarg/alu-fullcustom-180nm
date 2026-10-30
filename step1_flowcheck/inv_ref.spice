@@ -1,0 +1,5 @@
+* Inverter reference netlist (LVS)
+.subckt inv A Y vdd gnd
+M1 Y A vdd vdd pfet w=2u l=0.2u
+M2 Y A gnd gnd nfet w=1u l=0.2u
+.ends inv

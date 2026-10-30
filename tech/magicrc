@@ -1,0 +1,7 @@
+# Magic startup file for this project: OSU018 kit rules (SCN6M_SUBM.10, lambda = 0.1 um)
+path sys +/apps/vlsi/share/qflow/tech/osu018
+tech load SCN6M_SUBM.10 -noprompt
+set GND gnd
+set VDD vdd
+drc euclidean on
+drc on

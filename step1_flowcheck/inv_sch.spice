@@ -1,0 +1,8 @@
+* Inverter schematic netlist for pre-layout simulation
+* Wn = 1.0 um, Wp = 2.0 um, L = 0.2 um (minimum drawn length, SCMOS SUBM rules)
+* Junction areas and perimeters estimated for a contacted source/drain length
+* of 0.5 um (contact 0.4 um + 0.1 um contact-to-gate spacing)
+.subckt inv A Y vdd gnd
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 Y A gnd gnd nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+.ends inv
