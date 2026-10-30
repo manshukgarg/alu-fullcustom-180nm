@@ -1,0 +1,83 @@
+magic
+tech scmos
+timestamp 1730000000
+<< nwell >>
+rect -6 36 30 85
+<< ndiffusion >>
+rect 6 6 7 26
+rect 9 6 15 26
+rect 17 6 18 26
+<< pdiffusion >>
+rect 6 54 7 74
+rect 9 54 10 74
+rect 14 54 15 74
+rect 17 54 18 74
+<< polysilicon >>
+rect 7 4 9 6
+rect 15 4 17 6
+rect 7 26 9 33
+rect 15 26 17 33
+rect 7 37 9 54
+rect 15 37 17 54
+rect 7 74 9 76
+rect 15 74 17 76
+<< ntransistor >>
+rect 7 6 9 26
+rect 15 6 17 26
+<< ptransistor >>
+rect 7 54 9 74
+rect 15 54 17 74
+<< ndcontact >>
+rect 2 6 6 26
+rect 18 6 22 26
+<< pdcontact >>
+rect 2 54 6 74
+rect 10 54 14 74
+rect 18 54 22 74
+<< polycontact >>
+rect 6 33 10 37
+rect 14 33 18 37
+<< psubstratepcontact >>
+rect 3 -2 7 2
+rect 15 -2 19 2
+<< nsubstratencontact >>
+rect 3 78 7 82
+rect 15 78 19 82
+<< metal1 >>
+rect 0 -3 24 -2
+rect 0 -2 3 2
+rect 7 -2 15 2
+rect 19 -2 24 2
+rect 0 2 24 3
+rect 2 3 6 6
+rect 15 23 18 26
+rect 2 33 6 37
+rect 18 33 22 37
+rect 11 44 15 48
+rect 11 48 14 54
+rect 2 74 6 77
+rect 18 74 22 77
+rect 0 77 24 78
+rect 0 78 3 82
+rect 7 78 15 82
+rect 19 78 24 82
+rect 0 82 24 83
+<< m2contact >>
+rect 11 23 15 27
+rect 11 40 15 44
+<< metal2 >>
+rect 11 27 14 40
+<< labels >>
+rlabel metal1 s 18 33 22 37 0 A
+port 1 nsew signal input
+rlabel metal1 s 2 33 6 37 0 B
+port 2 nsew signal input
+rlabel metal1 s 11 44 15 48 0 Y
+port 3 nsew signal output
+rlabel metal1 s 0 77 2 83 0 vdd
+port 4 nsew power bidirectional
+rlabel metal1 s 0 -3 2 3 0 gnd
+port 5 nsew ground bidirectional
+<< properties >>
+string FIXED_BBOX 0 0 24 80
+<< end >>

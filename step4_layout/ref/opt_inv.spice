@@ -1,0 +1,7 @@
+* LVS reference for opt_inv: inv_cmos at k = 1.5, r = 2.5 (devices as laid out)
+.subckt opt_inv A Y vdd gnd
+M0 gnd A Y gnd nfet w=0.8u l=0.2u
+M1 Y A gnd gnd nfet w=0.7u l=0.2u
+M2 vdd A Y vdd pfet w=1.9u l=0.2u
+M3 Y A vdd vdd pfet w=1.9u l=0.2u
+.ends opt_inv

@@ -1,0 +1,62 @@
+magic
+tech scmos
+timestamp 1730000000
+<< nwell >>
+rect -6 36 26 85
+<< ndiffusion >>
+rect 8 6 9 16
+rect 11 6 12 16
+<< pdiffusion >>
+rect 8 54 9 74
+rect 11 54 12 74
+<< polysilicon >>
+rect 9 4 11 6
+rect 9 16 11 33
+rect 9 37 11 54
+rect 9 74 11 76
+<< ntransistor >>
+rect 9 6 11 16
+<< ptransistor >>
+rect 9 54 11 74
+<< ndcontact >>
+rect 4 6 8 16
+rect 12 6 16 16
+<< pdcontact >>
+rect 4 54 8 74
+rect 12 54 16 74
+<< polycontact >>
+rect 8 33 12 37
+<< psubstratepcontact >>
+rect 3 -2 7 2
+<< nsubstratencontact >>
+rect 3 78 7 82
+<< metal1 >>
+rect 0 -3 20 -2
+rect 0 -2 3 2
+rect 7 -2 20 2
+rect 0 2 20 3
+rect 4 3 8 6
+rect 12 16 15 26
+rect 12 26 16 27
+rect 2 27 16 30
+rect 2 30 5 48
+rect 12 33 16 37
+rect 2 48 15 51
+rect 12 51 15 54
+rect 4 74 8 77
+rect 0 77 20 78
+rect 0 78 3 82
+rect 7 78 20 82
+rect 0 82 20 83
+<< labels >>
+rlabel metal1 s 12 33 16 37 0 A
+port 1 nsew signal input
+rlabel metal1 s 12 26 16 30 0 Y
+port 2 nsew signal output
+rlabel metal1 s 0 77 2 83 0 vdd
+port 3 nsew power bidirectional
+rlabel metal1 s 0 -3 2 3 0 gnd
+port 4 nsew ground bidirectional
+<< properties >>
+string FIXED_BBOX 0 0 20 80
+<< end >>

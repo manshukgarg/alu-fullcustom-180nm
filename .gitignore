@@ -6,3 +6,5 @@ b3v3_1check.log
 step2_rtl_baseline/out/
 step2_rtl_baseline/qflow/
 step3_cells/out/
+step4_layout/out/
+step4_layout/cells.txt

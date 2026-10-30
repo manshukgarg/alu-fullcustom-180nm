@@ -1,0 +1,23 @@
+* LVS reference for conv_xor2: xor_cmos12 at k = 1, r = 2 (devices as laid out)
+.subckt conv_xor2 A B Y vdd gnd
+M0 An A gnd gnd nfet w=0.5u l=0.2u
+M1 An A vdd vdd pfet w=1u l=0.2u
+M2 gnd B n1_1 gnd nfet w=1u l=0.2u
+M3 n1_2 B gnd gnd nfet w=1u l=0.2u
+M4 vdd Bn p2_1 vdd pfet w=2u l=0.2u
+M5 p2_2 Bn vdd vdd pfet w=2u l=0.2u
+M6 n1_1 A Y gnd nfet w=1u l=0.2u
+M7 Y A n1_2 gnd nfet w=1u l=0.2u
+M8 p2_1 A Y vdd pfet w=2u l=0.2u
+M9 Y A p2_2 vdd pfet w=2u l=0.2u
+M10 gnd Bn n2_1 gnd nfet w=1u l=0.2u
+M11 n2_2 Bn gnd gnd nfet w=1u l=0.2u
+M12 vdd B p1_1 vdd pfet w=2u l=0.2u
+M13 p1_2 B vdd vdd pfet w=2u l=0.2u
+M14 n2_1 An Y gnd nfet w=1u l=0.2u
+M15 Y An n2_2 gnd nfet w=1u l=0.2u
+M16 p1_1 An Y vdd pfet w=2u l=0.2u
+M17 Y An p1_2 vdd pfet w=2u l=0.2u
+M18 gnd B Bn gnd nfet w=0.5u l=0.2u
+M19 vdd B Bn vdd pfet w=1u l=0.2u
+.ends conv_xor2

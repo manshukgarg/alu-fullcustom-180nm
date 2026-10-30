@@ -1,0 +1,7 @@
+* LVS reference for conv_nand2: nand2_cmos at k = 1, r = 2 (devices as laid out)
+.subckt conv_nand2 A B Y vdd gnd
+M0 gnd B x gnd nfet w=2u l=0.2u
+M1 vdd B Y vdd pfet w=2u l=0.2u
+M2 x A Y gnd nfet w=2u l=0.2u
+M3 Y A vdd vdd pfet w=2u l=0.2u
+.ends conv_nand2

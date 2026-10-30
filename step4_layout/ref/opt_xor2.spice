@@ -1,0 +1,11 @@
+* LVS reference for opt_xor2: xor_tg8 at k = 1, r = 2.5 (devices as laid out)
+.subckt opt_xor2 A B Y vdd gnd
+M0 A Bn Y gnd nfet w=1u l=0.2u
+M1 A B Y vdd pfet w=2.5u l=0.2u
+M2 Y B An gnd nfet w=1u l=0.2u
+M3 Y Bn An vdd pfet w=2.5u l=0.2u
+M4 An A gnd gnd nfet w=1u l=0.2u
+M5 An A vdd vdd pfet w=2.5u l=0.2u
+M6 gnd B Bn gnd nfet w=0.5u l=0.2u
+M7 vdd B Bn vdd pfet w=1.2u l=0.2u
+.ends opt_xor2

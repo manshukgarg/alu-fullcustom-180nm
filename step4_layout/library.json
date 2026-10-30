@@ -1,0 +1,21 @@
+{
+  "note": "Cells of the two full-custom libraries. 'cell' names the netlist in step3_cells/cellnet.py; k is the width scale and r the P/N width ratio. The optimized sizes are the minimum-PDP sizes of the Step 3b sweep; the conventional library is static CMOS at k = 1, r = 2.",
+  "optimized": {
+    "INV":   {"name": "opt_inv",   "cell": "inv_cmos",   "k": 1.5, "r": 2.5},
+    "NAND2": {"name": "opt_nand2", "cell": "nand2_cmos", "k": 1.0, "r": 2.5},
+    "NOR2":  {"name": "opt_nor2",  "cell": "nor2_cmos",  "k": 1.0, "r": 2.0},
+    "XOR2":  {"name": "opt_xor2",  "cell": "xor_tg8",    "k": 1.0, "r": 2.5},
+    "MUX2":  {"name": "opt_mux2",  "cell": "mux_tg6",    "k": 0.6, "r": 2.0},
+    "MUX2I": {"name": "opt_mux2i", "cell": "muxi_tg8",   "k": 0.6, "r": 2.5},
+    "FA":    {"name": "opt_fa",    "cell": "fa_tgab24",  "k": 0.8, "r": 1.5}
+  },
+  "conventional": {
+    "INV":   {"name": "conv_inv",   "cell": "inv_cmos",    "k": 1.0, "r": 2.0},
+    "NAND2": {"name": "conv_nand2", "cell": "nand2_cmos",  "k": 1.0, "r": 2.0},
+    "NOR2":  {"name": "conv_nor2",  "cell": "nor2_cmos",   "k": 1.0, "r": 2.0},
+    "XOR2":  {"name": "conv_xor2",  "cell": "xor_cmos12",  "k": 1.0, "r": 2.0},
+    "MUX2":  {"name": "conv_mux2",  "cell": "mux_cmos12",  "k": 1.0, "r": 2.0},
+    "MUX2I": {"name": "conv_mux2i", "cell": "muxi_cmos10", "k": 1.0, "r": 2.0},
+    "FA":    {"name": "conv_fa",    "cell": "fa_cmos28",   "k": 1.0, "r": 2.0}
+  }
+}

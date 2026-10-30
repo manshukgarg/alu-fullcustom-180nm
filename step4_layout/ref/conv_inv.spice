@@ -1,0 +1,5 @@
+* LVS reference for conv_inv: inv_cmos at k = 1, r = 2 (devices as laid out)
+.subckt conv_inv A Y vdd gnd
+M0 gnd A Y gnd nfet w=1u l=0.2u
+M1 vdd A Y vdd pfet w=2u l=0.2u
+.ends conv_inv

@@ -1,0 +1,11 @@
+* LVS reference for opt_mux2i: muxi_tg8 at k = 0.6, r = 2.5 (devices as laid out)
+.subckt opt_mux2i A B S Y vdd gnd
+M0 Sn S gnd gnd nfet w=0.4u l=0.2u
+M1 Sn S vdd vdd pfet w=0.8u l=0.2u
+M2 gnd M Y gnd nfet w=0.6u l=0.2u
+M3 vdd M Y vdd pfet w=1.5u l=0.2u
+M4 A Sn M gnd nfet w=0.4u l=0.2u
+M5 A S M vdd pfet w=0.8u l=0.2u
+M6 M S B gnd nfet w=0.4u l=0.2u
+M7 M Sn B vdd pfet w=0.8u l=0.2u
+.ends opt_mux2i

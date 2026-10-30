@@ -1,0 +1,11 @@
+* LVS reference for opt_nor2: nor2_cmos at k = 1, r = 2 (devices as laid out)
+.subckt opt_nor2 A B Y vdd gnd
+M0 gnd A Y gnd nfet w=0.5u l=0.2u
+M1 Y A gnd gnd nfet w=0.5u l=0.2u
+M2 Y A x_1 vdd pfet w=2u l=0.2u
+M3 x_2 A Y vdd pfet w=2u l=0.2u
+M4 Y B gnd gnd nfet w=0.5u l=0.2u
+M5 gnd B Y gnd nfet w=0.5u l=0.2u
+M6 x_1 B vdd vdd pfet w=2u l=0.2u
+M7 vdd B x_2 vdd pfet w=2u l=0.2u
+.ends opt_nor2

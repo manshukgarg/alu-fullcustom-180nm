@@ -1,0 +1,9 @@
+* LVS reference for opt_mux2: mux_tg6 at k = 0.6, r = 2 (devices as laid out)
+.subckt opt_mux2 A B S Y vdd gnd
+M0 gnd S Sn gnd nfet w=0.4u l=0.2u
+M1 vdd S Sn vdd pfet w=0.6u l=0.2u
+M2 A Sn Y gnd nfet w=0.6u l=0.2u
+M3 A S Y vdd pfet w=1.2u l=0.2u
+M4 Y S B gnd nfet w=0.6u l=0.2u
+M5 Y Sn B vdd pfet w=1.2u l=0.2u
+.ends opt_mux2

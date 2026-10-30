@@ -1,0 +1,27 @@
+* LVS reference for opt_fa: fa_tgab24 at k = 0.8, r = 1.5 (devices as laid out)
+.subckt opt_fa A B C S CO vdd gnd
+M0 A Bn P gnd nfet w=0.4u l=0.2u
+M1 A B P vdd pfet w=0.6u l=0.2u
+M2 P B An gnd nfet w=0.4u l=0.2u
+M3 P Bn An vdd pfet w=0.6u l=0.2u
+M4 Bn B gnd gnd nfet w=0.4u l=0.2u
+M5 Bn B vdd vdd pfet w=0.6u l=0.2u
+M6 gnd A An gnd nfet w=0.4u l=0.2u
+M7 vdd A An vdd pfet w=0.6u l=0.2u
+M8 An Pn COx gnd nfet w=0.4u l=0.2u
+M9 An P COx vdd pfet w=0.6u l=0.2u
+M10 COx P Cn gnd nfet w=0.4u l=0.2u
+M11 COx Pn Cn vdd pfet w=0.6u l=0.2u
+M12 Cn Pn Sx gnd nfet w=0.4u l=0.2u
+M13 Cn P Sx vdd pfet w=0.6u l=0.2u
+M14 Sx P C gnd nfet w=0.4u l=0.2u
+M15 Sx Pn C vdd pfet w=0.6u l=0.2u
+M16 Cn C gnd gnd nfet w=0.4u l=0.2u
+M17 Cn C vdd vdd pfet w=0.6u l=0.2u
+M18 gnd P Pn gnd nfet w=0.4u l=0.2u
+M19 vdd P Pn vdd pfet w=0.6u l=0.2u
+M20 S Sx gnd gnd nfet w=0.8u l=0.2u
+M21 S Sx vdd vdd pfet w=1.2u l=0.2u
+M22 gnd COx CO gnd nfet w=0.8u l=0.2u
+M23 vdd COx CO vdd pfet w=1.2u l=0.2u
+.ends opt_fa

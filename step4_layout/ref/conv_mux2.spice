@@ -1,0 +1,23 @@
+* LVS reference for conv_mux2: mux_cmos12 at k = 1, r = 2 (devices as laid out)
+.subckt conv_mux2 A B S Y vdd gnd
+M0 Sn S gnd gnd nfet w=0.5u l=0.2u
+M1 Sn S vdd vdd pfet w=1u l=0.2u
+M2 gnd Yb Y gnd nfet w=1u l=0.2u
+M3 vdd Yb Y vdd pfet w=2u l=0.2u
+M4 gnd Sn n1_1 gnd nfet w=1u l=0.2u
+M5 n1_2 Sn gnd gnd nfet w=1u l=0.2u
+M6 vdd B p1 vdd pfet w=2u l=0.2u
+M7 p1 B vdd vdd pfet w=2u l=0.2u
+M8 n1_1 A Yb gnd nfet w=1u l=0.2u
+M9 Yb A n1_2 gnd nfet w=1u l=0.2u
+M10 p1 A Yb vdd pfet w=2u l=0.2u
+M11 Yb A p1 vdd pfet w=2u l=0.2u
+M12 Yb B n2_1 gnd nfet w=1u l=0.2u
+M13 n2_2 B Yb gnd nfet w=1u l=0.2u
+M14 Yb Sn p1 vdd pfet w=2u l=0.2u
+M15 p1 Sn Yb vdd pfet w=2u l=0.2u
+M16 n2_1 S gnd gnd nfet w=1u l=0.2u
+M17 gnd S n2_2 gnd nfet w=1u l=0.2u
+M18 p1 S vdd vdd pfet w=2u l=0.2u
+M19 vdd S p1 vdd pfet w=2u l=0.2u
+.ends conv_mux2
