@@ -20,6 +20,10 @@ and with an automated standard-cell implementation of the same ALU.
 All tools run in the NIELIT ChipCraft Virtual Lab; the OSU018 kit is read from
 `/apps/vlsi/share/qflow/tech/osu018`.
 
+Current progress and the plan are in [STATUS.md](STATUS.md).
+
+![Inverter layout generated for Step 1](docs/figures/inv_layout_preview.png)
+
 ## Repository layout
 
 | Path | Contents |
