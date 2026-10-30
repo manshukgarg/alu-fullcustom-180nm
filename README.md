@@ -29,6 +29,8 @@ All tools run in the NIELIT ChipCraft Virtual Lab; the OSU018 kit is read from
 | `layout/` | Python layout generator: rule-checked Magic cells on the lambda grid |
 | `mag/` | Generated Magic layouts |
 | `step1_flowcheck/` | End-to-end flow check on one inverter |
+| `rtl/`, `tb/` | ALU Verilog models (behavioural and bit-sliced) and the exhaustive testbench |
+| `step2_rtl_baseline/` | RTL verification and the automated OSU018 baseline (Yosys, Qflow, OpenSTA) |
 
 ## Cell template
 
@@ -50,3 +52,10 @@ compares layout and schematic with Netgen, simulates the extracted layout, and
 writes `step1_flowcheck/out/summary.txt`.
 
 To view the layout: `cd step1_flowcheck && magic -rcfile ../tech/magicrc ../mag/inv.mag`
+
+## Status
+
+| Step | Content | Result |
+| --- | --- | --- |
+| 1 | Inverter flow check | DRC clean, LVS match, post-layout delay +6.9 % over schematic |
+| 2 | ALU RTL and automated baseline | in progress |

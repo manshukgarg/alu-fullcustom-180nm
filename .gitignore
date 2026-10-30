@@ -3,3 +3,5 @@ __pycache__/
 *.ext
 step1_flowcheck/out/
 b3v3_1check.log
+step2_rtl_baseline/out/
+step2_rtl_baseline/qflow/
