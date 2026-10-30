@@ -58,4 +58,5 @@ To view the layout: `cd step1_flowcheck && magic -rcfile ../tech/magicrc ../mag/
 | Step | Content | Result |
 | --- | --- | --- |
 | 1 | Inverter flow check | DRC clean, LVS match, post-layout delay +6.9 % over schematic |
-| 2 | ALU RTL and automated baseline | in progress |
+| 2 | ALU RTL and automated baseline | RTL, bit-sliced RTL and gate netlist pass all 524,288 vectors; bit-sliced RTL: 136 OSU018 cells, 4090 um2, 1.59 ns (OpenSTA); Qflow layout routed, LVS clean, DRC clean (GDS view) |
+| 3 | Cell topology comparison and sizing | in progress |
