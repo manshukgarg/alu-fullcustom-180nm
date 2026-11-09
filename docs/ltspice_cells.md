@@ -16,6 +16,14 @@ by the automated flow (Step 5).
 | Width | multiples of `0.1u`, at least `0.4u`; wider than 2.4 um (NMOS) or 3.2 um (PMOS) is allowed and is folded into fingers in the layout |
 | Supply, temperature | 1.8 V, 27 C (`.temp 27`) |
 
+## Reference cells
+
+`docs/conventional_cells.sp` holds the conventional static-CMOS cells of the project
+(INV, NAND2, NOR2, XOR2, MUX2, MUX2I and the 28-transistor mirror full adder, at the
+reference sizes) as subcircuits with pin order inputs, outputs, vdd, gnd. They are the
+baseline against which new cells are compared, and the building blocks of the
+conventional full-custom ALU (design D1) until the new cells replace them (design D2).
+
 ## Measurement (as Step 3)
 
 * Every input is driven through two X1 inverters (Wn 1.0 um, Wp 2.0 um) from an
