@@ -37,6 +37,8 @@ BRK = ("B",)
 # ---------------------------------------------------------------------------
 PLANS = {
     "inv_cmos": [D("gnd", "vdd"), G("A"), D("Y", "Y")],
+    # two inverters sharing the supply column; the output stage folds when wide
+    "buf_cmos": [D("Yn", "Yn"), G("A"), D("gnd", "vdd"), BRK, D("gnd", "vdd"), G("Yn"), D("Y", "Y")],
 
     "nand2_cmos": [D("gnd", "vdd"), G("B"), D("x", "Y"), G("A"), D("Y", "vdd")],
 
@@ -232,10 +234,29 @@ def join_strips(plan):
     return out
 
 
-def make_cell(fname, k, r, name=None):
-    """Netlist cell (step3_cells/cellnet.py) and its CellBuilder."""
+def make_cell(fname, k, r, name=None, grid=False):
+    """Netlist cell (step3_cells/cellnet.py) and its CellBuilder.
+
+    grid=True builds a cell for automatic place and route (site-multiple width,
+    pin pads on routing-track crossings, see cellgen.py)."""
     cell = getattr(cellnet, fname)(k, r)
     devs = [(m, d, g, s, int(round(w * 10))) for m, d, g, s, b, w in cell.devs]
     plan = join_strips(fold(cell, PLANS[fname], cell.inputs + cell.outputs))
-    b = CellBuilder(name or fname, devs, plan, cell.inputs, cell.outputs)
+    b = CellBuilder(name or fname, devs, plan, cell.inputs, cell.outputs, grid=grid)
     return cell, b
+
+
+def fill_cell(name, sites=1):
+    """Filler cell for placement rows: rails, n-well and power ports only."""
+    from maglib import Layout
+    from template import H, RAIL, NW_Y0, NW_Y1, EDGE
+    from cellgen import SITE
+    w = SITE * sites
+    L = Layout(name, bbox=(0, 0, w, H))
+    L.paint("m1", 0, -RAIL, w, RAIL)
+    L.paint("m1", 0, H - RAIL, w, H + RAIL)
+    L.paint("nwell", -6, NW_Y0, w + 6, NW_Y1)
+    L.label("m1", 0, H - RAIL, EDGE, H + RAIL, "vdd", "power", "bidirectional")
+    L.label("m1", 0, -RAIL, EDGE, RAIL, "gnd", "ground", "bidirectional")
+    shapes = [("m1", 0, -RAIL, w, RAIL, "gnd"), ("m1", 0, H - RAIL, w, H + RAIL, "vdd")]
+    return L, shapes

@@ -1,0 +1,169 @@
+magic
+tech scmos
+timestamp 1730000000
+<< nwell >>
+rect -6 36 54 85
+<< ndiffusion >>
+rect 6 6 7 10
+rect 9 6 10 10
+rect 14 6 15 10
+rect 17 6 18 12
+rect 30 6 31 10
+rect 33 6 34 10
+rect 38 6 39 10
+rect 41 6 42 10
+rect 10 10 15 12
+<< pdiffusion >>
+rect 10 59 15 66
+rect 17 59 18 74
+rect 6 66 7 74
+rect 9 66 10 74
+rect 14 66 15 74
+rect 30 66 31 74
+rect 33 66 34 74
+rect 38 66 39 74
+rect 41 66 42 74
+<< polysilicon >>
+rect 7 4 9 6
+rect 15 4 17 6
+rect 31 4 33 6
+rect 39 4 41 6
+rect 7 10 9 33
+rect 31 10 33 29
+rect 39 10 41 33
+rect 15 12 17 13
+rect 15 13 27 15
+rect 25 15 27 18
+rect 7 33 41 35
+rect 7 35 9 43
+rect 31 42 38 44
+rect 36 44 38 63
+rect 7 47 33 49
+rect 7 49 9 66
+rect 31 49 33 66
+rect 15 56 27 58
+rect 15 58 17 59
+rect 36 63 41 65
+rect 39 65 41 66
+rect 7 74 9 76
+rect 15 74 17 76
+rect 31 74 33 76
+rect 39 74 41 76
+<< ntransistor >>
+rect 7 6 9 10
+rect 15 6 17 12
+rect 31 6 33 10
+rect 39 6 41 10
+<< ptransistor >>
+rect 15 59 17 74
+rect 7 66 9 74
+rect 31 66 33 74
+rect 39 66 41 74
+<< ndcontact >>
+rect 2 6 6 10
+rect 10 6 14 10
+rect 18 6 22 12
+rect 26 6 30 10
+rect 34 6 38 10
+rect 42 6 46 10
+<< pdcontact >>
+rect 18 59 22 74
+rect 2 66 6 74
+rect 10 66 14 74
+rect 26 66 30 74
+rect 34 66 38 74
+rect 42 66 46 74
+<< polycontact >>
+rect 24 18 28 22
+rect 27 26 31 30
+rect 27 40 31 44
+rect 6 43 10 47
+rect 24 52 28 56
+<< psubstratepcontact >>
+rect 3 -2 7 2
+rect 15 -2 19 2
+rect 27 -2 31 2
+rect 39 -2 43 2
+<< nsubstratencontact >>
+rect 3 78 7 82
+rect 15 78 19 82
+rect 27 78 31 82
+rect 39 78 43 82
+<< metal1 >>
+rect 0 -3 48 -2
+rect 0 -2 3 2
+rect 7 -2 15 2
+rect 19 -2 27 2
+rect 31 -2 39 2
+rect 43 -2 48 2
+rect 0 2 48 3
+rect 10 3 14 6
+rect 17 9 18 12
+rect 3 10 6 26
+rect 26 10 29 11
+rect 34 10 37 18
+rect 42 10 45 33
+rect 10 13 14 19
+rect 28 18 37 21
+rect 34 21 37 52
+rect 3 26 27 29
+rect 22 29 27 30
+rect 22 30 28 33
+rect 8 33 14 37
+rect 22 33 25 40
+rect 42 33 46 37
+rect 42 37 45 66
+rect 22 40 27 44
+rect 10 43 14 47
+rect 22 44 28 46
+rect 17 46 28 47
+rect 17 47 25 49
+rect 17 49 20 53
+rect 28 52 37 55
+rect 3 53 20 56
+rect 34 55 37 66
+rect 3 56 6 66
+rect 13 59 18 62
+rect 25 63 28 66
+rect 25 66 26 69
+rect 10 74 14 77
+rect 0 77 48 78
+rect 0 78 3 82
+rect 7 78 15 82
+rect 19 78 27 82
+rect 31 78 39 82
+rect 43 78 48 82
+rect 0 82 48 83
+<< m2contact >>
+rect 25 11 29 15
+rect 17 12 21 16
+rect 10 19 14 23
+rect 4 33 8 37
+rect 9 59 13 63
+rect 25 59 29 63
+<< metal2 >>
+rect 4 7 20 10
+rect 4 10 7 33
+rect 17 10 20 12
+rect 25 15 28 21
+rect 14 21 28 23
+rect 10 23 28 24
+rect 25 24 28 59
+rect 4 37 7 59
+rect 4 59 9 62
+<< labels >>
+rlabel metal1 s 10 13 14 17 0 A
+port 1 nsew signal input
+rlabel metal1 s 42 33 46 37 0 B
+port 2 nsew signal input
+rlabel metal1 s 10 43 14 47 0 S
+port 3 nsew signal input
+rlabel metal1 s 10 33 14 37 0 Y
+port 4 nsew signal output
+rlabel metal1 s 0 77 2 83 0 vdd
+port 5 nsew power bidirectional
+rlabel metal1 s 0 -3 2 3 0 gnd
+port 6 nsew ground bidirectional
+<< properties >>
+string FIXED_BBOX 0 0 48 80
+<< end >>

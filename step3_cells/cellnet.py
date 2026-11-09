@@ -73,6 +73,15 @@ def inv_x1():
     return c
 
 
+# output buffer of the automated-flow library (not a sizing candidate):
+# X1 input stage driving an X2 output stage, like OSU018 BUFX2
+def buf_cmos(k=1.0, r=2.0):
+    c = Cell("buf_cmos", ["A"], ["Y"], lambda v: {"Y": v["A"]}, "BUF", "static CMOS, two inverters", r=r)
+    c.inv("A", "Yn", 1.0 * k, 2.0 * k)
+    c.inv("Yn", "Y", 2.0 * k, 4.0 * k)
+    return c
+
+
 # --------------------------------------------------------------------------
 # basic gates
 # --------------------------------------------------------------------------

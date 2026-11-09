@@ -15,6 +15,11 @@ lambda grid (polysilicon, metal1 and metal2, with poly contacts and vias), and
 returns a maglib.Layout together with the device list it intended to build.
 Every net that is a cell pin gets a 4 x 4 lambda metal1 pad on which a via can
 land, so the cell can be connected from metal2 above.
+
+Grid mode (cells for automatic place and route): the cell width is a whole
+number of 0.8 um placement sites, and every pin pad is centred on a crossing of
+the OSU018 routing tracks (metal2 every 0.8 um from 0.4 um, metal1 every 1.0 um
+from 0.5 um), which stays true for every placement orientation.
 """
 
 import heapq
@@ -33,6 +38,9 @@ WIRE = {POLY: 2, M1: 3, M2: 3}               # wire widths
 STEP_COST = {POLY: 1.5, M1: 1.0, M2: 1.6}     # cost per lambda of wire
 PC_COST, V1_COST, BEND_COST = 18, 14, 3
 SPACE = {POLY: 3, M1: 3, M2: 3}               # same-layer spacing
+SITE = 8                                       # placement site width (0.8 um), grid mode
+TRACK_X, TRACK_X0 = 8, 4                       # metal2 tracks: pitch and offset (lambda)
+TRACK_Y, TRACK_Y0 = 10, 5                      # metal1 tracks: pitch and offset (lambda)
 
 
 def base(net):
@@ -107,9 +115,10 @@ def window_any(mask, a, b, c, d):
 # cell builder
 # ----------------------------------------------------------------------------
 class CellBuilder:
-    def __init__(self, name, devices, plan, inputs, outputs, extra_space=0, spread=0):
+    def __init__(self, name, devices, plan, inputs, outputs, extra_space=0, spread=0, grid=False):
         """devices: list of (model, drain, gate, source, width_lambda)."""
         self.name = name
+        self.grid = grid
         self.devices = devices
         self.plan = plan
         self.inputs = inputs
@@ -240,6 +249,8 @@ class CellBuilder:
                 x += 2
             prev = kind
         self.width = x + EDGE + self.extra_space
+        if self.grid:
+            self.width = -(-self.width // SITE) * SITE
         self.cont = cont
 
     def _row_extent(self, row, w):
@@ -607,7 +618,7 @@ class CellBuilder:
         self.trees[net] = tree
         if net in self.pins:
             fx = self.fx
-            pad_ok = (L["v1"] & L[M1] & ~window_any(fx["cut1"], 0, 4, 0, 4))
+            pad_ok = (L["v1"] & L[M1] & ~window_any(fx["cut1"], 0, 4, 0, 4)) & self._pad_grid()
             tot, own = self.rtotal, self.rmask.get(net)
             o1 = (tot["m1"] - (own["m1"] if own is not None else 0)) > 0
             o2 = (tot["m2"] - (own["m2"] if own is not None else 0)) > 0
@@ -622,6 +633,16 @@ class CellBuilder:
             shapes.append(("m2k", x, y, x + 4, y + 4, net))
             self.pads[net] = ("m1", x, y, x + 4, y + 4)
         return shapes
+
+    def _pad_grid(self):
+        """Pad corners allowed for pin pads: everywhere, or (grid mode) only where the
+        4 x 4 pad is centred on a routing-track crossing."""
+        shape = (self.width, Y1 - Y0)
+        if not self.grid:
+            return np.ones(shape, dtype=bool)
+        xs = np.arange(self.width)[:, None]
+        ys = np.arange(Y1 - Y0)[None, :] + Y0
+        return ((xs + 2) % TRACK_X == TRACK_X0) & ((ys + 2) % TRACK_Y == TRACK_Y0)
 
     def _legal_all(self, nid):
         """Hard legality against every shape already in the cell (used after negotiation)."""
@@ -654,7 +675,8 @@ class CellBuilder:
                 cut = mp["cut1"] | mp["via1"]
                 full1 = ~window_any(~o1, 0, 4, 0, 4)
                 touch = window_any(o1, -1, 5, 0, 4) | window_any(o1, 0, 4, -1, 5)
-                c1 = np.argwhere(L["v1"] & touch & ~window_any(cut, 0, 4, 0, 4))
+                grid = self._pad_grid()
+                c1 = np.argwhere(L["v1"] & touch & ~window_any(cut, 0, 4, 0, 4) & grid)
                 mid = (NW_Y0 - 3) - Y0
                 if len(c1):
                     i = min(range(len(c1)), key=lambda i: (not full1[c1[i][0], c1[i][1]],
@@ -663,7 +685,7 @@ class CellBuilder:
                     self._set_route(net, self.routes[net] + [("m1", x, y, x + 4, y + 4, net)])
                     self.pads[net] = ("m1", x, y, x + 4, y + 4)
                     break
-                full2 = ~window_any(~o2, 0, 4, 0, 4) & self._inside(4)
+                full2 = ~window_any(~o2, 0, 4, 0, 4) & self._inside(4) & grid
                 c2 = np.argwhere(full2)
                 if len(c2):
                     i = min(range(len(c2)), key=lambda i: (abs(int(c2[i][1]) - mid), int(c2[i][0])))
@@ -672,10 +694,10 @@ class CellBuilder:
                     break
                 # extend the net with a short wire into free space (metal1 pad, else metal2 pad)
                 targets = [(M1, int(c[0]), int(c[1]) + Y0)
-                           for c in np.argwhere(L["v1"] & L[M1] & ~window_any(cut, 0, 4, 0, 4))]
+                           for c in np.argwhere(L["v1"] & L[M1] & ~window_any(cut, 0, 4, 0, 4) & grid)]
                 if not targets:
                     f2 = (mp["m2"] != 0) & (mp["m2"] != nid)
-                    ok2 = ~window_any(f2, -3, 7, -3, 7) & self._inside(4) & L[M2]
+                    ok2 = ~window_any(f2, -3, 7, -3, 7) & self._inside(4) & L[M2] & grid
                     targets = [(M2, int(c[0]), int(c[1]) + Y0) for c in np.argwhere(ok2)]
                 zero = {k: np.zeros_like(v, dtype=float) for k, v in L.items()}
                 vias = self._via_anchors(self.routes[net])
@@ -794,7 +816,8 @@ class CellBuilder:
         return sorted(nets, key=key)
 
     def _reset(self, extra, spread=0):
-        self.__init__(self.name, self.devices, self.plan, self.inputs, self.outputs, extra, spread)
+        self.__init__(self.name, self.devices, self.plan, self.inputs, self.outputs, extra, spread,
+                      grid=self.grid)
         self._place()
         self._draw_frame()
         self._draw_devices()

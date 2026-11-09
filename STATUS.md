@@ -19,6 +19,17 @@
 * Novelty direction under consideration: radiation-aware low-power cells and a selectively
   hardened ALU. Not yet presented to the professor (as of 9 November).
 
+## Decisions of 9 November 2026
+
+* The teammates design their cells in LTspice with the project's 180 nm models
+  (conventions in `docs/ltspice_cells.md`).
+* Option A first: the project builds its own cell library for the automated flow
+  (Liberty, LEF, SPICE, Verilog views) and implements the same ALU with it (design D4),
+  so the proposed cells are evaluated as a real standard-cell library and the gain of
+  the cells is separated from the gain of full-custom layout (Step 5).
+* Option B afterwards, only if the teammates and the professor agree: fault injection on
+  the synthesized netlist and selective hardening of the most sensitive gates.
+
 ## Fixed decisions
 
 | Item | Decision |
@@ -28,7 +39,8 @@
 | Layout rules | MOSIS SCMOS SCN6M_SUBM, lambda = 0.1 um, minimum drawn L = 0.2 um (OSU018 kit, `/apps/vlsi/share/qflow/tech/osu018`) |
 | Tools | NIELIT ChipCraft lab only: Magic 8.3.629, Netgen, Ngspice 46, Yosys 0.64, Qflow, OpenSTA, iverilog |
 | ALU | 4 bits, 8 operations (ADD, SUB, INC, DEC, AND, OR, XOR, NOT), flags C V Z N, bit-sliced, ripple carry (`rtl/alu4.v`, `rtl/alu4_slice.v`; the width is a parameter) |
-| Designs compared | D1 conventional static-CMOS cells, full-custom layout; D2 proposed cells, full-custom layout; D3 automated flow (Yosys + Qflow, OSU018 cells), from the behavioural and from the bit-sliced RTL |
+| Designs compared | D1 conventional static-CMOS cells, full-custom; D2 proposed cells, full-custom; D3 automated flow with the OSU018 cells; D4 the same automated flow with the project library pl018; D3 and D4 from both the behavioural and the bit-sliced RTL |
+| Project library pl018 (automated flow) | Restoring cells only (every output driven by an inverter or a static gate): INV, BUF (output buffer), NAND2, NOR2, XOR2 (TG + inverter), MUX2 (TG + two inverters), MUX2I, FA, filler; 0.8 x 8.0 um site; pin pads centred on OSU018 routing-track crossings; OSU018 LEF technology section; NLDM Liberty (5 x 5, load x slew) characterized with Ngspice from the extracted layouts |
 | ALU measurement | `sim/alutb.py`, identical for every design: inputs through two X1 inverters, FO4 loads, 18 full-length carry propagations plus 24 random operand changes per operation, settling delay including glitches, energy per operation from the ALU supply, leakage from 16 DC states |
 | Cell template | 8.0 um row height (OSU018 uses 10 um), shared rails, taps under rails; NMOS up to 2.4 um and PMOS up to 3.2 um per finger |
 | Cell metric | Worst delay over every input transition, measured from the input of the last driver inverter (FO4 load); power includes the drivers; selection by minimum PDP with full swing |
@@ -55,9 +67,23 @@ numpy) and committed; the lab verifies them.
 | 3a | 16 candidate cell circuits compared (reference size) | done | TG styles best: XOR2 -51 %, MUX2 -64 %, FA -46 % PDP vs static CMOS |
 | 3b | Sizing sweep of every candidate (8 widths x 5 P/N ratios) | rerun pending | first run (30 Oct) mislabelled k in the summary; script fixed |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated | conventional full adder outstanding; lab verification pending; cell design now with the teammates |
-| 5 | Full-custom 4-bit ALU, D1 and D2 | pending | teammates; tool and technology to be confirmed (must match the 180 nm models used here) |
-| 6 | Comparison D1/D2/D3 with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | week of 16 Nov |
-| 7 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
+| 5 | Project cell library pl018 and the automated ALU with it, D4: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | scripts ready (9 Nov) | 9 cells generated, clean in the generator's checks; XOR2 and MUX2 sizes provisional until the Step 3b rerun; lab run of `step5_library/run.sh` next |
+| 6 | Full-custom 4-bit ALU, D1 and D2 | pending | teammates, in LTspice with the project models; layout of the slice from their netlists to be decided |
+| 7 | Comparison D1/D2/D3/D4 with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | week of 16 Nov |
+| 8 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
+
+## Step 5: how the library is made
+
+`step5_library/gen_library.py` (run outside the lab, needs numpy) lays out every cell of
+`step5_library/library.json` in grid mode, writes `mag/pl_*.mag`, caches the geometry of
+every net in `step5_library/build/`, and writes the views: `tech/pl018/pl018_cells.lef`
+(pins are the complete metal of each pin net, internal nets are obstructions),
+`pl018_cells.sp`, `pl018_cells.v` and `step5_library/cells.json`. In the lab,
+`step5_library/run.sh` verifies the cells, characterizes them into
+`tech/pl018/pl018_cells.lib` and runs the automated flow with `QFLOW_TECH_DIR=tech/pl018`.
+After the Step 3b rerun, the sizes in `library.json` are updated from the line
+"Automated-flow library (restoring outputs ...)" of the sweep summary and the library is
+regenerated.
 
 ## Step 2 (4-bit): expected lab result
 

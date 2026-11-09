@@ -1,0 +1,1 @@
+{"name": "pl_fill", "family": "FILL", "cell": null, "width_lambda": 8, "height_lambda": 80, "inputs": [], "outputs": [], "transistors": 0, "truth": {}, "fingers": [], "pads": {}, "shapes": [["m1", 0, -3, 8, 3, "gnd"], ["m1", 0, 77, 8, 83, "vdd"]], "drc_errors": [], "lvs_problems": [], "provisional": false}

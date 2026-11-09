@@ -1,0 +1,16 @@
+magic
+tech scmos
+timestamp 1730000000
+<< nwell >>
+rect -6 36 14 85
+<< metal1 >>
+rect 0 -3 8 3
+rect 0 77 8 83
+<< labels >>
+rlabel metal1 s 0 77 2 83 0 vdd
+port 1 nsew power bidirectional
+rlabel metal1 s 0 -3 2 3 0 gnd
+port 2 nsew ground bidirectional
+<< properties >>
+string FIXED_BBOX 0 0 8 80
+<< end >>

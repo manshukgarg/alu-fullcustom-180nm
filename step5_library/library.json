@@ -1,0 +1,16 @@
+{
+  "name": "pl018",
+  "note": "Project cell library for automatic place and route (design D4). Only restoring cells: every output is driven by an inverter or a static gate, so the synthesis tool may connect cells freely; the unbuffered pass-gate cells (xor_tg8, mux_tg6, fa_tga20) stay in the full-custom slice, where their drivers are known. 'cell' names the netlist in step3_cells/cellnet.py, k the width scale, r the P/N ratio. Sizes marked provisional are replaced by the minimum-PDP sizes of the corrected Step 3b sweep.",
+  "site_um": [0.8, 8.0],
+  "cells": {
+    "INV":   {"name": "pl_inv",   "cell": "inv_cmos",   "k": 1.5, "r": 2.5},
+    "BUF":   {"name": "pl_buf",   "cell": "buf_cmos",   "k": 1.0, "r": 2.5, "note": "output buffer, X1 and X2 stages, not swept"},
+    "NAND2": {"name": "pl_nand2", "cell": "nand2_cmos", "k": 1.0, "r": 2.5},
+    "NOR2":  {"name": "pl_nor2",  "cell": "nor2_cmos",  "k": 1.0, "r": 2.0},
+    "XOR2":  {"name": "pl_xor2",  "cell": "xor_tgb10",  "k": 1.0, "r": 2.0, "provisional": true},
+    "MUX2":  {"name": "pl_mux2",  "cell": "mux_tgb10",  "k": 1.0, "r": 2.0, "provisional": true},
+    "MUX2I": {"name": "pl_mux2i", "cell": "muxi_tg8",   "k": 0.6, "r": 2.5},
+    "FA":    {"name": "pl_fa",    "cell": "fa_tgab24",  "k": 0.8, "r": 1.5}
+  },
+  "fill": {"name": "pl_fill", "sites": 1}
+}

@@ -3,7 +3,8 @@
 Full-custom design of a 4-bit bit-sliced ALU in 180 nm CMOS, built from a custom
 standard-cell library whose cells are optimized for minimum power-delay product.
 The design is compared after layout with a conventional static-CMOS implementation
-and with an automated standard-cell implementation of the same ALU. (The project
+and with automated standard-cell implementations of the same ALU: one with the OSU
+0.18 um cells and one with the project's own cell library. (The project
 started as an 8-bit ALU; it was reduced to 4 bits after the review of 31 October 2026.)
 
 ## Technology and tools
@@ -37,6 +38,9 @@ Current progress and the plan are in [STATUS.md](STATUS.md).
 | `mag/` | Generated Magic layouts |
 | `step1_flowcheck/` | End-to-end flow check on one inverter |
 | `step2_rtl_baseline/` | Automated implementation D3: RTL and gate-level tests, Yosys, OpenSTA, Qflow, DRC, extraction, post-layout simulation |
+| `step5_library/` | Project cell library pl018 (generator, characterization) and the automated implementation D4 with it |
+| `tech/pl018/` | Qflow technology of the project library: LEF, Liberty (written in the lab), SPICE, Verilog, setup files |
+| `docs/ltspice_cells.md` | Conventions for cells designed in LTspice |
 | `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates), their Ngspice comparison and sizing sweep |
 | `step4_layout/` | Layouts of the optimized and conventional libraries: Magic DRC, Netgen LVS, post-layout simulation |
 | `docs/figures/` | Layout views for the report and slides |
@@ -61,6 +65,36 @@ extraction of the routed layout with all parasitic capacitances. The extracted
 netlist and the cell-level netlist before layout are then simulated with the
 ALU testbench below, so the automated design is measured exactly like the
 full-custom ones.
+
+## Project cell library and design D4 (Step 5)
+
+The cells that the automated flow may use must restore their outputs, because the
+synthesis tool connects them freely; the unbuffered pass-gate cells of Step 3
+(`xor_tg8`, `mux_tg6`, `fa_tga20`) are therefore reserved for the full-custom slice,
+and the library pl018 takes the minimum-PDP restoring candidate of every function:
+
+| Function | Cell | Structure |
+| --- | --- | --- |
+| INV, NAND2, NOR2 | `pl_inv`, `pl_nand2`, `pl_nor2` | static CMOS |
+| XOR2 | `pl_xor2` | transmission gates + output inverter |
+| MUX2 | `pl_mux2` | transmission gates + two inverters |
+| MUX2I | `pl_mux2i` | transmission gates + output inverter |
+| FA | `pl_fa` | transmission-gate adder, buffered outputs |
+| BUF | `pl_buf` | two inverters (X1, X2), output buffering by Qflow |
+| fill | `pl_fill` | rails and well only |
+
+The cells are laid out by the project generator in grid mode: the width is a whole
+number of 0.8 um sites on an 8.0 um row, and every pin pad is centred on a crossing
+of the OSU018 routing tracks (metal2 every 0.8 um, metal1 every 1.0 um), which holds
+for every placement orientation. The LEF uses the OSU018 technology section; a pin is
+the complete metal of its net, and internal nets are obstructions. In the lab, every
+cell is checked (Magic DRC, Netgen LVS) and characterized with Ngspice from its
+extracted layout into a 5 x 5 NLDM Liberty file (delay and transition against output
+load and input transition, input capacitance, leakage), in the conventions of the
+OSU018 library. The same RTL then goes through the same flow as D3, and the summary
+compares D4 with D3 after layout.
+
+![pl_xor2, generated layout; + marks the routing-track crossings](docs/figures/cells/pl_xor2.png)
 
 ## ALU-level measurement (`sim/alutb.py`)
 
@@ -131,6 +165,7 @@ bash step2_rtl_baseline/run.sh     # automated implementation D3, both RTL style
 bash step3_cells/run.sh            # candidate cells at reference size
 bash step3_cells/run_sweep.sh      # sizing sweep, selects the optimized library
 bash step4_layout/run.sh           # DRC, LVS and post-layout simulation of both libraries
+bash step5_library/run.sh          # project library pl018 and automated implementation D4 (15-25 min)
 ```
 
 Each script prints a one-screen summary and writes it to `out/summary.txt` in its
@@ -153,3 +188,4 @@ klayout step2_rtl_baseline/qflow_slice/layout/alu4_full.gds              # route
 | 2 | Automated implementation D3 | 8-bit version (30 Oct): 524,288 vectors pass, 136 cells, 4090 um2, 1.59 ns, DRC and LVS clean; 4-bit flow with post-layout ALU simulation ready for the lab |
 | 3 | Cell topology comparison and sizing | TG styles lowest PDP; sizing sweep rerun pending |
 | 4 | Layouts of both libraries | 13 of 14 cells generated (conventional full adder outstanding), rule check and connectivity clean; lab verification pending |
+| 5 | Project library pl018 and D4 | 9 cells generated (grid mode), rule check and connectivity clean; characterization and flow ready for the lab |

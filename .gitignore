@@ -10,3 +10,8 @@ step2_rtl_baseline/qflow_slice/
 step3_cells/out/
 step4_layout/out/
 step4_layout/cells.txt
+step5_library/out/
+step5_library/qflow_beh/
+step5_library/qflow_slice/
+tech/pl018/pl018.magicrc
+tech/pl018/pl018_cells.lib

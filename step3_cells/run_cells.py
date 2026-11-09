@@ -200,6 +200,10 @@ def evaluate(cell, vdd, period, workdir, k=1.0, r=2.0, dut_text=None, tag=""):
     }
 
 
+# candidates whose output is not restored by an inverter or a static gate: kept out of the
+# library for automatic place and route (step5_library), allowed in the full-custom slice
+UNBUFFERED = {"xor_tg8", "mux_tg6", "fa_tga20"}
+NO_LAYOUT_PLAN = {"xor_cpl14", "muxi_npt7"}      # layout/library.py has no column plan yet
 CONVENTIONAL = {"INV": "inv_cmos", "NAND2": "nand2_cmos", "NOR2": "nor2_cmos",
                 "XOR2": "xor_cmos12", "MUX2": "mux_cmos12", "MUX2I": "muxi_cmos10",
                 "FA": "fa_cmos28"}
@@ -293,6 +297,29 @@ def summarize(rows, names, vdd, workdir):
             selected.append(row)
     print("-" * len(hdr))
     print("<= selected for the optimized library (PDP change against the conventional cell)")
+    # library for automatic place and route: best restoring candidate of every function
+    auto = []
+    for fam in families:
+        best = None
+        for n in names:
+            if n in UNBUFFERED or n in NO_LAYOUT_PLAN:
+                continue
+            cand = [r for r in rows if r["cell"] == n and r["family"] == fam and good(r)]
+            if cand:
+                b = min(cand, key=lambda r: r["pdp_fJ"])
+                if best is None or b["pdp_fJ"] < best["pdp_fJ"]:
+                    best = b
+        if best:
+            auto.append(best)
+    if auto:
+        print("Automated-flow library (restoring outputs, cells with a layout plan):")
+        for r in auto:
+            print("  %-6s %-12s k %-5g r %-4g tmax %6.1f ps  PDP %6.2f fJ"
+                  % (r["family"], r["cell"], r["k"], r["r"], r["t_max_ps"], r["pdp_fJ"]))
+        with open(os.path.join(workdir, "selected_auto.csv"), "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(auto[0].keys()))
+            w.writeheader()
+            w.writerows(auto)
     if selected:
         keys = []
         for row in selected:

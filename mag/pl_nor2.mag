@@ -1,0 +1,123 @@
+magic
+tech scmos
+timestamp 1730000000
+<< nwell >>
+rect -6 36 46 85
+<< ndiffusion >>
+rect 6 6 7 11
+rect 9 6 10 11
+rect 14 6 15 11
+rect 17 6 18 11
+rect 22 6 23 11
+rect 25 6 26 11
+rect 30 6 31 11
+rect 33 6 34 11
+<< pdiffusion >>
+rect 6 54 7 74
+rect 9 54 15 74
+rect 17 54 18 74
+rect 22 54 23 74
+rect 25 54 31 74
+rect 33 54 34 74
+<< polysilicon >>
+rect 7 4 9 6
+rect 15 4 17 6
+rect 23 4 25 6
+rect 31 4 33 6
+rect 7 11 9 21
+rect 15 11 17 12
+rect 23 11 25 12
+rect 31 11 33 21
+rect 15 12 25 14
+rect 7 21 33 23
+rect 7 23 9 33
+rect 31 23 33 54
+rect 7 37 9 54
+rect 18 50 25 51
+rect 15 51 25 52
+rect 15 52 17 54
+rect 23 52 25 54
+rect 7 74 9 76
+rect 15 74 17 76
+rect 23 74 25 76
+rect 31 74 33 76
+<< ntransistor >>
+rect 7 6 9 11
+rect 15 6 17 11
+rect 23 6 25 11
+rect 31 6 33 11
+<< ptransistor >>
+rect 7 54 9 74
+rect 15 54 17 74
+rect 23 54 25 74
+rect 31 54 33 74
+<< ndcontact >>
+rect 2 6 6 11
+rect 10 6 14 11
+rect 18 6 22 11
+rect 26 6 30 11
+rect 34 6 38 11
+<< pdcontact >>
+rect 2 54 6 74
+rect 18 54 22 74
+rect 34 54 38 74
+<< polycontact >>
+rect 18 14 22 18
+rect 6 33 10 37
+rect 14 47 18 51
+<< psubstratepcontact >>
+rect 3 -2 7 2
+rect 15 -2 19 2
+rect 27 -2 31 2
+<< nsubstratencontact >>
+rect 3 78 7 82
+rect 15 78 19 82
+rect 27 78 31 82
+<< metal1 >>
+rect 0 -3 40 -2
+rect 0 -2 3 2
+rect 7 -2 15 2
+rect 19 -2 27 2
+rect 31 -2 40 2
+rect 0 2 40 3
+rect 2 3 6 6
+rect 18 3 22 6
+rect 34 3 38 6
+rect 26 15 29 33
+rect 18 18 21 33
+rect 10 33 14 37
+rect 18 33 22 37
+rect 26 33 30 37
+rect 18 37 21 50
+rect 26 37 29 54
+rect 6 54 11 57
+rect 29 54 34 57
+rect 18 74 22 77
+rect 0 77 40 78
+rect 0 78 3 82
+rect 7 78 15 82
+rect 19 78 27 82
+rect 31 78 40 82
+rect 0 82 40 83
+<< m2contact >>
+rect 11 11 15 15
+rect 25 11 29 15
+rect 11 54 15 58
+rect 25 54 29 58
+<< metal2 >>
+rect 15 11 25 14
+rect 15 54 25 57
+<< labels >>
+rlabel metal1 s 10 33 14 37 0 A
+port 1 nsew signal input
+rlabel metal1 s 18 33 22 37 0 B
+port 2 nsew signal input
+rlabel metal1 s 26 33 30 37 0 Y
+port 3 nsew signal output
+rlabel metal1 s 0 77 2 83 0 vdd
+port 4 nsew power bidirectional
+rlabel metal1 s 0 -3 2 3 0 gnd
+port 5 nsew ground bidirectional
+<< properties >>
+string FIXED_BBOX 0 0 40 80
+<< end >>
