@@ -30,6 +30,23 @@
 * Option B afterwards, only if the teammates and the professor agree: fault injection on
   the synthesized netlist and selective hardening of the most sensitive gates.
 
+## LTspice cell set received on 14 November 2026
+
+* Content: NOT, NAND2, NOR2, AND2, OR2, XOR2, XNOR2, half and full adder, half and full
+  subtractor, MUX2 and an 8-bit ALU (AND, OR, XOR, ADD) as SPICE text, with truth tables.
+* It could not be used as delivered: generic level-1 transistor models with L = 0.18 um
+  instead of the project models, no simulation results (all marked pending), only the
+  NOT, NAND2 and NOR2 files run on their own (the others call gates their file does not
+  define, the ALU files pass the wrong number of nodes to the inverter), the full-subtractor
+  borrow is wrong in 3 of 8 cases, and the ALU is 8-bit with four operations and no flags.
+  The circuits are textbook gate-level compositions; none is a new cell.
+* What was taken over: its gates have the proportions of the project's static gates at
+  k = 0.4, r = 2, so the set was re-entered in the project technology
+  (`step3_cells/cellnet.py`): AND2 and OR2 as cells, and the NAND-based XOR (16 T), the
+  AND/OR multiplexer (20 T) and the eleven-NAND full adder (44 T) as the gate-level
+  reference style of the cell comparison. AND2 and OR2 were added to the library pl018.
+* New transistor-level cells (the novelty asked for on 31 October) are still open.
+
 ## Fixed decisions
 
 | Item | Decision |
@@ -39,8 +56,9 @@
 | Layout rules | MOSIS SCMOS SCN6M_SUBM, lambda = 0.1 um, minimum drawn L = 0.2 um (OSU018 kit, `/apps/vlsi/share/qflow/tech/osu018`) |
 | Tools | NIELIT ChipCraft lab only: Magic 8.3.629, Netgen, Ngspice 46, Yosys 0.64, Qflow, OpenSTA, iverilog |
 | ALU | 4 bits, 8 operations (ADD, SUB, INC, DEC, AND, OR, XOR, NOT), flags C V Z N, bit-sliced, ripple carry (`rtl/alu4.v`, `rtl/alu4_slice.v`; the width is a parameter) |
-| Designs compared | D1 conventional static-CMOS cells, full-custom; D2 proposed cells, full-custom; D3 automated flow with the OSU018 cells; D4 the same automated flow with the project library pl018; D3 and D4 from both the behavioural and the bit-sliced RTL |
-| Project library pl018 (automated flow) | Restoring cells only (every output driven by an inverter or a static gate): INV, BUF (output buffer), NAND2, NOR2, XOR2 (TG + inverter), MUX2 (TG + two inverters), MUX2I, FA, filler; 0.8 x 8.0 um site; pin pads centred on OSU018 routing-track crossings; OSU018 LEF technology section; NLDM Liberty (5 x 5, load x slew) characterized with Ngspice from the extracted layouts |
+| Designs compared | D1 conventional static-CMOS cells, full-custom; D2 proposed cells, full-custom; D3 automated flow with the OSU018 cells; D4 the same automated flow with the project library pl018. D3 and D4 each in three versions: `beh` and `slice` synthesized from the behavioural and the bit-sliced RTL, `map` a hand-mapped netlist (slice with inverting multiplexers and the library's full adder, which synthesis cannot use because it has two outputs) |
+| Project library pl018 (automated flow) | Restoring cells only (every output driven by an inverter or a static gate): INV, BUF (output buffer), NAND2, NOR2, AND2, OR2, XOR2 (TG + inverter), MUX2 (TG + two inverters), MUX2I, FA, filler; 0.8 x 8.0 um site; pin pads centred on OSU018 routing-track crossings; OSU018 LEF technology section; NLDM Liberty (5 x 5, load x slew) characterized with Ngspice from the extracted layouts |
+| Netlist checks without a simulator | `sim/switchsim.py`: switch-level evaluation of transistor netlists, all vectors at once; every cell netlist (`step3_cells/check_netlists.py`) and every generated ALU netlist (`sim/gen_alu.py`, 2048 vectors) is checked before it is committed |
 | ALU measurement | `sim/alutb.py`, identical for every design: inputs through two X1 inverters, FO4 loads, 18 full-length carry propagations plus 24 random operand changes per operation, settling delay including glitches, energy per operation from the ALU supply, leakage from 16 DC states |
 | Cell template | 8.0 um row height (OSU018 uses 10 um), shared rails, taps under rails; NMOS up to 2.4 um and PMOS up to 3.2 um per finger |
 | Cell metric | Worst delay over every input transition, measured from the input of the last driver inverter (FO4 load); power includes the drivers; selection by minimum PDP with full swing |
@@ -63,12 +81,13 @@ numpy) and committed; the lab verifies them.
 | 0 | Lab check, models, GitHub repository | done | all tools present; ChipCraft has internet |
 | 1 | Inverter: simulate, layout, DRC, LVS, post-layout | done | DRC 0, LVS match, delay 95.0 ps schematic / 101.6 ps post-layout |
 | 2, 8-bit | ALU Verilog and automated baseline (30 Oct) | done, superseded | 524,288-vector test passes; 136 cells, 4,090 um2, 1.59 ns; Qflow layout DRC and LVS clean |
-| 2, 4-bit | Automated flow D3, complete: RTL and gate-level tests, Yosys, OpenSTA, Qflow, DRC with real cells, transistor-level extraction, post-layout ALU simulation, for both RTL styles | scripts ready (9 Nov) | lab run of `step2_rtl_baseline/run.sh` next |
-| 3a | 16 candidate cell circuits compared (reference size) | done | TG styles best: XOR2 -51 %, MUX2 -64 %, FA -46 % PDP vs static CMOS |
-| 3b | Sizing sweep of every candidate (8 widths x 5 P/N ratios) | rerun pending | first run (30 Oct) mislabelled k in the summary; script fixed |
+| 2, 4-bit | Automated flow D3, complete: netlist and gate-level tests, Yosys, OpenSTA, Qflow, DRC with real cells, transistor-level extraction, post-layout ALU simulation, for `beh`, `slice` and `map` | scripts ready (15 Nov) | lab run of `step2_rtl_baseline/run.sh` next |
+| 3a | 16 candidate cell circuits compared (reference size) | done (30 Oct) | TG styles best: XOR2 -51 %, MUX2 -64 %, FA -46 % PDP vs static CMOS; 5 candidates added on 15 Nov (AND2, OR2 and the gate-level XOR, MUX, FA), measured with the sweep |
+| 3b | Sizing sweep of every candidate (21 candidates, 8 widths x 5 P/N ratios) | rerun pending | first run (30 Oct) mislabelled k in the summary; script fixed; the rerun also sizes the new candidates |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated | conventional full adder outstanding; lab verification pending; cell design now with the teammates |
-| 5 | Project cell library pl018 and the automated ALU with it, D4: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | scripts ready (9 Nov) | 9 cells generated, clean in the generator's checks; XOR2 and MUX2 sizes provisional until the Step 3b rerun; lab run of `step5_library/run.sh` next |
-| 6 | Full-custom 4-bit ALU, D1 and D2 | pending | teammates, in LTspice with the project models; layout of the slice from their netlists to be decided |
+| 5 | Project cell library pl018 and the automated ALU with it, D4: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | scripts ready (15 Nov) | 11 cells generated, clean in the generator's checks; AND2, OR2, XOR2 and MUX2 sizes provisional until the Step 3b rerun; lab run of `step5_library/run.sh` next |
+| 6 | 4-bit ALU at transistor level from each cell style, before layout (`step6_alu_schematic`): gate-level cells, conventional cells (D1 schematic), minimum-PDP cells (D2 schematic), pl018 cells | netlists generated and correct on all 2048 vectors (15 Nov) | lab run of `step6_alu_schematic/run.sh` next |
+| 6b | Full-custom layout of the ALU (D1, D2) | open | nobody is assigned; without it the laid-out designs of the paper are D3 and D4 |
 | 7 | Comparison D1/D2/D3/D4 with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | week of 16 Nov |
 | 8 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
 
@@ -85,12 +104,26 @@ After the Step 3b rerun, the sizes in `library.json` are updated from the line
 "Automated-flow library (restoring outputs ...)" of the sweep summary and the library is
 regenerated.
 
-## Step 2 (4-bit): expected lab result
+## Lab order and expected results (as of 15 November)
 
-All tests 2048/2048; Qflow routing complete and LVS match for both designs; Magic DRC 0;
-every transistor-level run "cycles correct" 229/229 with no notes about missing pins or supplies.
-If the extracted netlist or the cell-level netlist is not recognised, the summary lists the
-reason (`out/sim/<label>.json`, `out/sim/<label>_tb.log`), and the harness is adjusted.
+```
+git pull
+bash step6_alu_schematic/run.sh    # 5-10 min, needs only Python and Ngspice
+bash step2_rtl_baseline/run.sh     # 15-25 min
+bash step3_cells/run_sweep.sh      # 20-30 min
+bash step5_library/run.sh          # 20-30 min, after Step 2 (it compares with it)
+```
+
+* Step 6: "netlists with problems: 0", "6 ALU netlists correct", and 229/229 cycles correct
+  for gate, conv, opt and pl. It is the first run of `sim/alutb.py` on the real Ngspice.
+* Steps 2 and 5: all tests 2048/2048; Qflow routing complete and LVS match for the three
+  designs; Magic DRC 0; every transistor-level column 229/229. `map` is the first Qflow run
+  on a hand-mapped netlist; if Qflow rejects it, the other two columns are unaffected.
+* Step 3b: the lines under "Automated-flow library" give the final sizes for pl018.
+* None of the Step 2, 5 and 6 scripts has run on the lab tools yet. They were run end to
+  end outside the lab against stand-ins for the tools that reproduce the file formats
+  (Qflow's cell-level netlist with the dumped OSU018 library, a flat Magic extraction,
+  Ngspice raw files), which checks paths, formats and the summaries, not the tools.
 
 ## Step 3b, first run (30 Oct, delay from the cell input)
 

@@ -44,6 +44,12 @@ PLANS = {
 
     "nor2_cmos": [D("gnd", "Y"), G("A"), D("Y", "x"), G("B"), D("gnd", "vdd")],
 
+    # NAND2 / NOR2 followed by the output inverter on the shared supply column
+    "and2_cmos": [D("Yn", "vdd"), G("A"), D("x", "Yn"), G("B"), D("gnd", "vdd"), G("Yn"), D("Y", "Y")],
+
+    "or2_cmos": [D("gnd", "Yn"), G("A"), D("Yn", "x"), G("B"), D("gnd", "vdd"), BRK,
+                 D("gnd", "vdd"), G("Yn"), D("Y", "Y")],
+
     # A xor B: two transmission gates fed by A and An, inverters for An and Bn
     "xor_tg8": [D("A", "A"), G("Bn", "B"), D("Y", "Y"), G("B", "Bn"), D("An", "An"),
                 G("A"), D("gnd", "vdd"), G("B"), D("Bn", "Bn")],

@@ -211,6 +211,118 @@
    }
   },
   {
+   "name": "pl_and2",
+   "family": "AND2",
+   "cell": "and2_cmos",
+   "k": 1.0,
+   "r": 2.5,
+   "provisional": true,
+   "inputs": [
+    "A",
+    "B"
+   ],
+   "outputs": [
+    "Y"
+   ],
+   "transistors": 6,
+   "truth": {
+    "Y": [
+     0,
+     0,
+     0,
+     1
+    ]
+   },
+   "function": {
+    "Y": "(A&B)"
+   },
+   "verilog": {
+    "Y": "(A&B)"
+   },
+   "width_um": 3.2,
+   "height_um": 8.0,
+   "area_um2": 25.6,
+   "pads_um": {
+    "A": [
+     "m1",
+     1.0,
+     1.3,
+     1.4,
+     1.7
+    ],
+    "B": [
+     "m1",
+     1.8,
+     2.3,
+     2.2,
+     2.7
+    ],
+    "Y": [
+     "m1",
+     2.6,
+     2.3,
+     3.0,
+     2.7
+    ]
+   }
+  },
+  {
+   "name": "pl_or2",
+   "family": "OR2",
+   "cell": "or2_cmos",
+   "k": 0.8,
+   "r": 2.0,
+   "provisional": true,
+   "inputs": [
+    "A",
+    "B"
+   ],
+   "outputs": [
+    "Y"
+   ],
+   "transistors": 6,
+   "truth": {
+    "Y": [
+     0,
+     1,
+     1,
+     1
+    ]
+   },
+   "function": {
+    "Y": "(A|B)"
+   },
+   "verilog": {
+    "Y": "(A|B)"
+   },
+   "width_um": 3.2,
+   "height_um": 8.0,
+   "area_um2": 25.6,
+   "pads_um": {
+    "A": [
+     "m1",
+     1.8,
+     3.3,
+     2.2,
+     3.7
+    ],
+    "B": [
+     "m1",
+     1.0,
+     2.3,
+     1.4,
+     2.7
+    ],
+    "Y": [
+     "m1",
+     2.6,
+     3.3,
+     3.0,
+     3.7
+    ]
+   }
+  },
+  {
    "name": "pl_xor2",
    "family": "XOR2",
    "cell": "xor_tgb10",

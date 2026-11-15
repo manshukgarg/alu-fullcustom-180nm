@@ -20,6 +20,16 @@ module pl_nor2 (A, B, Y);
     output Y;
     assign Y = (~A&~B);
 endmodule
+module pl_and2 (A, B, Y);
+    input A, B;
+    output Y;
+    assign Y = (A&B);
+endmodule
+module pl_or2 (A, B, Y);
+    input A, B;
+    output Y;
+    assign Y = (A|B);
+endmodule
 module pl_xor2 (A, B, Y);
     input A, B;
     output Y;

@@ -203,7 +203,8 @@ def evaluate(cell, vdd, period, workdir, k=1.0, r=2.0, dut_text=None, tag=""):
 # candidates whose output is not restored by an inverter or a static gate: kept out of the
 # library for automatic place and route (step5_library), allowed in the full-custom slice
 UNBUFFERED = {"xor_tg8", "mux_tg6", "fa_tga20"}
-NO_LAYOUT_PLAN = {"xor_cpl14", "muxi_npt7"}      # layout/library.py has no column plan yet
+# layout/library.py has no column plan for these (CPL cells and the gate-level reference cells)
+NO_LAYOUT_PLAN = {"xor_cpl14", "muxi_npt7"} | set(cellnet.GATE_LEVEL)
 CONVENTIONAL = {"INV": "inv_cmos", "NAND2": "nand2_cmos", "NOR2": "nor2_cmos",
                 "XOR2": "xor_cmos12", "MUX2": "mux_cmos12", "MUX2I": "muxi_cmos10",
                 "FA": "fa_cmos28"}

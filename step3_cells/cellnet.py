@@ -44,6 +44,27 @@ class Cell:
         self.n(a, gn, b, wn)
         self.p(a, gp, b, wp)
 
+    def _node(self, prefix):
+        """A new internal node name (gate-level cells composed of several gates)."""
+        self._nodes = getattr(self, "_nodes", 0) + 1
+        return "%s%d" % (prefix, self._nodes)
+
+    def nand2(self, a, b, y, k):
+        """Static NAND2 with the proportions of nand2_cmos."""
+        x = self._node("x")
+        self.n(y, a, x, 2.0 * k)
+        self.n(x, b, "gnd", 2.0 * k)
+        self.p(y, a, "vdd", 2.0 * k)
+        self.p(y, b, "vdd", 2.0 * k)
+
+    def nor2(self, a, b, y, k):
+        """Static NOR2 with the proportions of nor2_cmos."""
+        x = self._node("x")
+        self.n(y, a, "gnd", 1.0 * k)
+        self.n(y, b, "gnd", 1.0 * k)
+        self.p(y, a, x, 4.0 * k)
+        self.p(x, b, "vdd", 4.0 * k)
+
     @property
     def count(self):
         return len(self.devs)
@@ -111,6 +132,28 @@ def nor2_cmos(k=1.0, r=2.0):
     return c
 
 
+def and2_cmos(k=1.0, r=2.0):
+    c = Cell("and2_cmos", ["A", "B"], ["Y"], lambda v: {"Y": v["A"] & v["B"]},
+             "AND2", "static CMOS, NAND2 + inverter", r=r)
+    c.n("Yn", "A", "x", 2.0 * k)
+    c.n("x", "B", "gnd", 2.0 * k)
+    c.p("Yn", "A", "vdd", 2.0 * k)
+    c.p("Yn", "B", "vdd", 2.0 * k)
+    c.inv("Yn", "Y", 1.0 * k, 2.0 * k)
+    return c
+
+
+def or2_cmos(k=1.0, r=2.0):
+    c = Cell("or2_cmos", ["A", "B"], ["Y"], lambda v: {"Y": v["A"] | v["B"]},
+             "OR2", "static CMOS, NOR2 + inverter", r=r)
+    c.n("Yn", "A", "gnd", 1.0 * k)
+    c.n("Yn", "B", "gnd", 1.0 * k)
+    c.p("Yn", "A", "x", 4.0 * k)
+    c.p("x", "B", "vdd", 4.0 * k)
+    c.inv("Yn", "Y", 1.0 * k, 2.0 * k)
+    return c
+
+
 # --------------------------------------------------------------------------
 # XOR2: Y = A xor B
 # --------------------------------------------------------------------------
@@ -130,6 +173,16 @@ def xor_cmos12(k=1.0, r=2.0):
     c.p("p1", "B", "vdd", 4.0 * k)
     c.p("Y", "A", "p2", 4.0 * k)
     c.p("p2", "Bn", "vdd", 4.0 * k)
+    return c
+
+
+def xor_nand16(k=1.0, r=2.0):
+    """Gate-level XOR of the LTspice cell set: four NAND2 gates."""
+    c = Cell("xor_nand16", ["A", "B"], ["Y"], fxor, "XOR2", "gate level, four NAND2", r=r)
+    c.nand2("A", "B", "n1", k)
+    c.nand2("A", "n1", "n2", k)
+    c.nand2("B", "n1", "n3", k)
+    c.nand2("n2", "n3", "Y", k)
     return c
 
 
@@ -190,6 +243,20 @@ def mux_cmos12(k=1.0, r=2.0):
     c.p("p1", "B", "vdd", 4.0 * k)
     c.p("p1", "S", "vdd", 4.0 * k)
     c.inv("Yb", "Y", 1.0 * k, 2.0 * k)
+    return c
+
+
+def mux_gate20(k=1.0, r=2.0):
+    """Gate-level multiplexer of the LTspice cell set: inverter, two AND2, OR2."""
+    c = Cell("mux_gate20", ["A", "B", "S"], ["Y"], fmux, "MUX2",
+             "gate level, inverter + two AND2 + OR2", r=r)
+    c.inv("S", "Sn", 1.0 * k, 2.0 * k)
+    c.nand2("A", "Sn", "m1n", k)
+    c.inv("m1n", "m1", 1.0 * k, 2.0 * k)
+    c.nand2("B", "S", "m2n", k)
+    c.inv("m2n", "m2", 1.0 * k, 2.0 * k)
+    c.nor2("m1", "m2", "Yn", k)
+    c.inv("Yn", "Y", 1.0 * k, 2.0 * k)
     return c
 
 
@@ -272,6 +339,24 @@ def fa_cmos28(k=1.0, r=2.0):
     return c
 
 
+def fa_nand44(k=1.0, r=2.0):
+    """Gate-level full adder of the LTspice cell set: two NAND-based XORs and three NAND2."""
+    c = Cell("fa_nand44", ["A", "B", "C"], ["S", "CO"], ffa, "FA",
+             "gate level, eleven NAND2", r=r)
+    c.nand2("A", "B", "a1", k)            # P = A xor B
+    c.nand2("A", "a1", "a2", k)
+    c.nand2("B", "a1", "a3", k)
+    c.nand2("a2", "a3", "P", k)
+    c.nand2("P", "C", "b1", k)            # S = P xor C
+    c.nand2("P", "b1", "b2", k)
+    c.nand2("C", "b1", "b3", k)
+    c.nand2("b2", "b3", "S", k)
+    c.nand2("A", "B", "g", k)             # CO = AB + PC
+    c.nand2("P", "C", "h", k)
+    c.nand2("g", "h", "CO", k)
+    return c
+
+
 def fa_tga20(k=1.0, r=2.0):
     c = Cell("fa_tga20", ["A", "B", "C"], ["S", "CO"], ffa, "FA", "transmission-gate adder, unbuffered", r=r)
     c.inv("A", "An", 0.5 * k, 1.0 * k)
@@ -305,7 +390,12 @@ def fa_tgab24(k=1.0, r=2.0):
     return c
 
 
-CANDIDATES = [inv_cmos, nand2_cmos, nor2_cmos,
-              xor_cmos12, xor_tg8, xor_tgb10, xor_cpl14,
-              mux_cmos12, mux_tg6, mux_tgb10, muxi_cmos10, muxi_tg8, muxi_npt7,
-              fa_cmos28, fa_tga20, fa_tgab24]
+# gate-level cells of the LTspice cell set (compositions of NAND2, NOR2 and inverters):
+# reference style of the comparison, not laid out as library cells
+GATE_LEVEL = ("xor_nand16", "mux_gate20", "fa_nand44")
+GATE_LEVEL_K, GATE_LEVEL_R = 0.4, 2.0   # sizes of that set: Wn 0.4 um, Wp 0.8 um inverter
+
+CANDIDATES = [inv_cmos, nand2_cmos, nor2_cmos, and2_cmos, or2_cmos,
+              xor_cmos12, xor_nand16, xor_tg8, xor_tgb10, xor_cpl14,
+              mux_cmos12, mux_gate20, mux_tg6, mux_tgb10, muxi_cmos10, muxi_tg8, muxi_npt7,
+              fa_cmos28, fa_nand44, fa_tga20, fa_tgab24]

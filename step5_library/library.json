@@ -7,6 +7,8 @@
     "BUF":   {"name": "pl_buf",   "cell": "buf_cmos",   "k": 1.0, "r": 2.5, "note": "output buffer, X1 and X2 stages, not swept"},
     "NAND2": {"name": "pl_nand2", "cell": "nand2_cmos", "k": 1.0, "r": 2.5},
     "NOR2":  {"name": "pl_nor2",  "cell": "nor2_cmos",  "k": 1.0, "r": 2.0},
+    "AND2":  {"name": "pl_and2",  "cell": "and2_cmos",  "k": 1.0, "r": 2.5, "provisional": true},
+    "OR2":   {"name": "pl_or2",   "cell": "or2_cmos",   "k": 0.8, "r": 2.0, "provisional": true},
     "XOR2":  {"name": "pl_xor2",  "cell": "xor_tgb10",  "k": 1.0, "r": 2.0, "provisional": true},
     "MUX2":  {"name": "pl_mux2",  "cell": "mux_tgb10",  "k": 1.0, "r": 2.0, "provisional": true},
     "MUX2I": {"name": "pl_mux2i", "cell": "muxi_tg8",   "k": 0.6, "r": 2.5},

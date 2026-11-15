@@ -265,8 +265,13 @@ def base_name(node):
     return node.split("/")[-1].lower().rstrip("!")
 
 
+DIFF_UM = 0.5      # diffusion length of the junction estimate (as step3_cells/cellnet.py)
+
+
 def normalize_devices(lines, notes, where):
-    """Map other model names to nfet/pfet and apply a scale option to geometries."""
+    """Map other model names to nfet/pfet, apply a scale option to geometries, and give
+    devices without source/drain junction sizes the project's estimate (cell libraries
+    such as OSU018 list ad = as = 0, which would hide the junction capacitance)."""
     scale = None
     kept = []
     for ln in lines:
@@ -281,7 +286,7 @@ def normalize_devices(lines, notes, where):
                     kept.append(" ".join(rest))
                 continue
         kept.append(ln)
-    out, renamed = [], {}
+    out, renamed, estimated = [], {}, 0
     for ln in kept:
         tok = ln.split()
         if tok and tok[0][0].lower() == "m" and len(tok) >= 6 and not tok[0].startswith("."):
@@ -303,10 +308,24 @@ def normalize_devices(lines, notes, where):
                         tok[i] = "%s=%.6gu" % (key, num * scale * 1e6)
                     elif k in ("ad", "as"):
                         tok[i] = "%s=%.6gp" % (key, num * scale * scale * 1e12)
+            par = {}
+            for t in tok[6:]:
+                if "=" in t:
+                    key, val = t.split("=", 1)
+                    par[key.lower()] = spice_value(val)
+            w = par.get("w")
+            if w and not par.get("ad") and not par.get("as"):
+                wu = w * 1e6
+                tok = [t for t in tok if t.split("=")[0].lower() not in ("ad", "as", "pd", "ps")]
+                tok += ["ad=%.4gp" % (wu * DIFF_UM), "as=%.4gp" % (wu * DIFF_UM),
+                        "pd=%.4gu" % (2 * (wu + DIFF_UM)), "ps=%.4gu" % (2 * (wu + DIFF_UM))]
+                estimated += 1
             ln = " ".join(tok)
         out.append(ln)
     for old, new in sorted(renamed.items()):
         notes.append("%s: model %s simulated as %s" % (where, old, new))
+    if estimated and not any("junctions estimated" in n for n in notes):
+        notes.append("junctions estimated (%.1f um diffusion) for cell devices listed without them" % DIFF_UM)
     return out
 
 
@@ -380,6 +399,19 @@ def prepare_netlist(path, top, W, libs=()):
         expanded.append(ln)
     expanded = normalize_devices(expanded, notes, os.path.basename(path))
     subckts, top_lines = parse_blocks(expanded)
+    # a netlist may carry a copy of its cell library (Qflow dumps it into the file) and the
+    # library may be given with --lib as well: the first definition of every cell is kept
+    seen, unique = set(), []
+    for sc in subckts:
+        if sc[0].lower() not in seen:
+            seen.add(sc[0].lower())
+            unique.append(sc)
+    subckts = unique
+    # device models come from the project model file only
+    nmodel = sum(1 for l in top_lines if l.lower().startswith(".model"))
+    if nmodel:
+        top_lines = [l for l in top_lines if not l.lower().startswith(".model")]
+        notes.append("%d .model lines of the netlist dropped (project models used)" % nmodel)
 
     blk = next((sc for sc in subckts if sc[0].lower() == top.lower()), None)
     if blk is None and len(subckts) == 1 and not any(is_element(l) for l in top_lines):
@@ -390,8 +422,8 @@ def prepare_netlist(path, top, W, libs=()):
     others = [sc for sc in subckts if sc is not blk]
     directives = [l for l in top_lines if not is_element(l)]
     elements = [l for l in top_lines if is_element(l)] + body
-    if blk is None:
-        notes.append("no subcircuit %s: top-level elements used" % top)
+    if blk is None and not elements:
+        errors.append("no subcircuit %s and no top-level devices in the netlist" % top)
 
     # supply, ground and floating-well nodes of the top level
     nodes = set()
@@ -449,6 +481,33 @@ def prepare_netlist(path, top, W, libs=()):
     missing = [p for p in in_pins(W) + out_pins(W) if p not in lower]
     if missing:
         errors.append("pins not found in the netlist: %s" % " ".join(missing))
+
+    # cells without devices (fillers) are removed with their instances, and only the
+    # subcircuits the design uses are kept (a cell library defines many more)
+    def inst_cell(ln):
+        return [t for t in ln.split() if "=" not in t][-1].lower()
+
+    empty = {sc[0].lower() for sc in others if not any(is_element(l) for l in sc[2])}
+    if empty:
+        n_before = len(out_el)
+        out_el = [l for l in out_el if not (l[0].lower() == "x" and inst_cell(l) in empty)]
+        others = [(nm, prt, [l for l in bd if not (l[0].lower() == "x" and inst_cell(l) in empty)])
+                  for nm, prt, bd in others if nm.lower() not in empty]
+        if n_before != len(out_el):
+            notes.append("%d instances of cells without devices removed (%s)"
+                         % (n_before - len(out_el), " ".join(sorted(empty))[:40]))
+    bodies = {sc[0].lower(): sc[2] for sc in others}
+    used, stack = set(), [inst_cell(l) for l in out_el if l[0].lower() == "x"]
+    while stack:
+        nm = stack.pop()
+        if nm in used or nm not in bodies:
+            continue
+        used.add(nm)
+        stack.extend(inst_cell(l) for l in bodies[nm] if l[0].lower() == "x")
+    undefined = sorted({inst_cell(l) for l in out_el if l[0].lower() == "x"} - set(bodies))
+    if undefined:
+        errors.append("cells without a definition: %s" % " ".join(undefined[:6]))
+    others = [sc for sc in others if sc[0].lower() in used]
 
     # device statistics (hierarchical count through subcircuit instances)
     defs = {sc[0].lower(): sc[2] for sc in others}

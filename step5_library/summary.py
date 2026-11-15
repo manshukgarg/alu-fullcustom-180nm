@@ -17,8 +17,10 @@ _spec = importlib.util.spec_from_file_location("s2", os.path.join(ROOT, "step2_r
 s2 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(s2)
 s2.HERE, s2.OUT = HERE, OUT            # the parsers read this step's logs
-f, fmt_tests, short_lvs = s2.f, s2.fmt_tests, s2.short_lvs
-DESIGNS = s2.DESIGNS
+f = s2.f
+DESIGNS = (("beh", "beh", "behavioural RTL, synthesized (rtl/alu4.v)"),
+           ("slice", "slice", "bit-sliced RTL, synthesized (rtl/alu4_slice.v)"),
+           ("map", "map", "hand-mapped netlist with pl_fa full adders (rtl/alu4_map_pl018.v)"))
 W = 79
 
 
@@ -76,21 +78,25 @@ def library():
 
 
 def num(v):
-    return "%.0f" % v if v >= 100 or float(v).is_integer() else "%.1f" % v
+    if v >= 100 or float(v).is_integer():
+        return "%.0f" % v
+    return "%.1f" % v if v >= 10 else "%.2f" % v
 
 
 def change(a, b):
-    if a is None or b is None or not b:
+    """Value of this step with its change against Step 2, e.g. '1234 (-18%)'."""
+    if a is None:
         return "n/a"
-    return "%s / %s (%+.0f%%)" % (num(a), num(b), 100 * (a / b - 1))
+    if b is None or not b:
+        return num(a)
+    return "%s (%+.0f%%)" % (num(a), 100 * (a / b - 1))
 
 
 def main():
     lib, lib_err, char_checks = library()
-    res = {"library": lib}
-    for d, _ in DESIGNS:
-        res[d] = {"rtl": s2.tests("sim_" + d), "gate": s2.tests("sim_gate_" + d), "yosys": s2.yosys(d),
-                  "sta": s2.sta(d), "layout": s2.layout(d), "pre": s2.sim(d + "_pre"), "post": s2.sim(d + "_post")}
+    designs = [d for d, _, _ in DESIGNS]
+    titles = [t for _, t, _ in DESIGNS]
+    res = s2.collect(designs)
     print("=" * W)
     print("STEP 5 SUMMARY  project cell library pl018 and the automated ALU with it (D4)")
     print("=" * W)
@@ -105,82 +111,42 @@ def main():
             f(r["drc"], "%d"), r["lvs"], f(r["cin_max_fF"], "%.1f"), f(r["tpd_rise_ps"], "%.0f"),
             f(r["tpd_fall_ps"], "%.0f"), f(r["leak_nW"], "%.3f"), r["netlist"]))
     print("* fF, ps, nW; worst arc at 16 fF load and 80 ps input slope; + provisional size")
-    b, s = res["beh"], res["slice"]
-    row = "%-33s %-22s %-22s"
     print("-" * W)
-    print(row % ("", DESIGNS[0][1], DESIGNS[1][1]))
-    print(row % ("RTL simulation, exhaustive", fmt_tests(b["rtl"]), fmt_tests(s["rtl"])))
-    print(row % ("Gate-level simulation, exhaustive", fmt_tests(b["gate"]), fmt_tests(s["gate"])))
-    print(row % ("Yosys: cells, area (um2)",
-                 "%s, %s" % (f(b["yosys"]["cells"], "%d"), f(b["yosys"]["area_um2"])),
-                 "%s, %s" % (f(s["yosys"]["cells"], "%d"), f(s["yosys"]["area_um2"]))))
-    print(row % ("OpenSTA worst delay (ns)", f(b["sta"]["delay_ns"], "%.3f"), f(s["sta"]["delay_ns"], "%.3f")))
-
-    def die(r):
-        dm = r["layout"]["die_um"]
-        return "%s, %s" % (f(r["layout"]["cells"], "%d"), "%.1f x %.1f um" % tuple(dm) if dm else "n/a")
-    print(row % ("Qflow: cells placed, die size", die(b), die(s)))
-    print(row % ("Qflow routing", b["layout"]["route"][:22], s["layout"]["route"][:22]))
-    print(row % ("Qflow LVS / DRC with real cells",
-                 "%s / %s" % (short_lvs(b["layout"]["lvs"]), f(b["layout"]["drc_errors"], "%d")),
-                 "%s / %s" % (short_lvs(s["layout"]["lvs"]), f(s["layout"]["drc_errors"], "%d"))))
+    for d, _, note in DESIGNS:
+        print("  %-5s %s" % (d, note[:W - 8]))
+    s2.print_flow(res, designs, titles)
     print("-" * W)
-    row4 = "%-31s %-11s %-11s %-11s %-11s"
-    print(row4 % ("Ngspice, 1.8 V, 27 C, FO4 loads", "beh pre", "beh post", "slice pre", "slice post"))
-    cols = [b["pre"], b["post"], s["pre"], s["post"]]
-
-    def line(text, fn):
-        print(row4 % ((text,) + tuple(fn(c) if c.get("status") == "ok" else "-" for c in cols)))
-    line("cycles correct", lambda c: "%d/%d" % (c["transitions"] - c["wrong_cycles"], c["transitions"]))
-    line("worst delay (ps)", lambda c: f(c.get("t_max_ps")))
-    line("energy per operation (fJ)", lambda c: f(c.get("e_avg_fJ")))
-    line("leakage power (nW)", lambda c: f(c.get("p_leak_nW"), "%.2f"))
-    line("energy x worst delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
-    # comparison with Step 2
+    s2.print_sim(res, designs, titles)
+    # comparison with Step 2 (same designs with the OSU018 cells)
     try:
         d3 = json.load(open(os.path.join(ROOT, "step2_rtl_baseline", "out", "step2_results.json")))
     except (OSError, ValueError):
         d3 = None
     print("-" * W)
     if d3:
-        print(row % ("After layout: D4 / D3 (change)", DESIGNS[0][1], DESIGNS[1][1]))
+        row = "%-33s" + " %-14s" * len(designs)
+        print(row % (("After layout: D4 (change vs D3)",) + tuple(titles)))
         for text, key in (("cells placed", ("layout", "cells")), ("worst delay (ps)", ("post", "t_max_ps")),
                           ("energy per operation (fJ)", ("post", "e_avg_fJ")),
                           ("leakage power (nW)", ("post", "p_leak_nW")),
                           ("energy x worst delay (fJ ns)", ("post", "edp_fJns"))):
-            vals = []
-            for d, _ in DESIGNS:
-                a = res[d][key[0]].get(key[1]) if isinstance(res[d][key[0]], dict) else None
-                c3 = d3.get(d, {}).get(key[0], {}).get(key[1])
-                vals.append(change(a, c3))
-            print(row % ("  " + text, vals[0], vals[1]))
-        for d, _ in DESIGNS:
-            da, d3a = res[d]["layout"]["die_um"], d3.get(d, {}).get("layout", {}).get("die_um")
-            if da and d3a:
-                print("  die area %-5s %.0f um2 / %.0f um2 (%+.0f%%)" % (
-                    d, da[0] * da[1], d3a[0] * d3a[1], 100 * (da[0] * da[1] / (d3a[0] * d3a[1]) - 1)))
+            print(row % (("  " + text,) + tuple(
+                change(res[d][key[0]].get(key[1]), d3.get(d, {}).get(key[0], {}).get(key[1]))
+                for d in designs)))
+        areas = []
+        for d in designs:
+            da, db = res[d]["layout"]["die_um"], d3.get(d, {}).get("layout", {}).get("die_um")
+            areas.append(change(da[0] * da[1] if da else None, db[0] * db[1] if db else None))
+        print(row % (("  die area (um2)",) + tuple(areas)))
     else:
         print("D3 results not found: run step2_rtl_baseline/run.sh for the comparison")
     msgs = ["library: " + e for e in lib_err] + ["characterization: " + e for e in char_checks]
-    for d, _ in DESIGNS:
-        r = res[d]
-        for k in ("rtl", "gate"):
-            if r[k] is None or r[k]["errors"]:
-                msgs.append("%s %s simulation: %s" % (d, k, fmt_tests(r[k])))
-        msgs += ["%s qflow: %s" % (d, e) for e in r["layout"]["qflow_errors"]]
-        msgs += ["%s magic: %s" % (d, e) for e in r["layout"]["magic_errors"]]
-        msgs += ["%s DRC: %s" % (d, e) for e in r["layout"]["drc_types"]]
-        for k in ("pre", "post"):
-            c = r[k]
-            if c.get("status") != "ok":
-                msgs.append("%s_%s: %s" % (d, k, c.get("status")))
-            msgs += ["%s_%s: %s" % (d, k, e) for e in c.get("errors", [])[:2]]
-            if c.get("warning"):
-                msgs.append("%s_%s: %s" % (d, k, c["warning"]))
+    msgs += s2.messages(res, designs)
     if msgs:
         print("-" * W)
-        for m in msgs[:12]:
+        for m in msgs[:14]:
             print("  " + m[:W - 2])
+    res["library"] = lib
     with open(os.path.join(OUT, "step5_results.json"), "w") as fh:
         json.dump(res, fh, indent=1)
 

@@ -15,3 +15,6 @@ step5_library/qflow_beh/
 step5_library/qflow_slice/
 tech/pl018/pl018.magicrc
 tech/pl018/pl018_cells.lib
+step6_alu_schematic/out/
+step2_rtl_baseline/qflow_map/
+step5_library/qflow_map/

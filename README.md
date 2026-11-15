@@ -32,16 +32,19 @@ Current progress and the plan are in [STATUS.md](STATUS.md).
 | --- | --- |
 | `models/` | Transistor models (`nfet`, `pfet`) |
 | `tech/magicrc` | Magic start-up file that loads the SCN6M_SUBM.10 rules |
-| `rtl/`, `tb/` | 4-bit ALU in Verilog (behavioural `alu4.v`, bit-sliced `alu4_slice.v`) and the exhaustive testbench |
+| `rtl/`, `tb/` | 4-bit ALU in Verilog (behavioural `alu4.v`, bit-sliced `alu4_slice.v`, hand-mapped `alu4_map_*.v`) and the exhaustive testbench |
 | `sim/alutb.py` | Transistor-level ALU testbench used for every design (Ngspice) |
+| `sim/gen_alu.py` | Generator of the structural ALU from a cell set (SPICE and Verilog), with exhaustive checks |
+| `sim/switchsim.py` | Switch-level logic check of transistor netlists (no simulator needed) |
 | `layout/` | Cell layout generator: Magic writer, cell plans, placer and router, rule checker, extractor |
 | `mag/` | Generated Magic layouts |
 | `step1_flowcheck/` | End-to-end flow check on one inverter |
-| `step2_rtl_baseline/` | Automated implementation D3: RTL and gate-level tests, Yosys, OpenSTA, Qflow, DRC, extraction, post-layout simulation |
+| `step2_rtl_baseline/` | Automated implementation D3: netlist and gate-level tests, Yosys, OpenSTA, Qflow, DRC, extraction, post-layout simulation |
+| `step6_alu_schematic/` | The ALU at transistor level from each cell style (before layout) and its comparison |
 | `step5_library/` | Project cell library pl018 (generator, characterization) and the automated implementation D4 with it |
 | `tech/pl018/` | Qflow technology of the project library: LEF, Liberty (written in the lab), SPICE, Verilog, setup files |
 | `docs/ltspice_cells.md` | Conventions for cells designed in LTspice |
-| `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates), their Ngspice comparison and sizing sweep |
+| `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates), their switch-level check, Ngspice comparison and sizing sweep |
 | `step4_layout/` | Layouts of the optimized and conventional libraries: Magic DRC, Netgen LVS, post-layout simulation |
 | `docs/figures/` | Layout views for the report and slides |
 
@@ -57,7 +60,16 @@ integer arithmetic in `tb/tb_alu4.v`.
 
 ## Automated implementation (Step 2, design D3)
 
-Both RTL descriptions are taken through the complete automated flow:
+Three descriptions of the ALU are taken through the complete automated flow: the
+behavioural RTL (`beh`), the bit-sliced RTL (`slice`) and a hand-mapped netlist (`map`).
+Logic synthesis maps only single-output cells, so the synthesized designs cannot use
+the library's full adder; the hand-mapped netlist does. It also uses inverting
+multiplexers throughout: each multiplexer receives its inputs in the complemented
+polarity (NAND and NOR in place of AND and OR, XNOR in place of XOR, the complemented
+sum), so no multiplexer needs an output inverter. The netlist is written by
+`sim/gen_alu.py` for the OSU018 cells (`rtl/alu4_map_osu018.v`) and for the project
+library (`rtl/alu4_map_pl018.v`) and checked against the reference model on all 2048
+input vectors. The flow is
 Yosys synthesis onto the OSU018 cells, exhaustive gate-level simulation, OpenSTA,
 Qflow placement and routing with cell-level LVS, a Magic design-rule check with the
 real cell layouts (GDS view, not the LEF outlines), and a flat transistor-level
@@ -76,6 +88,7 @@ and the library pl018 takes the minimum-PDP restoring candidate of every functio
 | Function | Cell | Structure |
 | --- | --- | --- |
 | INV, NAND2, NOR2 | `pl_inv`, `pl_nand2`, `pl_nor2` | static CMOS |
+| AND2, OR2 | `pl_and2`, `pl_or2` | NAND2 or NOR2 with an output inverter |
 | XOR2 | `pl_xor2` | transmission gates + output inverter |
 | MUX2 | `pl_mux2` | transmission gates + two inverters |
 | MUX2I | `pl_mux2i` | transmission gates + output inverter |
@@ -91,10 +104,30 @@ the complete metal of its net, and internal nets are obstructions. In the lab, e
 cell is checked (Magic DRC, Netgen LVS) and characterized with Ngspice from its
 extracted layout into a 5 x 5 NLDM Liberty file (delay and transition against output
 load and input transition, input capacitance, leakage), in the conventions of the
-OSU018 library. The same RTL then goes through the same flow as D3, and the summary
-compares D4 with D3 after layout.
+OSU018 library. The same three descriptions then go through the same flow as D3, and
+the summary compares D4 with D3 after layout.
 
 ![pl_xor2, generated layout; + marks the routing-track crossings](docs/figures/cells/pl_xor2.png)
+
+## The ALU from each cell style (Step 6)
+
+To compare cell styles at ALU level, `sim/gen_alu.py` composes the same 4-bit ALU from
+four cell sets and writes one transistor-level netlist each
+(`step6_alu_schematic/netlists/`):
+
+| Netlist | Cells | Transistors |
+| --- | --- | --- |
+| `alu4_gate.sp` | gate-level cells: XOR from four NAND2, multiplexer from AND/OR gates, full adder from eleven NAND2 (k = 0.4, r = 2) | 822 |
+| `alu4_conv.sp` | conventional static CMOS: 12-transistor XOR and multiplexer, 28-transistor mirror adder (k = 1, r = 2) | 558 |
+| `alu4_opt.sp` | minimum-PDP cells of Step 3, unbuffered transmission-gate cells included | 382 |
+| `alu4_pl.sp` | cells of the library pl018 as laid out, slice with inverting multiplexers | 436 |
+
+The first three use the slice of `rtl/alu4_slice.v`; the last is the hand-mapped
+netlist of design D4. Every netlist is read back and evaluated at switch level
+(`sim/switchsim.py`: an NMOS conducts when its gate is 1, a PMOS when it is 0, all
+2048 vectors at once) and must reproduce the reference model before it is committed.
+The lab step simulates the four netlists with the ALU testbench below and reports
+delay, energy per operation and leakage against the conventional design.
 
 ## ALU-level measurement (`sim/alutb.py`)
 
@@ -114,7 +147,10 @@ compares D4 with D3 after layout.
   10 % of the rails). Leakage is the mean of 16 DC operating points.
 * The netlist may be a Magic extraction (flat or hierarchical) or a cell-level netlist
   with its cell library: the top subcircuit is unwrapped, bus names are converted,
-  and supply, substrate and well nodes are joined to the measured supplies.
+  and supply, substrate and well nodes are joined to the measured supplies. Cells
+  without devices (fillers) and unused cells are removed. Library devices listed
+  without source and drain junction sizes (the OSU018 netlists give zero) receive the
+  project's estimate for a 0.5 um diffusion, so designs are comparable before layout.
 
 ## Cell template
 
@@ -161,11 +197,13 @@ Layouts are regenerated with `python3 step4_layout/gen_cells.py --preview`
 git clone https://github.com/manshukgarg/alu-fullcustom-180nm.git
 cd alu-fullcustom-180nm
 bash step1_flowcheck/run.sh        # inverter flow check
-bash step2_rtl_baseline/run.sh     # automated implementation D3, both RTL styles (10-20 min)
+bash step2_rtl_baseline/run.sh     # automated implementation D3, three designs (15-25 min)
 bash step3_cells/run.sh            # candidate cells at reference size
 bash step3_cells/run_sweep.sh      # sizing sweep, selects the optimized library
 bash step4_layout/run.sh           # DRC, LVS and post-layout simulation of both libraries
-bash step5_library/run.sh          # project library pl018 and automated implementation D4 (15-25 min)
+bash step5_library/run.sh          # project library pl018 and automated implementation D4 (20-30 min)
+bash step6_alu_schematic/run.sh    # the ALU from each cell style at transistor level (5-10 min)
+python3 step3_cells/check_netlists.py   # switch-level check of every cell netlist (seconds)
 ```
 
 Each script prints a one-screen summary and writes it to `out/summary.txt` in its
@@ -186,6 +224,7 @@ klayout step2_rtl_baseline/qflow_slice/layout/alu4_full.gds              # route
 | --- | --- | --- |
 | 1 | Inverter flow check | DRC clean, LVS match, post-layout delay +6.9 % over schematic |
 | 2 | Automated implementation D3 | 8-bit version (30 Oct): 524,288 vectors pass, 136 cells, 4090 um2, 1.59 ns, DRC and LVS clean; 4-bit flow with post-layout ALU simulation ready for the lab |
-| 3 | Cell topology comparison and sizing | TG styles lowest PDP; sizing sweep rerun pending |
+| 3 | Cell topology comparison and sizing | TG styles lowest PDP; 21 candidates, all correct at switch level; sizing sweep rerun pending |
 | 4 | Layouts of both libraries | 13 of 14 cells generated (conventional full adder outstanding), rule check and connectivity clean; lab verification pending |
-| 5 | Project library pl018 and D4 | 9 cells generated (grid mode), rule check and connectivity clean; characterization and flow ready for the lab |
+| 5 | Project library pl018 and D4 | 11 cells generated (grid mode), rule check and connectivity clean; characterization and flow ready for the lab |
+| 6 | The ALU from each cell style, transistor level | four netlists generated, correct on all 2048 vectors at switch level; simulation ready for the lab |

@@ -30,6 +30,22 @@ M5 gnd B Y gnd nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
 M6 x_1 B vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
 M7 vdd B x_2 vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
 .ends pl_nor2
+.subckt pl_and2 A B Y vdd gnd
+M0 Yn A x gnd nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M1 vdd A Yn vdd pfet w=2.5u l=0.2u ad=1.25p as=1.25p pd=6u ps=6u
+M2 x B gnd gnd nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Yn B vdd vdd pfet w=2.5u l=0.2u ad=1.25p as=1.25p pd=6u ps=6u
+M4 gnd Yn Y gnd nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M5 vdd Yn Y vdd pfet w=2.5u l=0.2u ad=1.25p as=1.25p pd=6u ps=6u
+.ends pl_and2
+.subckt pl_or2 A B Y vdd gnd
+M0 gnd A Yn gnd nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 Yn A x vdd pfet w=3.2u l=0.2u ad=1.6p as=1.6p pd=7.4u ps=7.4u
+M2 Yn B gnd gnd nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 x B vdd vdd pfet w=3.2u l=0.2u ad=1.6p as=1.6p pd=7.4u ps=7.4u
+M4 gnd Yn Y gnd nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M5 vdd Yn Y vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+.ends pl_or2
 .subckt pl_xor2 A B Y vdd gnd
 M0 A B Xn gnd nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
 M1 A Bn Xn vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u

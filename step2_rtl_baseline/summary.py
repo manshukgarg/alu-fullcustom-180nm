@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Step 2 summary: one screen for both RTL descriptions, and out/step2_results.json.
+"""Step 2 summary: one screen for the three designs, and out/step2_results.json.
 
 Reads the logs of run.sh (iverilog, Yosys, OpenSTA, Qflow, Magic) and the results of
 the transistor-level simulations (out/sim/*.json, written by sim/alutb.py).
@@ -11,7 +11,11 @@ from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
-DESIGNS = (("beh", "behavioural RTL"), ("slice", "bit-sliced RTL"))
+# key, column title, description
+DESIGNS = (("beh", "beh", "behavioural RTL, synthesized (rtl/alu4.v)"),
+           ("slice", "slice", "bit-sliced RTL, synthesized (rtl/alu4_slice.v)"),
+           ("map", "map", "hand-mapped netlist with FAX1 full adders (rtl/alu4_map_osu018.v)"))
+W = 79
 OPS = ("ADD", "SUB", "INC", "DEC", "AND", "OR", "XOR", "NOT")
 
 
@@ -119,79 +123,92 @@ def short_lvs(text):
     return text[:12] or "n/a"
 
 
-def main():
+def short_route(text):
+    low = text.lower()
+    if "no failed routes" in low:
+        return "complete"
+    m = re.search(r"(\d+)", text)
+    if "fail" in low and m:
+        return "%s failed" % m.group(1)
+    return text[:14] or "n/a"
+
+
+def collect(designs):
     res = {}
-    for d, _ in DESIGNS:
+    for d in designs:
         res[d] = {"rtl": tests("sim_" + d), "gate": tests("sim_gate_" + d), "yosys": yosys(d),
                   "sta": sta(d), "layout": layout(d), "pre": sim(d + "_pre"), "post": sim(d + "_post")}
-    W = 79
-    print("=" * W)
-    print("STEP 2 SUMMARY  4-bit ALU, automated OSU018 implementation (design D3)")
-    print("=" * W)
-    row = "%-33s %-22s %-22s"
-    print(row % ("", DESIGNS[0][1], DESIGNS[1][1]))
-    b, s = res["beh"], res["slice"]
-    print(row % ("RTL simulation, exhaustive", fmt_tests(b["rtl"]), fmt_tests(s["rtl"])))
-    print(row % ("Gate-level simulation, exhaustive", fmt_tests(b["gate"]), fmt_tests(s["gate"])))
-    print(row % ("Yosys: cells, area (um2)",
-                 "%s, %s" % (f(b["yosys"]["cells"], "%d"), f(b["yosys"]["area_um2"])),
-                 "%s, %s" % (f(s["yosys"]["cells"], "%d"), f(s["yosys"]["area_um2"]))))
-    print(row % ("OpenSTA worst delay (ns), path",
-                 "%s %s" % (f(b["sta"]["delay_ns"], "%.3f"), b["sta"]["path"]),
-                 "%s %s" % (f(s["sta"]["delay_ns"], "%.3f"), s["sta"]["path"])))
+    return res
 
-    def die(r):
-        dm = r["layout"]["die_um"]
-        return "%s, %s" % (f(r["layout"]["cells"], "%d"), "%.1f x %.1f um" % tuple(dm) if dm else "n/a")
-    print(row % ("Qflow: cells placed, die size", die(b), die(s)))
-    print(row % ("Qflow routing", b["layout"]["route"][:22], s["layout"]["route"][:22]))
-    print(row % ("Qflow LVS (cell level)", short_lvs(b["layout"]["lvs"]), short_lvs(s["layout"]["lvs"])))
-    print(row % ("Magic DRC with real cell layouts", f(b["layout"]["drc_errors"], "%d errors"),
-                 f(s["layout"]["drc_errors"], "%d errors")))
 
-    def ext(r):
-        p = r["post"]
-        if "transistors" not in p:
-            return "n/a"
-        return "%d T, %d C (%.0f fF)" % (p["transistors"], p.get("capacitors", 0), p.get("cap_total_fF", 0))
-    print(row % ("Extracted layout netlist", ext(b), ext(s)))
+def is_ok(c):
+    return c.get("status") == "ok"
 
-    ref = next((r[k] for r in (b, s) for k in ("post", "pre") if r[k].get("status") == "ok"), {})
-    print("-" * W)
+
+def print_flow(res, designs, titles):
+    """Synthesis and layout rows, one column per design."""
+    row = "%-33s" + " %-14s" * len(designs)
+    cols = [res[d] for d in designs]
+    print(row % (("",) + tuple(titles)))
+    print(row % (("Netlist simulation, exhaustive",) + tuple(fmt_tests(r["rtl"]) for r in cols)))
+    print(row % (("Gate-level simulation",) + tuple(fmt_tests(r["gate"]) for r in cols)))
+    print(row % (("Yosys: cells, area (um2)",) + tuple(
+        "%s, %s" % (f(r["yosys"]["cells"], "%d"), f(r["yosys"]["area_um2"])) for r in cols)))
+    print(row % (("OpenSTA worst delay (ns)",) + tuple(f(r["sta"]["delay_ns"], "%.3f") for r in cols)))
+    print(row % (("Qflow: cells placed",) + tuple(f(r["layout"]["cells"], "%d") for r in cols)))
+    print(row % (("Qflow: die size (um)",) + tuple(
+        "%.1f x %.1f" % tuple(r["layout"]["die_um"]) if r["layout"]["die_um"] else "n/a" for r in cols)))
+    print(row % (("Qflow routing",) + tuple(short_route(r["layout"]["route"]) for r in cols)))
+    print(row % (("Qflow LVS (cell level)",) + tuple(short_lvs(r["layout"]["lvs"]) for r in cols)))
+    print(row % (("Magic DRC, real cell layouts",) + tuple(
+        f(r["layout"]["drc_errors"], "%d errors") for r in cols)))
+    print(row % (("Extracted: transistors, C (fF)",) + tuple(
+        "%d, %.0f" % (r["post"]["transistors"], r["post"].get("cap_total_fF", 0))
+        if "transistors" in r["post"] else "n/a" for r in cols)))
+
+
+def print_sim(res, designs, titles):
+    """Transistor-level rows: before and after layout for every design."""
+    ref = next((res[d][k] for d in designs for k in ("post", "pre") if is_ok(res[d][k])), {})
     print("Ngspice, %s V, %s C, FO4 loads: %s transitions, %s full carry ripples"
           % (ref.get("vdd", "1.8"), f(ref.get("temp"), "%g"), ref.get("transitions", "n/a"),
              ref.get("critical_transitions", "n/a")))
-    row4 = "%-31s %-11s %-11s %-11s %-11s"
-    print(row4 % ("", "beh pre", "beh post", "slice pre", "slice post"))
-    cols = [b["pre"], b["post"], s["pre"], s["post"]]
+    row = "%-24s" + " %8s" * (2 * len(designs))
+    heads = []
+    for t in titles:
+        heads += ["%s pre" % t[:3], "%s post" % t[:3]]
+    print(row % (("",) + tuple(heads)))
+    cols = [res[d][k] for d in designs for k in ("pre", "post")]
 
     def line(text, fn):
-        print(row4 % ((text,) + tuple(fn(c) if c.get("status") == "ok" else "-" for c in cols)))
+        print(row % ((text,) + tuple(fn(c) if is_ok(c) else "-" for c in cols)))
     line("cycles correct", lambda c: "%d/%d" % (c["transitions"] - c["wrong_cycles"], c["transitions"]))
     line("worst delay (ps)", lambda c: f(c.get("t_max_ps")))
     line("mean delay (ps)", lambda c: f(c.get("t_avg_ps")))
-    line("energy per operation (fJ)", lambda c: f(c.get("e_avg_fJ")))
-    line("input-driver energy (fJ)", lambda c: f(c.get("e_drv_avg_fJ")))
+    line("energy per op (fJ)", lambda c: f(c.get("e_avg_fJ")))
+    line("driver energy (fJ)", lambda c: f(c.get("e_drv_avg_fJ")))
     line("leakage power (nW)", lambda c: f(c.get("p_leak_nW"), "%.2f"))
-    line("energy x worst delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
-    for d, name in DESIGNS:
+    line("energy x delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
+    for d in designs:
         pre, post = res[d]["pre"], res[d]["post"]
-        if pre.get("status") == "ok" and post.get("status") == "ok" and pre.get("t_max_ps") and pre.get("e_avg_fJ"):
+        if is_ok(pre) and is_ok(post) and pre.get("t_max_ps") and pre.get("e_avg_fJ"):
             print("  %-5s after layout: worst delay %+.1f %%, energy %+.1f %%" % (
                 d, 100 * (post["t_max_ps"] / pre["t_max_ps"] - 1),
                 100 * (post["e_avg_fJ"] / pre["e_avg_fJ"] - 1)))
     print("%-24s" % "Post-layout energy (fJ)" + "".join("%6s" % o for o in OPS))
-    for d, name in DESIGNS:
+    for d in designs:
         e = res[d]["post"].get("e_op_fJ") or {}
-        print("  %-22s" % name + "".join("%6s" % f(e.get(o), "%.0f") for o in OPS))
-    for d, name in DESIGNS:
+        print("  %-22s" % d + "".join("%6s" % f(e.get(o), "%.0f") for o in OPS))
+    for d in designs:
         wst = res[d]["post"].get("worst")
         if wst:
-            print("  worst %-5s %s -> %s, last output %s" % (
-                d, wst["from"], wst["to"], wst["last_output"]))
-    # anything that needs a look
-    msgs = []
-    for d, name in DESIGNS:
+            print("  worst %-5s %s -> %s, last output %s" % (d, wst["from"], wst["to"], wst["last_output"]))
+
+
+def messages(res, designs):
+    """Lines for anything that needs a look, then the notes of the netlist preparation."""
+    msgs, notes = [], []
+    for d in designs:
         r = res[d]
         for k in ("rtl", "gate"):
             if r[k] is None or r[k]["errors"]:
@@ -201,15 +218,34 @@ def main():
         msgs += ["%s DRC: %s" % (d, e) for e in r["layout"]["drc_types"]]
         for k in ("pre", "post"):
             c = r[k]
-            if c.get("status") != "ok":
+            if not is_ok(c):
                 msgs.append("%s_%s: %s" % (d, k, c.get("status")))
             msgs += ["%s_%s: %s" % (d, k, e) for e in c.get("errors", [])[:3]]
-            msgs += ["%s_%s note: %s" % (d, k, e) for e in c.get("notes", [])[:3]]
+            for e in c.get("notes", [])[:3]:
+                text = "%s-layout netlists: %s" % (k, e)
+                if text not in notes:
+                    notes.append(text)
             if c.get("warning"):
                 msgs.append("%s_%s: %s" % (d, k, c["warning"]))
-            if c.get("status") == "ok" and (c["wrong_cycles"] or c["weak_levels"] or c["missing_references"]):
+            if is_ok(c) and (c["wrong_cycles"] or c["weak_levels"] or c["missing_references"]):
                 msgs.append("%s_%s: %d wrong cycles, %d weak levels, %d missing references (see CSV)" % (
                     d, k, c["wrong_cycles"], c["weak_levels"], c["missing_references"]))
+    return msgs + notes
+
+
+def main():
+    designs = [d for d, _, _ in DESIGNS]
+    titles = [t for _, t, _ in DESIGNS]
+    res = collect(designs)
+    print("=" * W)
+    print("STEP 2 SUMMARY  4-bit ALU, automated OSU018 implementation (design D3)")
+    print("=" * W)
+    for d, _, note in DESIGNS:
+        print("  %-5s %s" % (d, note[:W - 8]))
+    print_flow(res, designs, titles)
+    print("-" * W)
+    print_sim(res, designs, titles)
+    msgs = messages(res, designs)
     if msgs:
         print("-" * W)
         for m in msgs[:14]:
