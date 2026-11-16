@@ -1,0 +1,158 @@
+* cells_gate.lib
+* Gate-level cells of the LTspice cell set of 14 November, re-entered with the project models:
+* every function composed of NAND2, NOR2 and inverters, inverter Wn 0.4 / Wp 0.8 um.
+* 180 nm (TSMC 0.18 um BSIM3 models in tsmc018.lib, devices nfet and pfet), L = 0.2 um.
+* Pin order of every cell: inputs, outputs, vdd, vss.
+*
+* cell       T    function / circuit
+* gate_inv   2    Y = not A
+*                 static CMOS; width scale k = 0.4, P/N ratio r = 2
+* gate_buf   4    Y = A
+*                 static CMOS, two inverters; width scale k = 0.4, P/N ratio r = 2
+* gate_nand2 4    Y = not (A and B)
+*                 static CMOS; width scale k = 0.4, P/N ratio r = 2
+* gate_nor2  4    Y = not (A or B)
+*                 static CMOS; width scale k = 0.4, P/N ratio r = 2
+* gate_and2  6    Y = A and B
+*                 static CMOS, NAND2 + inverter; width scale k = 0.4, P/N ratio r = 2
+* gate_or2   6    Y = A or B
+*                 static CMOS, NOR2 + inverter; width scale k = 0.4, P/N ratio r = 2
+* gate_xor2  16   Y = A xor B
+*                 gate level, four NAND2; width scale k = 0.4, P/N ratio r = 2
+* gate_mux2  20   Y = B if S = 1, else A
+*                 gate level, inverter + two AND2 + OR2; width scale k = 0.4, P/N ratio r = 2
+* gate_fa    44   S = A xor B xor C, CO = carry of A + B + C
+*                 gate level, eleven NAND2; width scale k = 0.4, P/N ratio r = 2
+
+.subckt gate_inv A Y vdd vss
+M0 Y A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Y A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_inv
+
+.subckt gate_buf A Y vdd vss
+M0 Yn A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Yn A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 Y Yn vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 Y Yn vdd vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+.ends gate_buf
+
+.subckt gate_nand2 A B Y vdd vss
+M0 Y A x vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 x B vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 Y A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 Y B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_nand2
+
+.subckt gate_nor2 A B Y vdd vss
+M0 Y A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Y B vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M2 Y A x vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+M3 x B vdd vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+.ends gate_nor2
+
+.subckt gate_and2 A B Y vdd vss
+M0 Yn A x vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 x B vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 Yn A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 Yn B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M4 Y Yn vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 Y Yn vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_and2
+
+.subckt gate_or2 A B Y vdd vss
+M0 Yn A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Yn B vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M2 Yn A x vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+M3 x B vdd vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+M4 Y Yn vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 Y Yn vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_or2
+
+.subckt gate_xor2 A B Y vdd vss
+M0 n1 A x1 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 x1 B vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 n1 A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 n1 B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M4 n2 A x2 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M5 x2 n1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M6 n2 A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M7 n2 n1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M8 n3 B x3 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M9 x3 n1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M10 n3 B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M11 n3 n1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M12 Y n2 x4 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M13 x4 n3 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M14 Y n2 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M15 Y n3 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_xor2
+
+.subckt gate_mux2 A B S Y vdd vss
+M0 Sn S vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Sn S vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 m1n A x1 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 x1 Sn vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M4 m1n A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M5 m1n Sn vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M6 m1 m1n vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M7 m1 m1n vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M8 m2n B x2 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M9 x2 S vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M10 m2n B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M11 m2n S vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M12 m2 m2n vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M13 m2 m2n vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M14 Yn m1 vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M15 Yn m2 vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M16 Yn m1 x3 vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+M17 x3 m2 vdd vdd pfet w=1.6u l=0.2u ad=0.8p as=0.8p pd=4.2u ps=4.2u
+M18 Y Yn vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M19 Y Yn vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_mux2
+
+.subckt gate_fa A B C S CO vdd vss
+M0 a1 A x1 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 x1 B vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 a1 A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M3 a1 B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M4 a2 A x2 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M5 x2 a1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M6 a2 A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M7 a2 a1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M8 a3 B x3 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M9 x3 a1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M10 a3 B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M11 a3 a1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M12 P a2 x4 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M13 x4 a3 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M14 P a2 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M15 P a3 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M16 b1 P x5 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M17 x5 C vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M18 b1 P vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M19 b1 C vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M20 b2 P x6 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M21 x6 b1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M22 b2 P vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M23 b2 b1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M24 b3 C x7 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M25 x7 b1 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M26 b3 C vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M27 b3 b1 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M28 S b2 x8 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M29 x8 b3 vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M30 S b2 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M31 S b3 vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M32 g A x9 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M33 x9 B vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M34 g A vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M35 g B vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M36 h P x10 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M37 x10 C vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M38 h P vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M39 h C vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M40 CO g x11 vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M41 x11 h vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M42 CO g vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M43 CO h vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends gate_fa

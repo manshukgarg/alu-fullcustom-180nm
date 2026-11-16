@@ -1,0 +1,6 @@
+design,cells_used,cell_instances,transistors,cycles_correct,worst_delay_ps,mean_delay_ps,energy_per_operation_fJ,energy_x_delay_fJns,leakage_nW
+gate,"gate-level cells (NAND-based XOR, multiplexer and full adder)",60,842,229/229,2925.4,1539.5,2039.6,5966.7,1.405
+conv,conventional static CMOS cells,60,578,229/229,2979.6,1461.2,3509.8,10457.9,2.016
+opt,"minimum-PDP cells (transmission-gate XOR, multiplexer, full adder)",69,402,229/229,2267.5,1257.9,1102.1,2499.1,0.814
+pl,"library pl018, slice with inverting multiplexers",66,458,229/229,2310.7,1133.3,1312.8,3033.6,0.927
+fb,"proposed: FB4 and CS cell per bit, pl018 cells for decoder and flags",28,272,229/229,2076.2,1050.4,870.6,1807.5,0.474

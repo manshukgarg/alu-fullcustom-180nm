@@ -1,0 +1,87 @@
+* tb_conv_mux2.cir  test of cell conv_mux2 (MUX2, 12 transistors)
+* Function: Y = B if S = 1, else A
+* 1.8 V, 27 C. Every input is driven through two X1 inverters, every output drives four
+* X1 inverters. Sequence: every input transition once (56 transitions),
+* 2 ns per state; data are saved from the first transition (2 ns).
+* States (A B S): 000 111 110 111 101 111 100 111 011 111 010 111 001 111 000 110 101 110 100 110 011 110 010 110 001 110 000 101 100 101 011 101 010 101 001 101 000 100 011 100 010 100 001 100 000 011 010 011 001 011 000 010 001 010 000 001 000
+* Measurements (LTspice: View > SPICE Error Log):
+*   dNN_<output>  delay of the output change in step NN, from the input of the last driver
+*                 inverter (node d_<input>) to the 50 % point of the output
+*   p_uW          average power in uW, cell and input drivers
+*   worst delay = largest dNN value;  PDP = p_uW x worst delay
+* Ngspice 46:  worst delay 402.1 ps (d17_Y),  power 116.12 uW,  PDP 46.69 fJ
+.include tsmc018.lib
+.include cells_conv.lib
+.options plotwinsize=0
+.subckt inv_x1 A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends inv_x1
+Vcut vcut 0 1.8
+Vdrv vdrv 0 1.8
+Vld vld 0 1.8
+Vs_A s_A 0 PWL(0n 0 2n 0 2.05n 1.8 16n 1.8 16.05n 0 18n 0 18.05n 1.8 20n 1.8 20.05n 0 22n 0 22.05n 1.8 24n 1.8
++ 24.05n 0 26n 0 26.05n 1.8 28n 1.8 28.05n 0 30n 0 30.05n 1.8 40n 1.8 40.05n 0 42n 0 42.05n 1.8
++ 44n 1.8 44.05n 0 46n 0 46.05n 1.8 48n 1.8 48.05n 0 50n 0 50.05n 1.8 52n 1.8 52.05n 0 54n 0
++ 54.05n 1.8 60n 1.8 60.05n 0 62n 0 62.05n 1.8 64n 1.8 64.05n 0 66n 0 66.05n 1.8 68n 1.8 68.05n 0
++ 70n 0 70.05n 1.8 72n 1.8 72.05n 0 74n 0 74.05n 1.8 76n 1.8 76.05n 0 78n 0 78.05n 1.8 80n 1.8
++ 80.05n 0 82n 0 82.05n 1.8 84n 1.8 84.05n 0 86n 0 86.05n 1.8 88n 1.8 88.05n 0)
+Xd1_A s_A d_A vdrv 0 inv_x1
+Xd2_A d_A A vdrv 0 inv_x1
+Vs_B s_B 0 PWL(0n 0 2n 0 2.05n 1.8 8n 1.8 8.05n 0 10n 0 10.05n 1.8 12n 1.8 12.05n 0 14n 0 14.05n 1.8 24n 1.8
++ 24.05n 0 26n 0 26.05n 1.8 28n 1.8 28.05n 0 30n 0 30.05n 1.8 32n 1.8 32.05n 0 34n 0 34.05n 1.8
++ 36n 1.8 36.05n 0 38n 0 38.05n 1.8 48n 1.8 48.05n 0 50n 0 50.05n 1.8 52n 1.8 52.05n 0 60n 0
++ 60.05n 1.8 62n 1.8 62.05n 0 64n 0 64.05n 1.8 66n 1.8 66.05n 0 76n 0 76.05n 1.8 78n 1.8 78.05n 0
++ 80n 0 80.05n 1.8 82n 1.8 82.05n 0 90n 0 90.05n 1.8 96n 1.8 96.05n 0 98n 0 98.05n 1.8 100n 1.8
++ 100.05n 0 102n 0 102.05n 1.8 104n 1.8 104.05n 0 106n 0 106.05n 1.8 108n 1.8 108.05n 0)
+Xd1_B s_B d_B vdrv 0 inv_x1
+Xd2_B d_B B vdrv 0 inv_x1
+Vs_S s_S 0 PWL(0n 0 2n 0 2.05n 1.8 4n 1.8 4.05n 0 6n 0 6.05n 1.8 12n 1.8 12.05n 0 14n 0 14.05n 1.8 20n 1.8 20.05n 0
++ 22n 0 22.05n 1.8 28n 1.8 28.05n 0 32n 0 32.05n 1.8 34n 1.8 34.05n 0 40n 0 40.05n 1.8 42n 1.8
++ 42.05n 0 48n 0 48.05n 1.8 50n 1.8 50.05n 0 54n 0 54.05n 1.8 56n 1.8 56.05n 0 58n 0 58.05n 1.8
++ 64n 1.8 64.05n 0 66n 0 66.05n 1.8 72n 1.8 72.05n 0 76n 0 76.05n 1.8 78n 1.8 78.05n 0 84n 0
++ 84.05n 1.8 86n 1.8 86.05n 0 90n 0 90.05n 1.8 92n 1.8 92.05n 0 94n 0 94.05n 1.8 100n 1.8 100.05n 0
++ 104n 0 104.05n 1.8 106n 1.8 106.05n 0 110n 0 110.05n 1.8 112n 1.8 112.05n 0)
+Xd1_S s_S d_S vdrv 0 inv_x1
+Xd2_S d_S S vdrv 0 inv_x1
+Xcut A B S Y vcut 0 conv_mux2
+Xl_Y_0 Y ld_Y_0 vld 0 inv_x1
+Xl_Y_1 Y ld_Y_1 vld 0 inv_x1
+Xl_Y_2 Y ld_Y_2 vld 0 inv_x1
+Xl_Y_3 Y ld_Y_3 vld 0 inv_x1
+Bpw pw 0 V=-(I(Vcut)+I(Vdrv))*1.8e+06
+.tran 1p 114n 2n 10p
+.meas tran d01_Y TRIG V(d_S) VAL=0.9 TD=2n FALL=1 TARG V(Y) VAL=0.9 TD=2n RISE=1
+.meas tran d04_Y TRIG V(d_B) VAL=0.9 TD=8n RISE=1 TARG V(Y) VAL=0.9 TD=8n FALL=1
+.meas tran d05_Y TRIG V(d_B) VAL=0.9 TD=10n FALL=1 TARG V(Y) VAL=0.9 TD=10n RISE=1
+.meas tran d10_Y TRIG V(d_S) VAL=0.9 TD=20n RISE=1 TARG V(Y) VAL=0.9 TD=20n FALL=1
+.meas tran d11_Y TRIG V(d_S) VAL=0.9 TD=22n FALL=1 TARG V(Y) VAL=0.9 TD=22n RISE=1
+.meas tran d12_Y TRIG V(d_B) VAL=0.9 TD=24n RISE=1 TARG V(Y) VAL=0.9 TD=24n FALL=1
+.meas tran d13_Y TRIG V(d_B) VAL=0.9 TD=26n FALL=1 TARG V(Y) VAL=0.9 TD=26n RISE=1
+.meas tran d14_Y TRIG V(d_S) VAL=0.9 TD=28n RISE=1 TARG V(Y) VAL=0.9 TD=28n FALL=1
+.meas tran d15_Y TRIG V(d_B) VAL=0.9 TD=30n FALL=1 TARG V(Y) VAL=0.9 TD=30n RISE=1
+.meas tran d16_Y TRIG V(d_B) VAL=0.9 TD=32n RISE=1 TARG V(Y) VAL=0.9 TD=32n FALL=1
+.meas tran d17_Y TRIG V(d_S) VAL=0.9 TD=34n RISE=1 TARG V(Y) VAL=0.9 TD=34n RISE=1
+.meas tran d22_Y TRIG V(d_A) VAL=0.9 TD=44n RISE=1 TARG V(Y) VAL=0.9 TD=44n FALL=1
+.meas tran d23_Y TRIG V(d_A) VAL=0.9 TD=46n FALL=1 TARG V(Y) VAL=0.9 TD=46n RISE=1
+.meas tran d24_Y TRIG V(d_A) VAL=0.9 TD=48n RISE=1 TARG V(Y) VAL=0.9 TD=48n FALL=1
+.meas tran d25_Y TRIG V(d_S) VAL=0.9 TD=50n RISE=1 TARG V(Y) VAL=0.9 TD=50n RISE=1
+.meas tran d26_Y TRIG V(d_B) VAL=0.9 TD=52n RISE=1 TARG V(Y) VAL=0.9 TD=52n FALL=1
+.meas tran d28_Y TRIG V(d_S) VAL=0.9 TD=56n RISE=1 TARG V(Y) VAL=0.9 TD=56n RISE=1
+.meas tran d29_Y TRIG V(d_S) VAL=0.9 TD=58n FALL=1 TARG V(Y) VAL=0.9 TD=58n FALL=1
+.meas tran d30_Y TRIG V(d_A) VAL=0.9 TD=60n RISE=1 TARG V(Y) VAL=0.9 TD=60n RISE=1
+.meas tran d31_Y TRIG V(d_B) VAL=0.9 TD=62n RISE=1 TARG V(Y) VAL=0.9 TD=62n FALL=1
+.meas tran d37_Y TRIG V(d_A) VAL=0.9 TD=74n FALL=1 TARG V(Y) VAL=0.9 TD=74n RISE=1
+.meas tran d40_Y TRIG V(d_A) VAL=0.9 TD=80n RISE=1 TARG V(Y) VAL=0.9 TD=80n FALL=1
+.meas tran d41_Y TRIG V(d_B) VAL=0.9 TD=82n RISE=1 TARG V(Y) VAL=0.9 TD=82n RISE=1
+.meas tran d42_Y TRIG V(d_A) VAL=0.9 TD=84n RISE=1 TARG V(Y) VAL=0.9 TD=84n FALL=1
+.meas tran d43_Y TRIG V(d_S) VAL=0.9 TD=86n RISE=1 TARG V(Y) VAL=0.9 TD=86n RISE=1
+.meas tran d44_Y TRIG V(d_A) VAL=0.9 TD=88n RISE=1 TARG V(Y) VAL=0.9 TD=88n FALL=1
+.meas tran d45_Y TRIG V(d_S) VAL=0.9 TD=90n FALL=1 TARG V(Y) VAL=0.9 TD=90n RISE=1
+.meas tran d46_Y TRIG V(d_S) VAL=0.9 TD=92n RISE=1 TARG V(Y) VAL=0.9 TD=92n FALL=1
+.meas tran d47_Y TRIG V(d_S) VAL=0.9 TD=94n FALL=1 TARG V(Y) VAL=0.9 TD=94n RISE=1
+.meas tran d48_Y TRIG V(d_B) VAL=0.9 TD=96n RISE=1 TARG V(Y) VAL=0.9 TD=96n FALL=1
+.meas tran d49_Y TRIG V(d_B) VAL=0.9 TD=98n FALL=1 TARG V(Y) VAL=0.9 TD=98n RISE=1
+.meas tran d50_Y TRIG V(d_S) VAL=0.9 TD=100n RISE=1 TARG V(Y) VAL=0.9 TD=100n FALL=1
+.meas tran p_uW AVG V(pw)
+.end

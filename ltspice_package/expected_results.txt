@@ -1,0 +1,63 @@
+Expected results of the test decks (Ngspice 46, 1.8 V, 27 C)
+============================================================
+
+Cell decks: worst delay = largest dNN value, power = p_uW, PDP = power x worst delay
+
+deck                   delay (ps) measure         p_uW PDP (fJ)
+tb_gate_inv.cir             240.8 d2_Y           57.22    13.78
+tb_gate_buf.cir             218.5 d1_Y           68.56    14.98
+tb_gate_nand2.cir           281.2 d02_Y          50.39    14.17
+tb_gate_nor2.cir            293.6 d06_Y          52.13    15.31
+tb_gate_and2.cir            308.7 d01_Y          53.15    16.41
+tb_gate_or2.cir             338.0 d11_Y          54.91    18.56
+tb_gate_xor2.cir            460.5 d02_Y          84.18    38.77
+tb_gate_mux2.cir            498.3 d17_Y          86.37    43.04
+tb_gate_fa.cir              769.3 d09_S         173.68   133.61
+tb_conv_inv.cir             152.2 d2_Y           65.82    10.01
+tb_conv_buf.cir             188.6 d1_Y           92.95    17.53
+tb_conv_nand2.cir           196.2 d02_Y          62.72    12.31
+tb_conv_nor2.cir            205.8 d06_Y          67.04    13.80
+tb_conv_and2.cir            236.3 d02_Y          69.41    16.40
+tb_conv_or2.cir             271.5 d11_Y          73.76    20.02
+tb_conv_xor2.cir            365.9 d11_Y         116.93    42.78
+tb_conv_mux2.cir            402.1 d17_Y         116.12    46.69
+tb_conv_fa.cir              651.1 d48_S         245.04   159.56
+tb_opt_inv.cir              149.2 d2_Y           64.86     9.68
+tb_opt_buf.cir              194.2 d1_Y           99.47    19.32
+tb_opt_nand2.cir            184.9 d02_Y          57.53    10.64
+tb_opt_nor2.cir             222.9 d11_Y          60.13    13.40
+tb_opt_xor2.cir             260.5 d05_Y          77.38    20.16
+tb_opt_mux2.cir             250.3 d43_Y          65.24    16.33
+tb_opt_mux2i.cir            282.5 d45_Y          68.82    19.44
+tb_opt_fa.cir               589.8 d08_S         108.60    64.06
+tb_pl_inv.cir               149.2 d2_Y           64.86     9.68
+tb_pl_buf.cir               194.0 d1_Y           99.78    19.36
+tb_pl_nand2.cir             184.9 d02_Y          57.53    10.64
+tb_pl_nor2.cir              222.9 d11_Y          60.13    13.40
+tb_pl_and2.cir              247.8 d02_Y          60.77    15.06
+tb_pl_or2.cir               284.4 d11_Y          62.79    17.86
+tb_pl_xor2.cir              322.3 d02_Y          68.26    22.00
+tb_pl_mux2.cir              334.3 d45_Y          69.04    23.08
+tb_pl_mux2i.cir             282.5 d45_Y          68.82    19.44
+tb_pl_fa.cir                589.8 d08_S         108.60    64.06
+tb_pl_fb4.cir               450.2 d084_P         42.08    18.95
+tb_pl_cs.cir                458.6 d14_Y          73.36    33.64
+
+ALU decks
+
+deck                         result
+tb_alu4_gate_function.cir    64 of 64 words as in the table of the deck
+tb_alu4_gate_delay.cir       delay 2930.1 ps = t_z (8.0014 ns) - latest tin (5.0714 ns); e_fJ 5592
+tb_alu4_gate_energy.cir      e_op_fJ 2039.7
+tb_alu4_conv_function.cir    64 of 64 words as in the table of the deck
+tb_alu4_conv_delay.cir       delay 2986.0 ps = t_z (8.0577 ns) - latest tin (5.0717 ns); e_fJ 11515
+tb_alu4_conv_energy.cir      e_op_fJ 3509.9
+tb_alu4_opt_function.cir     64 of 64 words as in the table of the deck
+tb_alu4_opt_delay.cir        delay 2275.2 ps = t_n (7.3467 ns) - latest tin (5.0716 ns); e_fJ 3526
+tb_alu4_opt_energy.cir       e_op_fJ 1102.2
+tb_alu4_pl_function.cir      64 of 64 words as in the table of the deck
+tb_alu4_pl_delay.cir         delay 2309.8 ps = t_v (7.3812 ns) - latest tin (5.0714 ns); e_fJ 3208
+tb_alu4_pl_energy.cir        e_op_fJ 1312.9
+tb_alu4_fb_function.cir      64 of 64 words as in the table of the deck
+tb_alu4_fb_delay.cir         delay 2076.2 ps = t_z (7.1395 ns) - latest tin (5.0633 ns); e_fJ 2441
+tb_alu4_fb_energy.cir        e_op_fJ 870.6

@@ -19,7 +19,11 @@ that all designs are compared with the same stimulus, load and definitions:
     the energy of the input drivers is reported separately,
   * output levels are checked at the end of every cycle (logic value and swing
     within 10 % of the rails),
-  * leakage power = mean of DC operating points at NLEAK static input states.
+  * leakage power = mean of DC operating points at NLEAK static input states. Each state
+    is solved with two values of the simulator's junction conductance gmin (1e-12 and
+    1e-13 S) and extrapolated to zero: the conductance adds a current proportional to
+    gmin that exceeds the real leakage, while a very small gmin lets large netlists
+    converge to non-physical points.
 
 Netlists: a Magic extraction (flat or hierarchical, with parasitic capacitances)
 or a cell-level netlist that includes its cell library. The top subcircuit is
@@ -605,11 +609,20 @@ def write_tran_tb(path, dut_path, vecs, W, vdd, temp, period):
     return tstop
 
 
-def write_leak_tb(path, dut_path, vec, W, vdd, temp):
+LEAK_GMIN = (1e-12, 1e-13)      # the two gmin values of the leakage extrapolation
+
+
+def extrapolate_leak(i_a, i_b):
+    """Supply current at gmin = 0 from the currents at LEAK_GMIN (linear in gmin)."""
+    ga, gb = LEAK_GMIN
+    return (ga * i_b - gb * i_a) / (ga - gb)
+
+
+def write_leak_tb(path, dut_path, vec, W, vdd, temp, gmin):
     bits = pin_bits(vec, W)
     L = ["* leakage at a=%d b=%d s=%d (%s), %.2f V, %g C" % (vec[0], vec[1], vec[2], OPS[vec[2]], vdd, temp),
          ".include %s" % MODELS, ".include %s" % dut_path, ".temp %g" % temp,
-         ".options gmin=1e-15",
+         ".options gmin=%g" % gmin,
          "Vdut vdd_dut 0 %g" % vdd, "Vgnd gnd_dut 0 0"]
     for p in in_pins(W):
         L.append("V_%s %s 0 %g" % (p, p, vdd * bits[p]))
@@ -825,15 +838,23 @@ def run_ngspice(args, cwd, timeout):
 
 
 def _leak_job(job):
-    path, cwd, vdd = job
-    log, _ = run_ngspice([os.path.basename(path)], cwd, 600)
-    with open(path[:-3] + ".log", "w") as f:
-        f.write(log)
-    for line in log.splitlines():
-        m = MEAS_RE.match(line)
-        if m and m.group(1).lower() == "ileak":
-            return -float(m.group(2)) * vdd
-    return None
+    """Leakage power of one state: two DC runs (LEAK_GMIN), extrapolated to gmin = 0."""
+    paths, cwd, vdd = job
+    cur = []
+    for path in paths:
+        log, _ = run_ngspice([os.path.basename(path)], cwd, 600)
+        with open(path[:-3] + ".log", "w") as f:
+            f.write(log)
+        val = None
+        for line in log.splitlines():
+            m = MEAS_RE.match(line)
+            if m and m.group(1).lower() == "ileak":
+                val = float(m.group(2))
+        cur.append(val)
+    if None in cur or cur[0] >= 0 or cur[1] >= 0:      # current must flow out of the supply
+        return None
+    power = -extrapolate_leak(cur[0], cur[1]) * vdd
+    return power if power > 0 else None
 
 
 def error_lines(log, n=5):
@@ -897,9 +918,12 @@ def main():
     states = leak_states(W, args.nleak, args.seed)
     leak_tbs = []
     for i, st in enumerate(states):
-        p = os.path.join(out, "%s_leak%02d.sp" % (label, i))
-        write_leak_tb(p, dut_path, st, W, args.vdd, args.temp)
-        leak_tbs.append(p)
+        pair = []
+        for tag, gmin in zip("ab", LEAK_GMIN):
+            p = os.path.join(out, "%s_leak%02d%s.sp" % (label, i, tag))
+            write_leak_tb(p, dut_path, st, W, args.vdd, args.temp, gmin)
+            pair.append(p)
+        leak_tbs.append(pair)
     res.update({"vectors": len(vecs), "period": args.period, "tstop": tstop,
                 "critical_transitions": tags.count("crit")})
     if args.prepare_only:
@@ -922,6 +946,9 @@ def main():
         res["p_leak_nW"] = round(sum(leaks) / len(leaks) * 1e9, 3)
         res["p_leak_max_nW"] = round(max(leaks) * 1e9, 3)
         res["leak_states"] = len(leaks)
+    if len(leaks) < len(leak_tbs):
+        res.setdefault("notes", []).append("leakage: %d of %d states did not give a valid operating point"
+                                           % (len(leak_tbs) - len(leaks), len(leak_tbs)))
     if not os.path.isfile(raw) or os.path.getsize(raw) < 1000:
         res["errors"] = error_lines(log) or ["no raw file written; see %s" % (tb[:-3] + ".log")]
         finish("simulation failed")

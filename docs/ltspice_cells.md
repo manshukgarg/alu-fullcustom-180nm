@@ -5,6 +5,12 @@ conventions as the rest of the project, so that their results can be compared
 with the Step 3 cells and so that they can enter the project cell library used
 by the automated flow (Step 5).
 
+Since 16 November 2026 the complete set of project cells and ALUs is available as
+LTspice-ready files with test decks and expected results in `ltspice_package/`
+(written by `sim/make_ltspice_package.py`). Its model file `tsmc018.lib` is this model
+file with LEVEL = 8, the BSIM3v3 level of LTspice, and its cells name the ground pin
+`vss`, because `gnd` is the global ground node in LTspice and Ngspice.
+
 ## Models and devices
 
 | Item | Setting |

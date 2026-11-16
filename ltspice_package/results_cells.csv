@@ -1,0 +1,39 @@
+set,cell,function,circuit,transistors,k,r,worst_delay_ps,power_uW,pdp_fJ,transitions,sequence,deck
+gate,gate_inv,Y = not A,static CMOS,2,0.4,2.0,240.8,57.22,13.78,2,all input transitions,tb_gate_inv.cir
+gate,gate_buf,Y = A,"static CMOS, two inverters",4,0.4,2.0,218.5,68.56,14.98,2,all input transitions,tb_gate_buf.cir
+gate,gate_nand2,Y = not (A and B),static CMOS,4,0.4,2.0,281.2,50.39,14.17,12,all input transitions,tb_gate_nand2.cir
+gate,gate_nor2,Y = not (A or B),static CMOS,4,0.4,2.0,293.6,52.13,15.31,12,all input transitions,tb_gate_nor2.cir
+gate,gate_and2,Y = A and B,"static CMOS, NAND2 + inverter",6,0.4,2.0,308.7,53.15,16.41,12,all input transitions,tb_gate_and2.cir
+gate,gate_or2,Y = A or B,"static CMOS, NOR2 + inverter",6,0.4,2.0,338.0,54.91,18.56,12,all input transitions,tb_gate_or2.cir
+gate,gate_xor2,Y = A xor B,"gate level, four NAND2",16,0.4,2.0,460.5,84.18,38.77,12,all input transitions,tb_gate_xor2.cir
+gate,gate_mux2,"Y = B if S = 1, else A","gate level, inverter + two AND2 + OR2",20,0.4,2.0,498.3,86.37,43.04,56,all input transitions,tb_gate_mux2.cir
+gate,gate_fa,"S = A xor B xor C, CO = carry of A + B + C","gate level, eleven NAND2",44,0.4,2.0,769.3,173.68,133.61,56,all input transitions,tb_gate_fa.cir
+conv,conv_inv,Y = not A,static CMOS,2,1,2,152.2,65.82,10.01,2,all input transitions,tb_conv_inv.cir
+conv,conv_buf,Y = A,"static CMOS, two inverters",4,1,2,188.6,92.95,17.53,2,all input transitions,tb_conv_buf.cir
+conv,conv_nand2,Y = not (A and B),static CMOS,4,1,2,196.2,62.72,12.31,12,all input transitions,tb_conv_nand2.cir
+conv,conv_nor2,Y = not (A or B),static CMOS,4,1,2,205.8,67.04,13.8,12,all input transitions,tb_conv_nor2.cir
+conv,conv_and2,Y = A and B,"static CMOS, NAND2 + inverter",6,1,2,236.3,69.41,16.4,12,all input transitions,tb_conv_and2.cir
+conv,conv_or2,Y = A or B,"static CMOS, NOR2 + inverter",6,1,2,271.5,73.76,20.02,12,all input transitions,tb_conv_or2.cir
+conv,conv_xor2,Y = A xor B,"static CMOS, input inverters",12,1,2,365.9,116.93,42.78,12,all input transitions,tb_conv_xor2.cir
+conv,conv_mux2,"Y = B if S = 1, else A","static CMOS, AOI22 + inverter",12,1,2,402.1,116.12,46.69,56,all input transitions,tb_conv_mux2.cir
+conv,conv_fa,"S = A xor B xor C, CO = carry of A + B + C",mirror adder (static CMOS),28,1,2,651.1,245.04,159.56,56,all input transitions,tb_conv_fa.cir
+opt,opt_inv,Y = not A,static CMOS,2,0.8,2.5,149.2,64.86,9.68,2,all input transitions,tb_opt_inv.cir
+opt,opt_buf,Y = A,"static CMOS, two inverters",4,1.0,2.5,194.2,99.47,19.32,2,all input transitions,tb_opt_buf.cir
+opt,opt_nand2,Y = not (A and B),static CMOS,4,0.6,3.0,184.9,57.53,10.64,12,all input transitions,tb_opt_nand2.cir
+opt,opt_nor2,Y = not (A or B),static CMOS,4,0.6,2.5,222.9,60.13,13.4,12,all input transitions,tb_opt_nor2.cir
+opt,opt_xor2,Y = A xor B,"transmission gate, unbuffered",8,0.6,3.0,260.5,77.38,20.16,12,all input transitions,tb_opt_xor2.cir
+opt,opt_mux2,"Y = B if S = 1, else A","transmission gate, unbuffered",6,0.4,3.0,250.3,65.24,16.33,56,all input transitions,tb_opt_mux2.cir
+opt,opt_mux2i,"Y = not (B if S = 1, else A)",transmission gate + output inverter,8,0.6,2.5,282.5,68.82,19.44,56,all input transitions,tb_opt_mux2i.cir
+opt,opt_fa,"S = A xor B xor C, CO = carry of A + B + C","transmission-gate adder, inverted internals, buffered outputs",24,0.3,2.5,589.8,108.6,64.06,56,all input transitions,tb_opt_fa.cir
+pl,pl_inv,Y = not A,static CMOS,2,0.8,2.5,149.2,64.86,9.68,2,all input transitions,tb_pl_inv.cir
+pl,pl_buf,Y = A,"static CMOS, two inverters",4,1.0,2.5,194.0,99.78,19.36,2,all input transitions,tb_pl_buf.cir
+pl,pl_nand2,Y = not (A and B),static CMOS,4,0.6,3.0,184.9,57.53,10.64,12,all input transitions,tb_pl_nand2.cir
+pl,pl_nor2,Y = not (A or B),static CMOS,4,0.6,2.5,222.9,60.13,13.4,12,all input transitions,tb_pl_nor2.cir
+pl,pl_and2,Y = A and B,"static CMOS, NAND2 + inverter",6,0.6,2.5,247.8,60.77,15.06,12,all input transitions,tb_pl_and2.cir
+pl,pl_or2,Y = A or B,"static CMOS, NOR2 + inverter",6,0.8,1.5,284.4,62.79,17.86,12,all input transitions,tb_pl_or2.cir
+pl,pl_xor2,Y = A xor B,transmission gate + output inverter,10,0.8,1.5,322.3,68.26,22.0,12,all input transitions,tb_pl_xor2.cir
+pl,pl_mux2,"Y = B if S = 1, else A",transmission gate + two inverters,10,0.6,2.0,334.3,69.04,23.08,56,all input transitions,tb_pl_mux2.cir
+pl,pl_mux2i,"Y = not (B if S = 1, else A)",transmission gate + output inverter,8,0.6,2.5,282.5,68.82,19.44,56,all input transitions,tb_pl_mux2i.cir
+pl,pl_fa,"S = A xor B xor C, CO = carry of A + B + C","transmission-gate adder, inverted internals, buffered outputs",24,0.3,2.5,589.8,108.6,64.06,56,all input transitions,tb_pl_fa.cir
+alu,pl_fb4,"P = C0, C1, C2, C3 for (A, B) = 00, 01, 10, 11","function block: 4:1 TG tree selected by the operands, restored output",20,0.4,2.5,450.2,42.08,18.95,384,single-input changes,tb_pl_fb4.cir
+alu,pl_cs,"CO = CI if P = 1, else A;  Y = P if K = 1, else P xor CI","carry-sum cell: TG carry multiplexer and TG sum/result selection, restored outputs",24,0.8,1.5,458.6,73.36,33.64,64,single-input changes,tb_pl_cs.cir

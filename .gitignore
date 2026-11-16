@@ -18,3 +18,5 @@ tech/pl018/pl018_cells.lib
 step6_alu_schematic/out/
 step2_rtl_baseline/qflow_map/
 step5_library/qflow_map/
+step5_library/qflow_fb/
+ALU4_180nm_LTspice.zip

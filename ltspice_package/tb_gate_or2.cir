@@ -1,0 +1,45 @@
+* tb_gate_or2.cir  test of cell gate_or2 (OR2, 6 transistors)
+* Function: Y = A or B
+* 1.8 V, 27 C. Every input is driven through two X1 inverters, every output drives four
+* X1 inverters. Sequence: every input transition once (12 transitions),
+* 2 ns per state; data are saved from the first transition (2 ns).
+* States (A B): 00 11 10 11 01 11 00 10 01 10 00 01 00
+* Measurements (LTspice: View > SPICE Error Log):
+*   dNN_<output>  delay of the output change in step NN, from the input of the last driver
+*                 inverter (node d_<input>) to the 50 % point of the output
+*   p_uW          average power in uW, cell and input drivers
+*   worst delay = largest dNN value;  PDP = p_uW x worst delay
+* Ngspice 46:  worst delay 338.0 ps (d11_Y),  power 54.91 uW,  PDP 18.56 fJ
+.include tsmc018.lib
+.include cells_gate.lib
+.options plotwinsize=0
+.subckt inv_x1 A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends inv_x1
+Vcut vcut 0 1.8
+Vdrv vdrv 0 1.8
+Vld vld 0 1.8
+Vs_A s_A 0 PWL(0n 0 2n 0 2.05n 1.8 8n 1.8 8.05n 0 10n 0 10.05n 1.8 12n 1.8 12.05n 0 14n 0 14.05n 1.8 16n 1.8
++ 16.05n 0 18n 0 18.05n 1.8 20n 1.8 20.05n 0)
+Xd1_A s_A d_A vdrv 0 inv_x1
+Xd2_A d_A A vdrv 0 inv_x1
+Vs_B s_B 0 PWL(0n 0 2n 0 2.05n 1.8 4n 1.8 4.05n 0 6n 0 6.05n 1.8 12n 1.8 12.05n 0 16n 0 16.05n 1.8 18n 1.8 18.05n 0
++ 22n 0 22.05n 1.8 24n 1.8 24.05n 0)
+Xd1_B s_B d_B vdrv 0 inv_x1
+Xd2_B d_B B vdrv 0 inv_x1
+Xcut A B Y vcut 0 gate_or2
+Xl_Y_0 Y ld_Y_0 vld 0 inv_x1
+Xl_Y_1 Y ld_Y_1 vld 0 inv_x1
+Xl_Y_2 Y ld_Y_2 vld 0 inv_x1
+Xl_Y_3 Y ld_Y_3 vld 0 inv_x1
+Bpw pw 0 V=-(I(Vcut)+I(Vdrv))*1.8e+06
+.tran 1p 26n 2n 10p
+.meas tran d01_Y TRIG V(d_B) VAL=0.9 TD=2n FALL=1 TARG V(Y) VAL=0.9 TD=2n RISE=1
+.meas tran d06_Y TRIG V(d_A) VAL=0.9 TD=12n RISE=1 TARG V(Y) VAL=0.9 TD=12n FALL=1
+.meas tran d07_Y TRIG V(d_A) VAL=0.9 TD=14n FALL=1 TARG V(Y) VAL=0.9 TD=14n RISE=1
+.meas tran d10_Y TRIG V(d_A) VAL=0.9 TD=20n RISE=1 TARG V(Y) VAL=0.9 TD=20n FALL=1
+.meas tran d11_Y TRIG V(d_B) VAL=0.9 TD=22n FALL=1 TARG V(Y) VAL=0.9 TD=22n RISE=1
+.meas tran d12_Y TRIG V(d_B) VAL=0.9 TD=24n RISE=1 TARG V(Y) VAL=0.9 TD=24n FALL=1
+.meas tran p_uW AVG V(pw)
+.end

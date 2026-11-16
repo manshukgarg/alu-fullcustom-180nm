@@ -1,0 +1,61 @@
+* cells_alu.lib
+* The two ALU-specific cells of the project, as laid out for the library pl018: function block
+* FB4 (pl_fb4) and carry-sum cell CS (pl_cs).
+* 180 nm (TSMC 0.18 um BSIM3 models in tsmc018.lib, devices nfet and pfet), L = 0.2 um.
+* Pin order of every cell: inputs, outputs, vdd, vss.
+*
+* cell       T    function / circuit
+* pl_fb4     20   P = C0, C1, C2, C3 for (A, B) = 00, 01, 10, 11
+*                 function block: 4:1 TG tree selected by the operands, restored output; width scale k = 0.4, P/N ratio r = 2.5
+* pl_cs      24   CO = CI if P = 1, else A;  Y = P if K = 1, else P xor CI
+*                 carry-sum cell: TG carry multiplexer and TG sum/result selection, restored outputs; width scale k = 0.8, P/N ratio r = 1.5
+
+.subckt pl_fb4 A B C0 C1 C2 C3 P vdd vss
+M0 C1 B u0 vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 C1 Bn u0 vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M2 u0 Bn C0 vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 u0 B C0 vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M4 C2 Bn u1 vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 C2 B u1 vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M6 u1 B C3 vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M7 u1 Bn C3 vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M8 u0 An x vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M9 u0 A x vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M10 x A u1 vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M11 x An u1 vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M12 An A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M13 An A vdd vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M14 vss B Bn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M15 vdd B Bn vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M16 Pn x vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M17 Pn x vdd vdd pfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M18 vss Pn P vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M19 vdd Pn P vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+.ends pl_fb4
+
+.subckt pl_cs P A CI K CO Y vdd vss
+M0 A Pn cx vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 A P cx vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M2 cx P CI vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 cx Pn CI vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M4 CI P xn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 CI Pn xn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M6 xn Pn CIn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M7 xn P CIn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M8 CIn CI vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M9 CIn CI vdd vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M10 vss P Pn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M11 vdd P Pn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M12 Pn K yn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M13 Pn Kn yn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M14 yn Kn xn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M15 yn K xn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M16 Kn K vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M17 Kn K vdd vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M18 vss cx COn vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M19 vdd cx COn vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M20 CO COn vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M21 CO COn vdd vdd pfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+M22 vss yn Y vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M23 vdd yn Y vdd pfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+.ends pl_cs

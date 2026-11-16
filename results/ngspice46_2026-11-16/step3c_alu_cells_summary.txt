@@ -1,0 +1,31 @@
+===============================================================================
+STEP 3c SUMMARY  ALU-specific cells: function block FB4 and carry-sum cell CS
+===============================================================================
+1.80 V, 27 C, FO4 loads; every change of one input in every state of the others
+tmax (ps): worst delay incl. the input driver; Ptot (uW) incl. the drivers;
+PDP (fJ) = Ptot x tmax; W (um): total transistor width
+  version                      T     k    r    tmax    Ptot     PDP      W  check
+-------------------------------------------------------------------------------
+FB4   P = C[2A + B]   (function codes C0..C3 from the operation decoder)
+  fb4_tg20, reference size    20     1    2   437.9   50.19   21.98   16.5  ok
+  fb4_tg20, minimum PDP       20   0.4  2.5   450.2   42.08   18.95    9.5  ok  <=
+  fb4_tg20, fastest           20  1.25  1.5   428.8   50.42   21.62   16.6  ok
+  3 x MUX2, static CMOS       36     -    -   688.7  102.77   70.78   85.5  ok
+  3 x MUX2I of pl018          24     -    -   433.6   49.77   21.58   17.1  ok
+    against 3 x MUX2, static CMOS:   PDP  -73 %, delay  -35 %, T  -44 %
+    against 3 x MUX2I of pl018:      PDP  -12 %, delay   +4 %, T  -17 %
+    40 of 40 sizes pass all checks
+-------------------------------------------------------------------------------
+CS    CO = P ? CI : A,   Y = K ? P : P xor CI
+  cs_tg24, reference size     24     1    2   439.5   85.13   37.41   21.0  ok
+  cs_tg24, minimum PDP        24   0.8  1.5   458.6   73.36   33.64   14.0  ok  <=
+  cs_tg24, fastest            24   1.5  1.5   432.6   94.68   40.95   26.4  ok
+  MUX2+XOR2+MUX2, static      36     -    -   614.6  152.67   93.84   84.0  ok
+  MUX2+XOR2+MUX2 of pl018     30     -    -   510.0   80.54   41.08   17.6  ok
+    against MUX2+XOR2+MUX2, static:  PDP  -64 %, delay  -25 %, T  -33 %
+    against MUX2+XOR2+MUX2 of pl018: PDP  -18 %, delay  -10 %, T  -20 %
+    40 of 40 sizes pass all checks
+-------------------------------------------------------------------------------
+  <= selected FB4 fb4_tg20 k 0.4 r 2.5   (alu_cells.json: same)
+  <= selected CS  cs_tg24 k 0.8 r 1.5   (alu_cells.json: same)
+  written to step3_cells/alu_cells.json

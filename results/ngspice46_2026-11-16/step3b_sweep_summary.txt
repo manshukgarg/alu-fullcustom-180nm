@@ -1,0 +1,56 @@
+sizing sweep: 21 candidates x 40 sizes = 840 simulations on 2 cores
+
+Best size of every candidate: minimum PDP, full swing, every transition correct
+1.80 V, 27 C, FO4 load; delay includes the input driver; 8 k x 5 r sizes
+  cell           T     k    r    tmax     Ptot     PDP     EDP      W   (ps, uW, fJ, fJ*ns, um)
+---------------------------------------------------------------------
+INV    conventional inv_cmos k 1 r 2: tmax 152.0 ps, PDP 9.99 fJ
+  inv_cmos       2   0.8  2.5   149.0    64.77    9.65     1.4    2.8  <= PDP -3 %
+---------------------------------------------------------------------
+NAND2  conventional nand2_cmos k 1 r 2: tmax 196.1 ps, PDP 12.28 fJ
+  nand2_cmos     4   0.6    3   184.9    57.43   10.62     2.0    6.0  <= PDP -14 %
+---------------------------------------------------------------------
+NOR2   conventional nor2_cmos k 1 r 2: tmax 205.7 ps, PDP 13.77 fJ
+  nor2_cmos      4   0.6  2.5   222.6    60.03   13.36     3.0    7.2  <= PDP -3 %
+---------------------------------------------------------------------
+AND2  
+  and2_cmos      6   0.6  2.5   247.6    60.66   15.02     3.7    7.5  <=
+---------------------------------------------------------------------
+OR2   
+  or2_cmos       6   0.8  1.5   283.8    62.68   17.79     5.0    8.4  <=
+---------------------------------------------------------------------
+XOR2   conventional xor_cmos12 k 1 r 2: tmax 365.5 ps, PDP 42.69 fJ
+  xor_cmos12    12   0.3  2.5   390.1    73.73   28.76    11.2   10.0
+  xor_nand16    16   0.3    3   427.6    81.43   34.82    14.9   12.0
+  xor_tg8        8   0.6    3   260.3    77.27   20.11     5.2    8.5  <= PDP -53 %
+  xor_tgb10     10   0.8  1.5   322.0    68.15   21.94     7.1    6.0
+  xor_cpl14     14     1    1   475.8    91.62   43.59    20.7    9.8
+---------------------------------------------------------------------
+MUX2   conventional mux_cmos12 k 1 r 2: tmax 401.8 ps, PDP 46.60 fJ
+  mux_cmos12    12   0.3  2.5   465.2    75.53   35.14    16.3   10.4
+  mux_gate20    20   0.3  2.5   498.1    83.90   41.79    20.8   14.2
+  mux_tg6        6   0.4    3   250.0    65.12   16.28     4.1    4.2  <= PDP -65 %
+  mux_tgb10     10   0.6    2   333.5    68.91   22.98     7.7    5.8
+---------------------------------------------------------------------
+MUX2I  conventional muxi_cmos10 k 1 r 2: tmax 337.4 ps, PDP 36.49 fJ
+  muxi_cmos10   10   0.4  2.5   334.9    78.74   26.37     8.8   12.1
+  muxi_tg8       8   0.6  2.5   282.1    68.69   19.38     5.5    5.7  <= PDP -47 %
+  muxi_npt7      7   1.5    1   361.1    80.41   29.04    10.5    8.0
+---------------------------------------------------------------------
+FA     conventional fa_cmos28 k 1 r 2: tmax 651.0 ps, PDP 159.44 fJ
+  fa_cmos28     28   0.3    2   703.3   123.89   87.13    61.3   26.3
+  fa_nand44     44   0.3    2   803.0   149.00  119.65    96.1   26.4
+  fa_tga20      20   0.4    3   625.4   119.30   74.61    46.7   13.0
+  fa_tgab24     24   0.3  2.5   589.6   108.46   63.95    37.7   10.4  <= PDP -60 %
+---------------------------------------------------------------------
+<= selected for the optimized library (PDP change against the conventional cell)
+Automated-flow library (restoring outputs, cells with a layout plan):
+  INV    inv_cmos     k 0.8   r 2.5  tmax  149.0 ps  PDP   9.65 fJ
+  NAND2  nand2_cmos   k 0.6   r 3    tmax  184.9 ps  PDP  10.62 fJ
+  NOR2   nor2_cmos    k 0.6   r 2.5  tmax  222.6 ps  PDP  13.36 fJ
+  AND2   and2_cmos    k 0.6   r 2.5  tmax  247.6 ps  PDP  15.02 fJ
+  OR2    or2_cmos     k 0.8   r 1.5  tmax  283.8 ps  PDP  17.79 fJ
+  XOR2   xor_tgb10    k 0.8   r 1.5  tmax  322.0 ps  PDP  21.94 fJ
+  MUX2   mux_tgb10    k 0.6   r 2    tmax  333.5 ps  PDP  22.98 fJ
+  MUX2I  muxi_tg8     k 0.6   r 2.5  tmax  282.1 ps  PDP  19.38 fJ
+  FA     fa_tgab24    k 0.3   r 2.5  tmax  589.6 ps  PDP  63.95 fJ

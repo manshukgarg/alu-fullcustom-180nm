@@ -6,14 +6,15 @@
    "lib": "optimized",
    "family": "INV",
    "cell": "inv_cmos",
-   "k": 1.5,
+   "k": 0.8,
    "r": 2.5,
    "transistors": 2,
-   "width_lambda": 24,
+   "devices_drawn": 2,
+   "width_lambda": 20,
    "height_lambda": 80,
-   "width_um": 2.4,
+   "width_um": 2.0,
    "height_um": 8.0,
-   "area_um2": 19.2,
+   "area_um2": 16.0,
    "inputs": [
     "A"
    ],
@@ -23,28 +24,32 @@
    "pins": {
     "A": [
      "m1",
-     10,
+     12,
      33,
-     14,
+     16,
      37
     ],
     "Y": [
      "m1",
-     17,
-     33,
-     21,
-     37
+     12,
+     26,
+     16,
+     30
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 0.3
   },
   {
    "name": "opt_nand2",
    "lib": "optimized",
    "family": "NAND2",
    "cell": "nand2_cmos",
-   "k": 1.0,
-   "r": 2.5,
+   "k": 0.6,
+   "r": 3.0,
    "transistors": 4,
+   "devices_drawn": 4,
    "width_lambda": 24,
    "height_lambda": 80,
    "width_um": 2.4,
@@ -79,21 +84,25 @@
      15,
      48
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 0.1
   },
   {
    "name": "opt_nor2",
    "lib": "optimized",
    "family": "NOR2",
    "cell": "nor2_cmos",
-   "k": 1.0,
-   "r": 2.0,
+   "k": 0.6,
+   "r": 2.5,
    "transistors": 4,
-   "width_lambda": 40,
+   "devices_drawn": 4,
+   "width_lambda": 24,
    "height_lambda": 80,
-   "width_um": 4.0,
+   "width_um": 2.4,
    "height_um": 8.0,
-   "area_um2": 32.0,
+   "area_um2": 19.2,
    "inputs": [
     "A",
     "B"
@@ -112,27 +121,31 @@
     "B": [
      "m1",
      18,
-     33,
+     26,
      22,
-     37
+     30
     ],
     "Y": [
      "m1",
-     26,
-     33,
-     30,
-     37
+     3,
+     22,
+     7,
+     26
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 0.1
   },
   {
    "name": "opt_xor2",
    "lib": "optimized",
    "family": "XOR2",
    "cell": "xor_tg8",
-   "k": 1.0,
-   "r": 2.5,
+   "k": 0.6,
+   "r": 3.0,
    "transistors": 8,
+   "devices_drawn": 8,
    "width_lambda": 44,
    "height_lambda": 80,
    "width_um": 4.4,
@@ -155,33 +168,37 @@
     ],
     "B": [
      "m1",
-     17,
-     34,
-     21,
-     38
+     10,
+     33,
+     14,
+     37
     ],
     "Y": [
      "m1",
-     10,
-     40,
-     14,
-     44
+     9,
+     12,
+     13,
+     16
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 8.6
   },
   {
    "name": "opt_mux2",
    "lib": "optimized",
    "family": "MUX2",
    "cell": "mux_tg6",
-   "k": 0.6,
-   "r": 2.0,
+   "k": 0.4,
+   "r": 3.0,
    "transistors": 6,
-   "width_lambda": 44,
+   "devices_drawn": 6,
+   "width_lambda": 48,
    "height_lambda": 80,
-   "width_um": 4.4,
+   "width_um": 4.8,
    "height_um": 8.0,
-   "area_um2": 35.2,
+   "area_um2": 38.4,
    "inputs": [
     "A",
     "B",
@@ -193,33 +210,36 @@
    "pins": {
     "A": [
      "m1",
-     17,
-     33,
-     21,
-     37
+     22,
+     66,
+     26,
+     70
     ],
     "B": [
      "m1",
-     37,
+     42,
      33,
-     41,
+     46,
      37
     ],
     "S": [
      "m1",
-     24,
-     36,
      28,
-     40
+     33,
+     32,
+     37
     ],
     "Y": [
      "m1",
-     30,
-     58,
-     34,
-     62
+     35,
+     33,
+     39,
+     37
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 15.2
   },
   {
    "name": "opt_mux2i",
@@ -278,14 +298,15 @@
    "lib": "optimized",
    "family": "FA",
    "cell": "fa_tgab24",
-   "k": 0.8,
-   "r": 1.5,
+   "k": 0.3,
+   "r": 2.5,
    "transistors": 24,
-   "width_lambda": 140,
+   "devices_drawn": 24,
+   "width_lambda": 144,
    "height_lambda": 80,
-   "width_um": 14.0,
+   "width_um": 14.4,
    "height_um": 8.0,
-   "area_um2": 112.0,
+   "area_um2": 115.2,
    "inputs": [
     "A",
     "B",
@@ -305,33 +326,36 @@
     ],
     "B": [
      "m1",
-     38,
+     18,
      33,
-     42,
+     22,
      37
     ],
     "C": [
      "m1",
-     87,
+     90,
      33,
-     91,
+     94,
      37
     ],
     "S": [
      "m1",
-     118,
-     57,
      122,
-     61
+     43,
+     126,
+     47
     ],
     "CO": [
      "m1",
-     134,
-     33,
      138,
+     33,
+     142,
      37
     ]
-   }
+   },
+   "drc_errors": [],
+   "lvs_problems": [],
+   "seconds": 167.0
   },
   {
    "name": "conv_inv",

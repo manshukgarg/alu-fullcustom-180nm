@@ -1,0 +1,81 @@
+* alu4_opt.lib  4-bit ALU, transistor level: minimum-PDP cells (transmission-gate XOR, multiplexer, full adder)
+* Subcircuit alu4_opt; pins: a_0..a_3, b_0..b_3, s_0..s_2, y_0..y_3, c, v, z, n, vdd, vss
+* (index 0 is the least significant bit). Operation select s_2 s_1 s_0:
+*   000 ADD   001 SUB   010 INC   011 DEC   100 AND   101 OR   110 XOR   111 NOT (of a)
+* Flags: c carry out (1 = no borrow for SUB and DEC), v signed overflow, z result zero,
+* n result negative; c and v are 0 for the logic operations.
+* 69 cell instances, 402 transistors. Cells used (cells_opt.lib):
+*   opt_xor2 x 10, opt_buf x 5, opt_mux2 x 20, opt_fa x 4, opt_nand2 x 5, opt_inv x 17, opt_nor2 x 8
+* Requires: .include tsmc018.lib and the cell files named above.
+
+.subckt alu4_opt a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd vss
+Xu_xor21 s_1 s_0 cy_0 vdd vss opt_xor2
+Xu_buf1 s_2 s2b vdd vss opt_buf
+Xu_buf2 s_0 s0b_0 vdd vss opt_buf
+Xu_buf3 s_0 s0b_1 vdd vss opt_buf
+Xu_buf4 s_1 s1b_0 vdd vss opt_buf
+Xu_buf5 s_1 s1b_1 vdd vss opt_buf
+Xu_xor22 b_0 s0b_0 bxs_0 vdd vss opt_xor2
+Xu_mux21 bxs_0 s0b_0 s1b_0 bx_0 vdd vss opt_mux2
+Xu_fa1 a_0 bx_0 cy_0 sum_0 cy_1 vdd vss opt_fa
+Xu_nand21 a_0 b_0 land_0_n vdd vss opt_nand2
+Xu_inv1 land_0_n land_0 vdd vss opt_inv
+Xu_nor21 a_0 b_0 lor_0_n vdd vss opt_nor2
+Xu_inv2 lor_0_n lor_0 vdd vss opt_inv
+Xu_xor23 a_0 b_0 lxor_0 vdd vss opt_xor2
+Xu_inv3 a_0 lnot_0 vdd vss opt_inv
+Xu_mux22 land_0 lor_0 s0b_0 m0_0 vdd vss opt_mux2
+Xu_mux23 lxor_0 lnot_0 s0b_0 m1_0 vdd vss opt_mux2
+Xu_mux24 m0_0 m1_0 s1b_0 lg_0 vdd vss opt_mux2
+Xu_mux25 sum_0 lg_0 s2b y_0 vdd vss opt_mux2
+Xu_xor24 b_1 s0b_0 bxs_1 vdd vss opt_xor2
+Xu_mux26 bxs_1 s0b_0 s1b_0 bx_1 vdd vss opt_mux2
+Xu_fa2 a_1 bx_1 cy_1 sum_1 cy_2 vdd vss opt_fa
+Xu_nand22 a_1 b_1 land_1_n vdd vss opt_nand2
+Xu_inv4 land_1_n land_1 vdd vss opt_inv
+Xu_nor22 a_1 b_1 lor_1_n vdd vss opt_nor2
+Xu_inv5 lor_1_n lor_1 vdd vss opt_inv
+Xu_xor25 a_1 b_1 lxor_1 vdd vss opt_xor2
+Xu_inv6 a_1 lnot_1 vdd vss opt_inv
+Xu_mux27 land_1 lor_1 s0b_0 m0_1 vdd vss opt_mux2
+Xu_mux28 lxor_1 lnot_1 s0b_0 m1_1 vdd vss opt_mux2
+Xu_mux29 m0_1 m1_1 s1b_0 lg_1 vdd vss opt_mux2
+Xu_mux210 sum_1 lg_1 s2b y_1 vdd vss opt_mux2
+Xu_xor26 b_2 s0b_1 bxs_2 vdd vss opt_xor2
+Xu_mux211 bxs_2 s0b_1 s1b_1 bx_2 vdd vss opt_mux2
+Xu_fa3 a_2 bx_2 cy_2 sum_2 cy_3 vdd vss opt_fa
+Xu_nand23 a_2 b_2 land_2_n vdd vss opt_nand2
+Xu_inv7 land_2_n land_2 vdd vss opt_inv
+Xu_nor23 a_2 b_2 lor_2_n vdd vss opt_nor2
+Xu_inv8 lor_2_n lor_2 vdd vss opt_inv
+Xu_xor27 a_2 b_2 lxor_2 vdd vss opt_xor2
+Xu_inv9 a_2 lnot_2 vdd vss opt_inv
+Xu_mux212 land_2 lor_2 s0b_1 m0_2 vdd vss opt_mux2
+Xu_mux213 lxor_2 lnot_2 s0b_1 m1_2 vdd vss opt_mux2
+Xu_mux214 m0_2 m1_2 s1b_1 lg_2 vdd vss opt_mux2
+Xu_mux215 sum_2 lg_2 s2b y_2 vdd vss opt_mux2
+Xu_xor28 b_3 s0b_1 bxs_3 vdd vss opt_xor2
+Xu_mux216 bxs_3 s0b_1 s1b_1 bx_3 vdd vss opt_mux2
+Xu_fa4 a_3 bx_3 cy_3 sum_3 cy_4 vdd vss opt_fa
+Xu_nand24 a_3 b_3 land_3_n vdd vss opt_nand2
+Xu_inv10 land_3_n land_3 vdd vss opt_inv
+Xu_nor24 a_3 b_3 lor_3_n vdd vss opt_nor2
+Xu_inv11 lor_3_n lor_3 vdd vss opt_inv
+Xu_xor29 a_3 b_3 lxor_3 vdd vss opt_xor2
+Xu_inv12 a_3 lnot_3 vdd vss opt_inv
+Xu_mux217 land_3 lor_3 s0b_1 m0_3 vdd vss opt_mux2
+Xu_mux218 lxor_3 lnot_3 s0b_1 m1_3 vdd vss opt_mux2
+Xu_mux219 m0_3 m1_3 s1b_1 lg_3 vdd vss opt_mux2
+Xu_mux220 sum_3 lg_3 s2b y_3 vdd vss opt_mux2
+Xu_inv13 cy_4 cyn vdd vss opt_inv
+Xu_nor25 s2b cyn c vdd vss opt_nor2
+Xu_xor210 cy_3 cy_4 vxn_n vdd vss opt_xor2
+Xu_inv14 vxn_n vxn vdd vss opt_inv
+Xu_nor26 s2b vxn v vdd vss opt_nor2
+Xu_nor27 y_0 y_1 zn_0 vdd vss opt_nor2
+Xu_nor28 y_2 y_3 zn_1 vdd vss opt_nor2
+Xu_nand25 zn_0 zn_1 z_n vdd vss opt_nand2
+Xu_inv15 z_n z vdd vss opt_inv
+Xu_inv16 y_3 nn vdd vss opt_inv
+Xu_inv17 nn n vdd vss opt_inv
+.ends alu4_opt

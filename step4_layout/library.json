@@ -1,13 +1,13 @@
 {
-  "note": "Cells of the two full-custom libraries. 'cell' names the netlist in step3_cells/cellnet.py; k is the width scale and r the P/N width ratio. The optimized sizes are the minimum-PDP sizes of the Step 3b sweep; the conventional library is static CMOS at k = 1, r = 2.",
+  "note": "Cells of the two full-custom libraries. 'cell' names the netlist in step3_cells/cellnet.py; k is the width scale and r the P/N width ratio. The optimized sizes are the minimum-PDP sizes of the Step 3b sweep (Ngspice 46, 16 Nov); the conventional library is static CMOS at k = 1, r = 2. 'grid' marks a cell laid out on the 0.8 um placement grid of the P&R library (opt_fa: the free-width placement does not route at this size).",
   "optimized": {
-    "INV":   {"name": "opt_inv",   "cell": "inv_cmos",   "k": 1.5, "r": 2.5},
-    "NAND2": {"name": "opt_nand2", "cell": "nand2_cmos", "k": 1.0, "r": 2.5},
-    "NOR2":  {"name": "opt_nor2",  "cell": "nor2_cmos",  "k": 1.0, "r": 2.0},
-    "XOR2":  {"name": "opt_xor2",  "cell": "xor_tg8",    "k": 1.0, "r": 2.5},
-    "MUX2":  {"name": "opt_mux2",  "cell": "mux_tg6",    "k": 0.6, "r": 2.0},
+    "INV":   {"name": "opt_inv",   "cell": "inv_cmos",   "k": 0.8, "r": 2.5},
+    "NAND2": {"name": "opt_nand2", "cell": "nand2_cmos", "k": 0.6, "r": 3.0},
+    "NOR2":  {"name": "opt_nor2",  "cell": "nor2_cmos",  "k": 0.6, "r": 2.5},
+    "XOR2":  {"name": "opt_xor2",  "cell": "xor_tg8",    "k": 0.6, "r": 3.0},
+    "MUX2":  {"name": "opt_mux2",  "cell": "mux_tg6",    "k": 0.4, "r": 3.0},
     "MUX2I": {"name": "opt_mux2i", "cell": "muxi_tg8",   "k": 0.6, "r": 2.5},
-    "FA":    {"name": "opt_fa",    "cell": "fa_tgab24",  "k": 0.8, "r": 1.5}
+    "FA":    {"name": "opt_fa",    "cell": "fa_tgab24",  "k": 0.3, "r": 2.5, "grid": true}
   },
   "conventional": {
     "INV":   {"name": "conv_inv",   "cell": "inv_cmos",    "k": 1.0, "r": 2.0},

@@ -9,7 +9,7 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
-DESIGNS = ("gate", "conv", "opt", "pl")
+DESIGNS = ("gate", "conv", "opt", "pl", "fb")
 OPS = ("ADD", "SUB", "INC", "DEC", "AND", "OR", "XOR", "NOT")
 W = 79
 
@@ -35,13 +35,13 @@ def main():
     print("=" * W)
     for d in DESIGNS:
         print("  %-5s %s" % (d, index.get(d, {}).get("note", "")[:W - 8]))
-    row = "%-31s %-11s %-11s %-11s %-11s"
+    row = "%-29s" + " %-9s" * len(DESIGNS)
     print("-" * W)
-    print(row % (("Ngspice, 1.8 V, 27 C, FO4 loads",) + DESIGNS))
+    print(row % (("Ngspice, 1.8 V, 27 C, FO4",) + DESIGNS))
     print(row % (("cells / transistors",) + tuple(
         "%s / %s" % (index.get(d, {}).get("cells", "?"), index.get(d, {}).get("transistors", "?"))
         for d in DESIGNS)))
-    print(row % (("logic check (2048 vectors)",) + tuple(index.get(d, {}).get("check", "n/a")[:11]
+    print(row % (("logic check (2048 vectors)",) + tuple(index.get(d, {}).get("check", "n/a")[:9]
                                                            for d in DESIGNS)))
 
     def line(text, fn):
@@ -50,12 +50,12 @@ def main():
     line("weak output levels", lambda c: "%d" % c.get("weak_levels", 0))
     line("worst delay (ps)", lambda c: f(c.get("t_max_ps")))
     line("  full carry ripples (ps)", lambda c: f(c.get("t_crit_max_ps")))
-    line("  random operand changes (ps)", lambda c: f(c.get("t_rand_max_ps")))
+    line("  random operand changes", lambda c: f(c.get("t_rand_max_ps")))
     line("mean delay (ps)", lambda c: f(c.get("t_avg_ps")))
     line("energy per operation (fJ)", lambda c: f(c.get("e_avg_fJ")))
     line("input-driver energy (fJ)", lambda c: f(c.get("e_drv_avg_fJ")))
     line("leakage power (nW)", lambda c: f(c.get("p_leak_nW"), "%.2f"))
-    line("energy x worst delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
+    line("energy x delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
     ref = res["conv"] if ok["conv"] else None
     if ref and ref.get("t_max_ps") and ref.get("e_avg_fJ"):
         print("-" * W)

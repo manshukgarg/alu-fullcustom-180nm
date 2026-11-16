@@ -2,7 +2,7 @@
 """Switch-level check of every transistor netlist of the project against its truth table.
 
 No simulator is needed (see sim/switchsim.py). Checked:
-  * every candidate cell of cellnet.py,
+  * every candidate cell of cellnet.py and the two ALU-specific cells,
   * the cells of the automated-flow library as laid out (tech/pl018/pl018_cells.sp),
   * the conventional reference cells handed to the LTspice designers (docs/conventional_cells.sp).
 Usage:  python3 step3_cells/check_netlists.py        (exit status 1 if any netlist fails)
@@ -28,7 +28,7 @@ def main():
         bad += bool(problems)
         print("%-14s %-22s %3d  %s" % (name, source, ntr, "ok" if not problems else "; ".join(problems)))
 
-    for fn in cellnet.CANDIDATES + [cellnet.buf_cmos]:
+    for fn in cellnet.CANDIDATES + [cellnet.buf_cmos] + cellnet.ALU_CELLS:
         c = fn(1.0, 2.0)
         ntr, problems = switchsim.check_subckt(c.spice(), c.name, c.inputs, c.outputs, c.func)
         report(c.name, "cellnet.py", ntr, problems)

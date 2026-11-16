@@ -2,37 +2,46 @@
  "gate": {
   "file": "step6_alu_schematic/netlists/alu4_gate.sp",
   "slice": "plain",
-  "cells": 55,
-  "transistors": 822,
-  "devices_drawn": 822,
+  "cells": 60,
+  "transistors": 842,
+  "devices_drawn": 842,
   "note": "gate-level cells of the LTspice cell set (NAND-based), k = 0.4, r = 2",
   "check": "ok"
  },
  "conv": {
   "file": "step6_alu_schematic/netlists/alu4_conv.sp",
   "slice": "plain",
-  "cells": 55,
-  "transistors": 558,
-  "devices_drawn": 558,
+  "cells": 60,
+  "transistors": 578,
+  "devices_drawn": 578,
   "note": "conventional static CMOS cells at the reference size (k = 1, r = 2)",
   "check": "ok"
  },
  "opt": {
   "file": "step6_alu_schematic/netlists/alu4_opt.sp",
   "slice": "plain",
-  "cells": 64,
-  "transistors": 382,
-  "devices_drawn": 382,
+  "cells": 69,
+  "transistors": 402,
+  "devices_drawn": 402,
   "note": "minimum-PDP cells of Step 3 (step4_layout/library.json)",
   "check": "ok"
  },
  "pl": {
   "file": "step6_alu_schematic/netlists/alu4_pl.sp",
   "slice": "inv",
-  "cells": 60,
-  "transistors": 436,
-  "devices_drawn": 494,
+  "cells": 66,
+  "transistors": 458,
+  "devices_drawn": 468,
   "note": "automated-flow library pl018 as laid out, inverting-multiplexer slice",
+  "check": "ok"
+ },
+ "fb": {
+  "file": "step6_alu_schematic/netlists/alu4_fb.sp",
+  "slice": "fb",
+  "cells": 28,
+  "transistors": 272,
+  "devices_drawn": 274,
+  "note": "function-block slice: FB4 and CS cells per bit, pl018 cells for decoder and flags",
   "check": "ok"
  }
 }

@@ -1,0 +1,40 @@
+* alu4_fb.lib  4-bit ALU, transistor level: proposed: FB4 and CS cell per bit, pl018 cells for decoder and flags
+* Subcircuit alu4_fb; pins: a_0..a_3, b_0..b_3, s_0..s_2, y_0..y_3, c, v, z, n, vdd, vss
+* (index 0 is the least significant bit). Operation select s_2 s_1 s_0:
+*   000 ADD   001 SUB   010 INC   011 DEC   100 AND   101 OR   110 XOR   111 NOT (of a)
+* Flags: c carry out (1 = no borrow for SUB and DEC), v signed overflow, z result zero,
+* n result negative; c and v are 0 for the logic operations.
+* 28 cell instances, 272 transistors. Cells used (cells_pl.lib, cells_alu.lib):
+*   pl_xor2 x 2, pl_buf x 1, pl_inv x 6, pl_nand2 x 1, pl_and2 x 2, pl_nor2 x 5, pl_mux2i x 3, pl_fb4 x 4, pl_cs x 4
+* Requires: .include tsmc018.lib and the cell files named above.
+
+.subckt alu4_fb a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd vss
+Xu_xor21 s_1 s_0 cy_0 vdd vss pl_xor2
+Xu_buf1 s_2 s2b vdd vss pl_buf
+Xu_inv1 cy_0 xn vdd vss pl_inv
+Xu_inv2 s_1 s1n vdd vss pl_inv
+Xu_nand21 s2b s1n dt vdd vss pl_nand2
+Xu_and21 s_0 dt fc0 vdd vss pl_and2
+Xu_nor21 s_1 s_0 dnor vdd vss pl_nor2
+Xu_mux2i1 cy_0 dnor s2b fc1 vdd vss pl_mux2i
+Xu_mux2i2 s_0 xn s2b fc2 vdd vss pl_mux2i
+Xu_mux2i3 xn s_1 s2b fc3 vdd vss pl_mux2i
+Xu_fb41 a_0 b_0 fc0 fc1 fc2 fc3 p_0 vdd vss pl_fb4
+Xu_cs1 p_0 a_0 cy_0 s2b cy_1 y_0 vdd vss pl_cs
+Xu_fb42 a_1 b_1 fc0 fc1 fc2 fc3 p_1 vdd vss pl_fb4
+Xu_cs2 p_1 a_1 cy_1 s2b cy_2 y_1 vdd vss pl_cs
+Xu_fb43 a_2 b_2 fc0 fc1 fc2 fc3 p_2 vdd vss pl_fb4
+Xu_cs3 p_2 a_2 cy_2 s2b cy_3 y_2 vdd vss pl_cs
+Xu_fb44 a_3 b_3 fc0 fc1 fc2 fc3 p_3 vdd vss pl_fb4
+Xu_cs4 p_3 a_3 cy_3 s2b cy_4 y_3 vdd vss pl_cs
+Xu_inv3 cy_4 cyn vdd vss pl_inv
+Xu_nor22 s2b cyn c vdd vss pl_nor2
+Xu_xor22 cy_3 cy_4 vxn_n vdd vss pl_xor2
+Xu_inv4 vxn_n vxn vdd vss pl_inv
+Xu_nor23 s2b vxn v vdd vss pl_nor2
+Xu_nor24 y_0 y_1 zn_0 vdd vss pl_nor2
+Xu_nor25 y_2 y_3 zn_1 vdd vss pl_nor2
+Xu_and22 zn_0 zn_1 z vdd vss pl_and2
+Xu_inv5 y_3 nn vdd vss pl_inv
+Xu_inv6 nn n vdd vss pl_inv
+.ends alu4_fb

@@ -1,0 +1,107 @@
+* cells_opt.lib
+* Minimum-PDP cells of the sizing sweep: transmission-gate XOR, multiplexers and full adder,
+* static NAND, NOR and inverter.
+* 180 nm (TSMC 0.18 um BSIM3 models in tsmc018.lib, devices nfet and pfet), L = 0.2 um.
+* Pin order of every cell: inputs, outputs, vdd, vss.
+*
+* cell       T    function / circuit
+* opt_inv    2    Y = not A
+*                 static CMOS; width scale k = 0.8, P/N ratio r = 2.5
+* opt_buf    4    Y = A
+*                 static CMOS, two inverters; width scale k = 1, P/N ratio r = 2.5
+* opt_nand2  4    Y = not (A and B)
+*                 static CMOS; width scale k = 0.6, P/N ratio r = 3
+* opt_nor2   4    Y = not (A or B)
+*                 static CMOS; width scale k = 0.6, P/N ratio r = 2.5
+* opt_xor2   8    Y = A xor B
+*                 transmission gate, unbuffered; width scale k = 0.6, P/N ratio r = 3
+* opt_mux2   6    Y = B if S = 1, else A
+*                 transmission gate, unbuffered; width scale k = 0.4, P/N ratio r = 3
+* opt_mux2i  8    Y = not (B if S = 1, else A)
+*                 transmission gate + output inverter; width scale k = 0.6, P/N ratio r = 2.5
+* opt_fa     24   S = A xor B xor C, CO = carry of A + B + C
+*                 transmission-gate adder, inverted internals, buffered outputs; width scale k = 0.3, P/N ratio r = 2.5
+
+.subckt opt_inv A Y vdd vss
+M0 Y A vss vss nfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends opt_inv
+
+.subckt opt_buf A Y vdd vss
+M0 Yn A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Yn A vdd vdd pfet w=2.5u l=0.2u ad=1.25p as=1.25p pd=6u ps=6u
+M2 Y Yn vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Y Yn vdd vdd pfet w=5u l=0.2u ad=2.5p as=2.5p pd=11u ps=11u
+.ends opt_buf
+
+.subckt opt_nand2 A B Y vdd vss
+M0 Y A x vss nfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+M1 x B vss vss nfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+M2 Y A vdd vdd pfet w=1.8u l=0.2u ad=0.9p as=0.9p pd=4.6u ps=4.6u
+M3 Y B vdd vdd pfet w=1.8u l=0.2u ad=0.9p as=0.9p pd=4.6u ps=4.6u
+.ends opt_nand2
+
+.subckt opt_nor2 A B Y vdd vss
+M0 Y A vss vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M1 Y B vss vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M2 Y A x vdd pfet w=3u l=0.2u ad=1.5p as=1.5p pd=7u ps=7u
+M3 x B vdd vdd pfet w=3u l=0.2u ad=1.5p as=1.5p pd=7u ps=7u
+.ends opt_nor2
+
+.subckt opt_xor2 A B Y vdd vss
+M0 An A vss vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M1 An A vdd vdd pfet w=1.8u l=0.2u ad=0.9p as=0.9p pd=4.6u ps=4.6u
+M2 Bn B vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 Bn B vdd vdd pfet w=0.9u l=0.2u ad=0.45p as=0.45p pd=2.8u ps=2.8u
+M4 A Bn Y vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M5 A B Y vdd pfet w=1.8u l=0.2u ad=0.9p as=0.9p pd=4.6u ps=4.6u
+M6 An B Y vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M7 An Bn Y vdd pfet w=1.8u l=0.2u ad=0.9p as=0.9p pd=4.6u ps=4.6u
+.ends opt_xor2
+
+.subckt opt_mux2 A B S Y vdd vss
+M0 Sn S vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Sn S vdd vdd pfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M2 A Sn Y vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 A S Y vdd pfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+M4 B S Y vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 B Sn Y vdd pfet w=1.2u l=0.2u ad=0.6p as=0.6p pd=3.4u ps=3.4u
+.ends opt_mux2
+
+.subckt opt_mux2i A B S Y vdd vss
+M0 Sn S vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 Sn S vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M2 A Sn M vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 A S M vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M4 B S M vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 B Sn M vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M6 Y M vss vss nfet w=0.6u l=0.2u ad=0.3p as=0.3p pd=2.2u ps=2.2u
+M7 Y M vdd vdd pfet w=1.5u l=0.2u ad=0.75p as=0.75p pd=4u ps=4u
+.ends opt_mux2i
+
+.subckt opt_fa A B C S CO vdd vss
+M0 An A vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M1 An A vdd vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M2 Bn B vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M3 Bn B vdd vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M4 A Bn P vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M5 A B P vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M6 An B P vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M7 An Bn P vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M8 Pn P vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M9 Pn P vdd vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M10 Cn C vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M11 Cn C vdd vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M12 C P Sx vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M13 C Pn Sx vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M14 Cn Pn Sx vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M15 Cn P Sx vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M16 S Sx vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M17 S Sx vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+M18 Cn P COx vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M19 Cn Pn COx vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M20 An Pn COx vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M21 An P COx vdd pfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M22 CO COx vss vss nfet w=0.4u l=0.2u ad=0.2p as=0.2p pd=1.8u ps=1.8u
+M23 CO COx vdd vdd pfet w=0.8u l=0.2u ad=0.4p as=0.4p pd=2.6u ps=2.6u
+.ends opt_fa

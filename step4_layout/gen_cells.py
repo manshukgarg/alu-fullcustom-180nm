@@ -33,7 +33,8 @@ from template import H  # noqa: E402
 def build(job):
     lib, family, spec, preview = job
     t0 = time.time()
-    cell, b = library.make_cell(spec["cell"], spec["k"], spec["r"], name=spec["name"])
+    cell, b = library.make_cell(spec["cell"], spec["k"], spec["r"], name=spec["name"],
+                                grid=bool(spec.get("grid")))
     try:
         L = b.build()
     except Exception as err:          # report and continue with the other cells

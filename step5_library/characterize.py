@@ -17,7 +17,8 @@ tech/pl018/pl018_cells.sp when no extraction exists) is simulated:
     otherwise (XOR inputs, multiplexer select, adder inputs);
   * input capacitance: charge drawn from an ideal source driving the pin, unloaded
     outputs, mean over the sensitizing states and both edges;
-  * leakage: DC supply current, mean over all input states.
+  * leakage: DC supply current, mean over all input states; two runs at gmin 1e-12 and
+    1e-13 S, extrapolated linearly to gmin = 0 (the simulator's gmin adds to the current).
 Outputs: tech/pl018/pl018_cells.lib and out/characterization.json, and a summary.
 
 Usage:  python3 characterize.py [--vdd 1.8] [--temp 27] [--jobs N] [--only name,name]
@@ -230,10 +231,13 @@ def cap_deck(cell, dut, vdd, temp, path):
     return keys
 
 
-def leak_deck(cell, dut, vdd, temp, path):
+LEAK_GMIN = (1e-12, 1e-13)      # leakage: two DC runs, extrapolated linearly to gmin = 0
+
+
+def leak_deck(cell, dut, vdd, temp, path, gmin):
     n = len(cell["inputs"])
-    L = ["* %s: leakage in every input state" % cell["name"], ".include %s" % MODELS, dut,
-         ".temp %g" % temp, ".options gmin=1e-15"]
+    L = ["* %s: leakage in every input state, gmin = %g" % (cell["name"], gmin), ".include %s" % MODELS,
+         dut, ".temp %g" % temp, ".options gmin=%g" % gmin]
     for k in range(1 << n):
         bits = [(k >> (n - 1 - i)) & 1 for i in range(n)]
         conn = []
@@ -353,9 +357,10 @@ def main():
         p = os.path.join(WORK, "%s_cap.sp" % cell["name"])
         plan[p] = ("cap", cell, cap_deck(cell, dut, vdd, args.temp, p))
         jobs.append(p)
-        p = os.path.join(WORK, "%s_leak.sp" % cell["name"])
-        plan[p] = ("leak", cell, leak_deck(cell, dut, vdd, args.temp, p))
-        jobs.append(p)
+        for tag, gmin in zip("ab", LEAK_GMIN):
+            p = os.path.join(WORK, "%s_leak%s.sp" % (cell["name"], tag))
+            plan[p] = ("leak" + tag, cell, leak_deck(cell, dut, vdd, args.temp, p, gmin))
+            jobs.append(p)
         for pin in cell["inputs"]:
             for k, (st, sens) in enumerate(states(cell, pin)):
                 p = os.path.join(WORK, "%s_%s_%d.sp" % (cell["name"], pin, k))
@@ -377,16 +382,13 @@ def main():
         if source[name] is None or library_subckt(name) is None and "extracted" not in source[name]:
             problems.append("%s: no netlist" % name)
             continue
+        leak_i = {}
         for path, (kind, c, info) in plan.items():
             if c is not cell:
                 continue
             v = results.get(path, {})
-            if kind == "leak":
-                il = [v.get("il_%d" % k) for k in range(info)]
-                good = [-x * vdd * 1e9 for x in il if x is not None]
-                r["leakage_nW"] = sum(good) / len(good) if good else 0.0
-                if len(good) < info:
-                    problems.append("%s: %d leakage states missing" % (name, info - len(good)))
+            if kind in ("leaka", "leakb"):
+                leak_i[kind[-1]] = [v.get("il_%d" % k) for k in range(info)]
             elif kind == "cap":
                 acc = {}
                 for pin, c_ in info:
@@ -399,6 +401,15 @@ def main():
                     rise = sum(a for a, _ in lst) / len(lst)
                     fall = sum(b for _, b in lst) / len(lst)
                     r["cap_pF"][pin] = {"rise": rise, "fall": fall, "mean": (rise + fall) / 2}
+        # leakage: supply current of every state at the two gmin values, extrapolated to gmin = 0
+        ga, gb = LEAK_GMIN
+        la, lb = leak_i.get("a", []), leak_i.get("b", [])
+        good = [-(ga * xb - gb * xa) / (ga - gb) * vdd * 1e9 for xa, xb in zip(la, lb)
+                if xa is not None and xb is not None and xa < 0 and xb < 0]
+        r["leakage_nW"] = sum(good) / len(good) if good else 0.0
+        if len(good) < 1 << len(cell["inputs"]):
+            problems.append("%s: %d leakage states without a valid operating point"
+                            % (name, (1 << len(cell["inputs"])) - len(good)))
         # timing: worst case over the sensitizing states, per arc and output edge
         for pin in cell["inputs"]:
             for o in cell["outputs"]:

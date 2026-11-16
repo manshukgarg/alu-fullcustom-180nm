@@ -1,15 +1,17 @@
 #!/bin/bash
 # Step 6: the 4-bit ALU at transistor level, built from each cell style (before layout).
-# The same ALU structure is composed from four cell sets and measured with the project's
-# ALU testbench (sim/alutb.py), so the cell styles are compared at ALU level:
+# The same ALU is composed from five cell sets and measured with the project's ALU
+# testbench (sim/alutb.py), so the cell styles are compared at ALU level:
 #   gate   gate-level cells of the LTspice cell set (NAND-based XOR, multiplexer and full adder)
 #   conv   conventional static CMOS cells (design D1, schematic)
 #   opt    minimum-PDP cells of Step 3, unbuffered pass-gate cells included (design D2, schematic)
 #   pl     cells of the automated-flow library pl018, slice with inverting multiplexers
+#   fb     the two ALU-specific cells (function block FB4 and carry-sum cell CS, Step 3c)
+#          per bit, with pl018 cells for the operation decoder and the flags
 # The netlists in netlists/ are written by sim/gen_alu.py (not run here).
 #   1. logic check of all cell and ALU netlists at switch level (Python, no simulator)
-#   2. Ngspice: function, delay, energy per operation and leakage of the four ALUs
-# Usage (from the repository root):  bash step6_alu_schematic/run.sh      (about 5-10 minutes)
+#   2. Ngspice: function, delay, energy per operation and leakage of the five ALUs
+# Usage (from the repository root):  bash step6_alu_schematic/run.sh      (about 10 minutes)
 cd "$(dirname "$0")" || exit 1
 rm -rf out
 mkdir -p out
@@ -20,8 +22,8 @@ python3 ../sim/gen_alu.py --check > out/check_alu.txt 2>&1
 tail -1 out/check_cells.txt
 grep -c "correct" out/check_alu.txt | sed 's/$/ ALU netlists correct on all 2048 vectors/'
 
-echo "[2/2] transistor-level simulation of the four ALUs (ngspice), a few minutes"
-for pair in "gate conv" "opt pl"; do
+echo "[2/2] transistor-level simulation of the five ALUs (ngspice), a few minutes"
+for pair in "gate conv" "opt pl" "fb"; do
     for d in $pair; do
         python3 ../sim/alutb.py netlists/alu4_$d.sp --top alu4 --width 4 --label $d --out out \
             > out/$d.out 2>&1 &

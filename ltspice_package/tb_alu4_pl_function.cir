@@ -1,0 +1,218 @@
+* tb_alu4_pl_function.cir  function test of the 4-bit ALU, library pl018, slice with inverting multiplexers
+* 32 vectors (8 operations x 4 operand pairs), 5 ns each, after one start vector.
+* Inputs through two X1 inverters, every output loaded with four X1 inverters.
+* Plot V(yw) (result as a decimal word), V(fw) (flags, 8c + 4v + 2z + n), V(aw), V(bw), V(sw).
+* Measurements yNN, fNN: result and flag words 0.25 ns before the end of vector NN;
+* they must equal the columns y and fw of this table:
+*   NN  time (ns)   op    a   b  |   y  cvzn  fw
+*   01    5 -  10  ADD    5   3  |   8  0101   5
+*   02   10 -  15  ADD    3  12  |  15  0001   1
+*   03   15 -  20  ADD   15   1  |   0  1010  10
+*   04   20 -  25  ADD    8   8  |   0  1110  14
+*   05   25 -  30  SUB    5   3  |   2  1000   8
+*   06   30 -  35  SUB    3  12  |   7  0000   0
+*   07   35 -  40  SUB   15   1  |  14  1001   9
+*   08   40 -  45  SUB    8   8  |   0  1010  10
+*   09   45 -  50  INC    5   3  |   6  0000   0
+*   10   50 -  55  INC    3  12  |   4  0000   0
+*   11   55 -  60  INC   15   1  |   0  1010  10
+*   12   60 -  65  INC    8   8  |   9  0001   1
+*   13   65 -  70  DEC    5   3  |   4  1000   8
+*   14   70 -  75  DEC    3  12  |   2  1000   8
+*   15   75 -  80  DEC   15   1  |  14  1001   9
+*   16   80 -  85  DEC    8   8  |   7  1100  12
+*   17   85 -  90  AND    5   3  |   1  0000   0
+*   18   90 -  95  AND    3  12  |   0  0010   2
+*   19   95 - 100  AND   15   1  |   1  0000   0
+*   20  100 - 105  AND    8   8  |   8  0001   1
+*   21  105 - 110  OR     5   3  |   7  0000   0
+*   22  110 - 115  OR     3  12  |  15  0001   1
+*   23  115 - 120  OR    15   1  |  15  0001   1
+*   24  120 - 125  OR     8   8  |   8  0001   1
+*   25  125 - 130  XOR    5   3  |   6  0000   0
+*   26  130 - 135  XOR    3  12  |  15  0001   1
+*   27  135 - 140  XOR   15   1  |  14  0001   1
+*   28  140 - 145  XOR    8   8  |   0  0010   2
+*   29  145 - 150  NOT    5   3  |  10  0001   1
+*   30  150 - 155  NOT    3  12  |  12  0001   1
+*   31  155 - 160  NOT   15   1  |   0  0010   2
+*   32  160 - 165  NOT    8   8  |   7  0000   0
+.include tsmc018.lib
+.include cells_pl.lib
+.include alu4_pl.lib
+.options plotwinsize=0
+.subckt inv_x1 A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends inv_x1
+Vdut vdd_dut 0 1.8
+Vdrv vdrv 0 1.8
+Vld vld 0 1.8
+Vs_a_0 s_a_0 0 PWL(0n 0 5n 0 5.05n 1.8 20n 1.8 20.05n 0 25n 0 25.05n 1.8 40n 1.8 40.05n 0 45n 0 45.05n 1.8 60n 1.8
++ 60.05n 0 65n 0 65.05n 1.8 80n 1.8 80.05n 0 85n 0 85.05n 1.8 100n 1.8 100.05n 0 105n 0 105.05n 1.8
++ 120n 1.8 120.05n 0 125n 0 125.05n 1.8 140n 1.8 140.05n 0 145n 0 145.05n 1.8 160n 1.8 160.05n 0)
+Xd1_a_0 s_a_0 d_a_0 vdrv 0 inv_x1
+Xd2_a_0 d_a_0 a_0 vdrv 0 inv_x1
+Vs_a_1 s_a_1 0 PWL(0n 0 10n 0 10.05n 1.8 20n 1.8 20.05n 0 30n 0 30.05n 1.8 40n 1.8 40.05n 0 50n 0 50.05n 1.8 60n 1.8
++ 60.05n 0 70n 0 70.05n 1.8 80n 1.8 80.05n 0 90n 0 90.05n 1.8 100n 1.8 100.05n 0 110n 0 110.05n 1.8
++ 120n 1.8 120.05n 0 130n 0 130.05n 1.8 140n 1.8 140.05n 0 150n 0 150.05n 1.8 160n 1.8 160.05n 0)
+Xd1_a_1 s_a_1 d_a_1 vdrv 0 inv_x1
+Xd2_a_1 d_a_1 a_1 vdrv 0 inv_x1
+Vs_a_2 s_a_2 0 PWL(0n 0 5n 0 5.05n 1.8 10n 1.8 10.05n 0 15n 0 15.05n 1.8 20n 1.8 20.05n 0 25n 0 25.05n 1.8 30n 1.8
++ 30.05n 0 35n 0 35.05n 1.8 40n 1.8 40.05n 0 45n 0 45.05n 1.8 50n 1.8 50.05n 0 55n 0 55.05n 1.8
++ 60n 1.8 60.05n 0 65n 0 65.05n 1.8 70n 1.8 70.05n 0 75n 0 75.05n 1.8 80n 1.8 80.05n 0 85n 0
++ 85.05n 1.8 90n 1.8 90.05n 0 95n 0 95.05n 1.8 100n 1.8 100.05n 0 105n 0 105.05n 1.8 110n 1.8
++ 110.05n 0 115n 0 115.05n 1.8 120n 1.8 120.05n 0 125n 0 125.05n 1.8 130n 1.8 130.05n 0 135n 0
++ 135.05n 1.8 140n 1.8 140.05n 0 145n 0 145.05n 1.8 150n 1.8 150.05n 0 155n 0 155.05n 1.8 160n 1.8
++ 160.05n 0)
+Xd1_a_2 s_a_2 d_a_2 vdrv 0 inv_x1
+Xd2_a_2 d_a_2 a_2 vdrv 0 inv_x1
+Vs_a_3 s_a_3 0 PWL(0n 0 15n 0 15.05n 1.8 25n 1.8 25.05n 0 35n 0 35.05n 1.8 45n 1.8 45.05n 0 55n 0 55.05n 1.8 65n 1.8
++ 65.05n 0 75n 0 75.05n 1.8 85n 1.8 85.05n 0 95n 0 95.05n 1.8 105n 1.8 105.05n 0 115n 0 115.05n 1.8
++ 125n 1.8 125.05n 0 135n 0 135.05n 1.8 145n 1.8 145.05n 0 155n 0 155.05n 1.8)
+Xd1_a_3 s_a_3 d_a_3 vdrv 0 inv_x1
+Xd2_a_3 d_a_3 a_3 vdrv 0 inv_x1
+Vs_b_0 s_b_0 0 PWL(0n 0 5n 0 5.05n 1.8 10n 1.8 10.05n 0 15n 0 15.05n 1.8 20n 1.8 20.05n 0 25n 0 25.05n 1.8 30n 1.8
++ 30.05n 0 35n 0 35.05n 1.8 40n 1.8 40.05n 0 45n 0 45.05n 1.8 50n 1.8 50.05n 0 55n 0 55.05n 1.8
++ 60n 1.8 60.05n 0 65n 0 65.05n 1.8 70n 1.8 70.05n 0 75n 0 75.05n 1.8 80n 1.8 80.05n 0 85n 0
++ 85.05n 1.8 90n 1.8 90.05n 0 95n 0 95.05n 1.8 100n 1.8 100.05n 0 105n 0 105.05n 1.8 110n 1.8
++ 110.05n 0 115n 0 115.05n 1.8 120n 1.8 120.05n 0 125n 0 125.05n 1.8 130n 1.8 130.05n 0 135n 0
++ 135.05n 1.8 140n 1.8 140.05n 0 145n 0 145.05n 1.8 150n 1.8 150.05n 0 155n 0 155.05n 1.8 160n 1.8
++ 160.05n 0)
+Xd1_b_0 s_b_0 d_b_0 vdrv 0 inv_x1
+Xd2_b_0 d_b_0 b_0 vdrv 0 inv_x1
+Vs_b_1 s_b_1 0 PWL(0n 0 5n 0 5.05n 1.8 10n 1.8 10.05n 0 25n 0 25.05n 1.8 30n 1.8 30.05n 0 45n 0 45.05n 1.8 50n 1.8
++ 50.05n 0 65n 0 65.05n 1.8 70n 1.8 70.05n 0 85n 0 85.05n 1.8 90n 1.8 90.05n 0 105n 0 105.05n 1.8
++ 110n 1.8 110.05n 0 125n 0 125.05n 1.8 130n 1.8 130.05n 0 145n 0 145.05n 1.8 150n 1.8 150.05n 0)
+Xd1_b_1 s_b_1 d_b_1 vdrv 0 inv_x1
+Xd2_b_1 d_b_1 b_1 vdrv 0 inv_x1
+Vs_b_2 s_b_2 0 PWL(0n 0 10n 0 10.05n 1.8 15n 1.8 15.05n 0 30n 0 30.05n 1.8 35n 1.8 35.05n 0 50n 0 50.05n 1.8 55n 1.8
++ 55.05n 0 70n 0 70.05n 1.8 75n 1.8 75.05n 0 90n 0 90.05n 1.8 95n 1.8 95.05n 0 110n 0 110.05n 1.8
++ 115n 1.8 115.05n 0 130n 0 130.05n 1.8 135n 1.8 135.05n 0 150n 0 150.05n 1.8 155n 1.8 155.05n 0)
+Xd1_b_2 s_b_2 d_b_2 vdrv 0 inv_x1
+Xd2_b_2 d_b_2 b_2 vdrv 0 inv_x1
+Vs_b_3 s_b_3 0 PWL(0n 0 10n 0 10.05n 1.8 15n 1.8 15.05n 0 20n 0 20.05n 1.8 25n 1.8 25.05n 0 30n 0 30.05n 1.8 35n 1.8
++ 35.05n 0 40n 0 40.05n 1.8 45n 1.8 45.05n 0 50n 0 50.05n 1.8 55n 1.8 55.05n 0 60n 0 60.05n 1.8
++ 65n 1.8 65.05n 0 70n 0 70.05n 1.8 75n 1.8 75.05n 0 80n 0 80.05n 1.8 85n 1.8 85.05n 0 90n 0
++ 90.05n 1.8 95n 1.8 95.05n 0 100n 0 100.05n 1.8 105n 1.8 105.05n 0 110n 0 110.05n 1.8 115n 1.8
++ 115.05n 0 120n 0 120.05n 1.8 125n 1.8 125.05n 0 130n 0 130.05n 1.8 135n 1.8 135.05n 0 140n 0
++ 140.05n 1.8 145n 1.8 145.05n 0 150n 0 150.05n 1.8 155n 1.8 155.05n 0 160n 0 160.05n 1.8)
+Xd1_b_3 s_b_3 d_b_3 vdrv 0 inv_x1
+Xd2_b_3 d_b_3 b_3 vdrv 0 inv_x1
+Vs_s_0 s_s_0 0 PWL(0n 0 25n 0 25.05n 1.8 45n 1.8 45.05n 0 65n 0 65.05n 1.8 85n 1.8 85.05n 0 105n 0 105.05n 1.8 125n 1.8
++ 125.05n 0 145n 0 145.05n 1.8)
+Xd1_s_0 s_s_0 d_s_0 vdrv 0 inv_x1
+Xd2_s_0 d_s_0 s_0 vdrv 0 inv_x1
+Vs_s_1 s_s_1 0 PWL(0n 0 45n 0 45.05n 1.8 85n 1.8 85.05n 0 125n 0 125.05n 1.8)
+Xd1_s_1 s_s_1 d_s_1 vdrv 0 inv_x1
+Xd2_s_1 d_s_1 s_1 vdrv 0 inv_x1
+Vs_s_2 s_s_2 0 PWL(0n 0 85n 0 85.05n 1.8)
+Xd1_s_2 s_s_2 d_s_2 vdrv 0 inv_x1
+Xd2_s_2 d_s_2 s_2 vdrv 0 inv_x1
+Xalu a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd_dut 0 alu4_pl
+Xl_y_0_0 y_0 ld_y_0_0 vld 0 inv_x1
+Xl_y_0_1 y_0 ld_y_0_1 vld 0 inv_x1
+Xl_y_0_2 y_0 ld_y_0_2 vld 0 inv_x1
+Xl_y_0_3 y_0 ld_y_0_3 vld 0 inv_x1
+Xl_y_1_0 y_1 ld_y_1_0 vld 0 inv_x1
+Xl_y_1_1 y_1 ld_y_1_1 vld 0 inv_x1
+Xl_y_1_2 y_1 ld_y_1_2 vld 0 inv_x1
+Xl_y_1_3 y_1 ld_y_1_3 vld 0 inv_x1
+Xl_y_2_0 y_2 ld_y_2_0 vld 0 inv_x1
+Xl_y_2_1 y_2 ld_y_2_1 vld 0 inv_x1
+Xl_y_2_2 y_2 ld_y_2_2 vld 0 inv_x1
+Xl_y_2_3 y_2 ld_y_2_3 vld 0 inv_x1
+Xl_y_3_0 y_3 ld_y_3_0 vld 0 inv_x1
+Xl_y_3_1 y_3 ld_y_3_1 vld 0 inv_x1
+Xl_y_3_2 y_3 ld_y_3_2 vld 0 inv_x1
+Xl_y_3_3 y_3 ld_y_3_3 vld 0 inv_x1
+Xl_c_0 c ld_c_0 vld 0 inv_x1
+Xl_c_1 c ld_c_1 vld 0 inv_x1
+Xl_c_2 c ld_c_2 vld 0 inv_x1
+Xl_c_3 c ld_c_3 vld 0 inv_x1
+Xl_v_0 v ld_v_0 vld 0 inv_x1
+Xl_v_1 v ld_v_1 vld 0 inv_x1
+Xl_v_2 v ld_v_2 vld 0 inv_x1
+Xl_v_3 v ld_v_3 vld 0 inv_x1
+Xl_z_0 z ld_z_0 vld 0 inv_x1
+Xl_z_1 z ld_z_1 vld 0 inv_x1
+Xl_z_2 z ld_z_2 vld 0 inv_x1
+Xl_z_3 z ld_z_3 vld 0 inv_x1
+Xl_n_0 n ld_n_0 vld 0 inv_x1
+Xl_n_1 n ld_n_1 vld 0 inv_x1
+Xl_n_2 n ld_n_2 vld 0 inv_x1
+Xl_n_3 n ld_n_3 vld 0 inv_x1
+* decimal words for plotting and measuring: operands, operation, result, flags (8c+4v+2z+n)
+Baw aw 0 V=(1*V(a_0)+2*V(a_1)+4*V(a_2)+8*V(a_3))/1.8
+Bbw bw 0 V=(1*V(b_0)+2*V(b_1)+4*V(b_2)+8*V(b_3))/1.8
+Bsw sw 0 V=(V(s_0)+2*V(s_1)+4*V(s_2))/1.8
+Byw yw 0 V=(1*V(y_0)+2*V(y_1)+4*V(y_2)+8*V(y_3))/1.8
+Bfw fw 0 V=(8*V(c)+4*V(v)+2*V(z)+V(n))/1.8
+.save V(aw) V(bw) V(sw) V(yw) V(fw) V(a_0) V(a_1) V(a_2) V(a_3) V(b_0) V(b_1) V(b_2) V(b_3) V(s_0)
++ V(s_1) V(s_2) V(y_0) V(y_1) V(y_2) V(y_3) V(c) V(v) V(z) V(n) I(Vdut)
+.tran 10p 165n 0 20p
+.meas tran y01 FIND V(yw) AT=9.75n
+.meas tran f01 FIND V(fw) AT=9.75n
+.meas tran y02 FIND V(yw) AT=14.75n
+.meas tran f02 FIND V(fw) AT=14.75n
+.meas tran y03 FIND V(yw) AT=19.75n
+.meas tran f03 FIND V(fw) AT=19.75n
+.meas tran y04 FIND V(yw) AT=24.75n
+.meas tran f04 FIND V(fw) AT=24.75n
+.meas tran y05 FIND V(yw) AT=29.75n
+.meas tran f05 FIND V(fw) AT=29.75n
+.meas tran y06 FIND V(yw) AT=34.75n
+.meas tran f06 FIND V(fw) AT=34.75n
+.meas tran y07 FIND V(yw) AT=39.75n
+.meas tran f07 FIND V(fw) AT=39.75n
+.meas tran y08 FIND V(yw) AT=44.75n
+.meas tran f08 FIND V(fw) AT=44.75n
+.meas tran y09 FIND V(yw) AT=49.75n
+.meas tran f09 FIND V(fw) AT=49.75n
+.meas tran y10 FIND V(yw) AT=54.75n
+.meas tran f10 FIND V(fw) AT=54.75n
+.meas tran y11 FIND V(yw) AT=59.75n
+.meas tran f11 FIND V(fw) AT=59.75n
+.meas tran y12 FIND V(yw) AT=64.75n
+.meas tran f12 FIND V(fw) AT=64.75n
+.meas tran y13 FIND V(yw) AT=69.75n
+.meas tran f13 FIND V(fw) AT=69.75n
+.meas tran y14 FIND V(yw) AT=74.75n
+.meas tran f14 FIND V(fw) AT=74.75n
+.meas tran y15 FIND V(yw) AT=79.75n
+.meas tran f15 FIND V(fw) AT=79.75n
+.meas tran y16 FIND V(yw) AT=84.75n
+.meas tran f16 FIND V(fw) AT=84.75n
+.meas tran y17 FIND V(yw) AT=89.75n
+.meas tran f17 FIND V(fw) AT=89.75n
+.meas tran y18 FIND V(yw) AT=94.75n
+.meas tran f18 FIND V(fw) AT=94.75n
+.meas tran y19 FIND V(yw) AT=99.75n
+.meas tran f19 FIND V(fw) AT=99.75n
+.meas tran y20 FIND V(yw) AT=104.75n
+.meas tran f20 FIND V(fw) AT=104.75n
+.meas tran y21 FIND V(yw) AT=109.75n
+.meas tran f21 FIND V(fw) AT=109.75n
+.meas tran y22 FIND V(yw) AT=114.75n
+.meas tran f22 FIND V(fw) AT=114.75n
+.meas tran y23 FIND V(yw) AT=119.75n
+.meas tran f23 FIND V(fw) AT=119.75n
+.meas tran y24 FIND V(yw) AT=124.75n
+.meas tran f24 FIND V(fw) AT=124.75n
+.meas tran y25 FIND V(yw) AT=129.75n
+.meas tran f25 FIND V(fw) AT=129.75n
+.meas tran y26 FIND V(yw) AT=134.75n
+.meas tran f26 FIND V(fw) AT=134.75n
+.meas tran y27 FIND V(yw) AT=139.75n
+.meas tran f27 FIND V(fw) AT=139.75n
+.meas tran y28 FIND V(yw) AT=144.75n
+.meas tran f28 FIND V(fw) AT=144.75n
+.meas tran y29 FIND V(yw) AT=149.75n
+.meas tran f29 FIND V(fw) AT=149.75n
+.meas tran y30 FIND V(yw) AT=154.75n
+.meas tran f30 FIND V(fw) AT=154.75n
+.meas tran y31 FIND V(yw) AT=159.75n
+.meas tran f31 FIND V(fw) AT=159.75n
+.meas tran y32 FIND V(yw) AT=164.75n
+.meas tran f32 FIND V(fw) AT=164.75n
+.end

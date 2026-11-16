@@ -1,0 +1,78 @@
+* alu4_pl.lib  4-bit ALU, transistor level: library pl018, slice with inverting multiplexers
+* Subcircuit alu4_pl; pins: a_0..a_3, b_0..b_3, s_0..s_2, y_0..y_3, c, v, z, n, vdd, vss
+* (index 0 is the least significant bit). Operation select s_2 s_1 s_0:
+*   000 ADD   001 SUB   010 INC   011 DEC   100 AND   101 OR   110 XOR   111 NOT (of a)
+* Flags: c carry out (1 = no borrow for SUB and DEC), v signed overflow, z result zero,
+* n result negative; c and v are 0 for the logic operations.
+* 66 cell instances, 458 transistors. Cells used (cells_pl.lib):
+*   pl_xor2 x 10, pl_buf x 5, pl_inv x 14, pl_mux2i x 20, pl_fa x 4, pl_nand2 x 4, pl_nor2 x 8, pl_and2 x 1
+* Requires: .include tsmc018.lib and the cell files named above.
+
+.subckt alu4_pl a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd vss
+Xu_xor21 s_1 s_0 cy_0 vdd vss pl_xor2
+Xu_buf1 s_2 s2b vdd vss pl_buf
+Xu_buf2 s_0 s0b_0 vdd vss pl_buf
+Xu_buf3 s_0 s0b_1 vdd vss pl_buf
+Xu_buf4 s_1 s1b_0 vdd vss pl_buf
+Xu_buf5 s_1 s1b_1 vdd vss pl_buf
+Xu_inv1 s0b_0 s0n_0 vdd vss pl_inv
+Xu_inv2 s0b_1 s0n_1 vdd vss pl_inv
+Xu_inv3 b_0 bn_0 vdd vss pl_inv
+Xu_xor22 bn_0 s0b_0 bxsn_0 vdd vss pl_xor2
+Xu_xor23 a_0 bn_0 lxn_0 vdd vss pl_xor2
+Xu_mux2i1 bxsn_0 s0n_0 s1b_0 bx_0 vdd vss pl_mux2i
+Xu_fa1 a_0 bx_0 cy_0 sum_0 cy_1 vdd vss pl_fa
+Xu_nand21 a_0 b_0 lnand_0 vdd vss pl_nand2
+Xu_nor21 a_0 b_0 lnor_0 vdd vss pl_nor2
+Xu_mux2i2 lnand_0 lnor_0 s0b_0 m0_0 vdd vss pl_mux2i
+Xu_mux2i3 lxn_0 a_0 s0b_0 m1_0 vdd vss pl_mux2i
+Xu_mux2i4 m0_0 m1_0 s1b_0 lgn_0 vdd vss pl_mux2i
+Xu_inv4 sum_0 sumn_0 vdd vss pl_inv
+Xu_mux2i5 sumn_0 lgn_0 s2b y_0 vdd vss pl_mux2i
+Xu_inv5 b_1 bn_1 vdd vss pl_inv
+Xu_xor24 bn_1 s0b_0 bxsn_1 vdd vss pl_xor2
+Xu_xor25 a_1 bn_1 lxn_1 vdd vss pl_xor2
+Xu_mux2i6 bxsn_1 s0n_0 s1b_0 bx_1 vdd vss pl_mux2i
+Xu_fa2 a_1 bx_1 cy_1 sum_1 cy_2 vdd vss pl_fa
+Xu_nand22 a_1 b_1 lnand_1 vdd vss pl_nand2
+Xu_nor22 a_1 b_1 lnor_1 vdd vss pl_nor2
+Xu_mux2i7 lnand_1 lnor_1 s0b_0 m0_1 vdd vss pl_mux2i
+Xu_mux2i8 lxn_1 a_1 s0b_0 m1_1 vdd vss pl_mux2i
+Xu_mux2i9 m0_1 m1_1 s1b_0 lgn_1 vdd vss pl_mux2i
+Xu_inv6 sum_1 sumn_1 vdd vss pl_inv
+Xu_mux2i10 sumn_1 lgn_1 s2b y_1 vdd vss pl_mux2i
+Xu_inv7 b_2 bn_2 vdd vss pl_inv
+Xu_xor26 bn_2 s0b_1 bxsn_2 vdd vss pl_xor2
+Xu_xor27 a_2 bn_2 lxn_2 vdd vss pl_xor2
+Xu_mux2i11 bxsn_2 s0n_1 s1b_1 bx_2 vdd vss pl_mux2i
+Xu_fa3 a_2 bx_2 cy_2 sum_2 cy_3 vdd vss pl_fa
+Xu_nand23 a_2 b_2 lnand_2 vdd vss pl_nand2
+Xu_nor23 a_2 b_2 lnor_2 vdd vss pl_nor2
+Xu_mux2i12 lnand_2 lnor_2 s0b_1 m0_2 vdd vss pl_mux2i
+Xu_mux2i13 lxn_2 a_2 s0b_1 m1_2 vdd vss pl_mux2i
+Xu_mux2i14 m0_2 m1_2 s1b_1 lgn_2 vdd vss pl_mux2i
+Xu_inv8 sum_2 sumn_2 vdd vss pl_inv
+Xu_mux2i15 sumn_2 lgn_2 s2b y_2 vdd vss pl_mux2i
+Xu_inv9 b_3 bn_3 vdd vss pl_inv
+Xu_xor28 bn_3 s0b_1 bxsn_3 vdd vss pl_xor2
+Xu_xor29 a_3 bn_3 lxn_3 vdd vss pl_xor2
+Xu_mux2i16 bxsn_3 s0n_1 s1b_1 bx_3 vdd vss pl_mux2i
+Xu_fa4 a_3 bx_3 cy_3 sum_3 cy_4 vdd vss pl_fa
+Xu_nand24 a_3 b_3 lnand_3 vdd vss pl_nand2
+Xu_nor24 a_3 b_3 lnor_3 vdd vss pl_nor2
+Xu_mux2i17 lnand_3 lnor_3 s0b_1 m0_3 vdd vss pl_mux2i
+Xu_mux2i18 lxn_3 a_3 s0b_1 m1_3 vdd vss pl_mux2i
+Xu_mux2i19 m0_3 m1_3 s1b_1 lgn_3 vdd vss pl_mux2i
+Xu_inv10 sum_3 sumn_3 vdd vss pl_inv
+Xu_mux2i20 sumn_3 lgn_3 s2b y_3 vdd vss pl_mux2i
+Xu_inv11 cy_4 cyn vdd vss pl_inv
+Xu_nor25 s2b cyn c vdd vss pl_nor2
+Xu_xor210 cy_3 cy_4 vxn_n vdd vss pl_xor2
+Xu_inv12 vxn_n vxn vdd vss pl_inv
+Xu_nor26 s2b vxn v vdd vss pl_nor2
+Xu_nor27 y_0 y_1 zn_0 vdd vss pl_nor2
+Xu_nor28 y_2 y_3 zn_1 vdd vss pl_nor2
+Xu_and21 zn_0 zn_1 z vdd vss pl_and2
+Xu_inv13 y_3 nn vdd vss pl_inv
+Xu_inv14 nn n vdd vss pl_inv
+.ends alu4_pl

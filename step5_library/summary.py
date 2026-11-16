@@ -20,7 +20,8 @@ s2.HERE, s2.OUT = HERE, OUT            # the parsers read this step's logs
 f = s2.f
 DESIGNS = (("beh", "beh", "behavioural RTL, synthesized (rtl/alu4.v)"),
            ("slice", "slice", "bit-sliced RTL, synthesized (rtl/alu4_slice.v)"),
-           ("map", "map", "hand-mapped netlist with pl_fa full adders (rtl/alu4_map_pl018.v)"))
+           ("map", "map", "hand-mapped netlist with pl_fa full adders (rtl/alu4_map_pl018.v)"),
+           ("fb", "fb", "hand-mapped function-block slice, pl_fb4 + pl_cs (rtl/alu4_fb_pl018.v)"))
 W = 79
 
 
@@ -107,10 +108,10 @@ def main():
                                                  f(r["drc"], "%d"), "filler"))
             continue
         print("%-10s %4d %6.1f %2d %4s  %-6s %6s   %5s/%-5s   %6s  %s" % (
-            r["name"] + ("+" if r["provisional"] else ""), r["sites"], r["area_um2"], r["transistors"],
+            r["name"], r["sites"], r["area_um2"], r["transistors"],
             f(r["drc"], "%d"), r["lvs"], f(r["cin_max_fF"], "%.1f"), f(r["tpd_rise_ps"], "%.0f"),
             f(r["tpd_fall_ps"], "%.0f"), f(r["leak_nW"], "%.3f"), r["netlist"]))
-    print("* fF, ps, nW; worst arc at 16 fF load and 80 ps input slope; + provisional size")
+    print("* fF, ps, nW; worst arc at 16 fF load and 80 ps input slope")
     print("-" * W)
     for d, _, note in DESIGNS:
         print("  %-5s %s" % (d, note[:W - 8]))
@@ -124,12 +125,12 @@ def main():
         d3 = None
     print("-" * W)
     if d3:
-        row = "%-33s" + " %-14s" * len(designs)
-        print(row % (("After layout: D4 (change vs D3)",) + tuple(titles)))
+        row = s2.flow_row(len(designs))
+        print(row % (("D4 after layout (vs D3)",) + tuple(titles)))
         for text, key in (("cells placed", ("layout", "cells")), ("worst delay (ps)", ("post", "t_max_ps")),
                           ("energy per operation (fJ)", ("post", "e_avg_fJ")),
                           ("leakage power (nW)", ("post", "p_leak_nW")),
-                          ("energy x worst delay (fJ ns)", ("post", "edp_fJns"))):
+                          ("energy x delay (fJ ns)", ("post", "edp_fJns"))):
             print(row % (("  " + text,) + tuple(
                 change(res[d][key[0]].get(key[1]), d3.get(d, {}).get(key[0], {}).get(key[1]))
                 for d in designs)))

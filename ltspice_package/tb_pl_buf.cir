@@ -1,0 +1,36 @@
+* tb_pl_buf.cir  test of cell pl_buf (BUF, 4 transistors)
+* Function: Y = A
+* 1.8 V, 27 C. Every input is driven through two X1 inverters, every output drives four
+* X1 inverters. Sequence: every input transition once (2 transitions),
+* 2 ns per state; data are saved from the first transition (2 ns).
+* States (A): 0 1 0
+* Measurements (LTspice: View > SPICE Error Log):
+*   dNN_<output>  delay of the output change in step NN, from the input of the last driver
+*                 inverter (node d_<input>) to the 50 % point of the output
+*   p_uW          average power in uW, cell and input drivers
+*   worst delay = largest dNN value;  PDP = p_uW x worst delay
+* Ngspice 46:  worst delay 194.0 ps (d1_Y),  power 99.78 uW,  PDP 19.36 fJ
+.include tsmc018.lib
+.include cells_pl.lib
+.options plotwinsize=0
+.subckt inv_x1 A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends inv_x1
+Vcut vcut 0 1.8
+Vdrv vdrv 0 1.8
+Vld vld 0 1.8
+Vs_A s_A 0 PWL(0n 0 2n 0 2.05n 1.8 4n 1.8 4.05n 0)
+Xd1_A s_A d_A vdrv 0 inv_x1
+Xd2_A d_A A vdrv 0 inv_x1
+Xcut A Y vcut 0 pl_buf
+Xl_Y_0 Y ld_Y_0 vld 0 inv_x1
+Xl_Y_1 Y ld_Y_1 vld 0 inv_x1
+Xl_Y_2 Y ld_Y_2 vld 0 inv_x1
+Xl_Y_3 Y ld_Y_3 vld 0 inv_x1
+Bpw pw 0 V=-(I(Vcut)+I(Vdrv))*1.8e+06
+.tran 1p 6n 2n 10p
+.meas tran d1_Y TRIG V(d_A) VAL=0.9 TD=2n FALL=1 TARG V(Y) VAL=0.9 TD=2n RISE=1
+.meas tran d2_Y TRIG V(d_A) VAL=0.9 TD=4n RISE=1 TARG V(Y) VAL=0.9 TD=4n FALL=1
+.meas tran p_uW AVG V(pw)
+.end

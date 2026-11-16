@@ -11,6 +11,10 @@ Two slice architectures:
   inv     the same function with inverting multiplexers only: the multiplexer inputs are
           supplied in the complemented polarity (NAND and NOR in place of AND and OR, XNOR
           in place of XOR, the complemented sum), so no multiplexer needs an output inverter.
+  fb      function-block slice with the two ALU-specific cells: per bit one FB4 cell (the
+          operand bits select one of four function-code lines) and one CS cell (carry
+          multiplexer and result); a small decoder shared by all bits sets the code lines
+          from the operation select.
 
 Cell sets (SPICE, written to step6_alu_schematic/netlists/):
   gate    gate-level cells of the LTspice cell set (XOR from four NAND2, AND/OR multiplexer,
@@ -18,8 +22,11 @@ Cell sets (SPICE, written to step6_alu_schematic/netlists/):
   conv    conventional static CMOS cells at the reference size, plain
   opt     minimum-PDP cells of Step 3 (step4_layout/library.json), plain
   pl      automated-flow library pl018 as laid out (tech/pl018/pl018_cells.sp), inv
+  fb      FB4 and CS cells at the sizes of Step 3c (step3_cells/alu_cells.json), with
+          pl018 cells for the decoder and the flags, fb
 Verilog (hand-mapped netlists for place and route, written to rtl/):
   alu4_map_pl018.v    pl018 cells, inv
+  alu4_fb_pl018.v     pl018 cells with pl_fb4 and pl_cs, fb
   alu4_map_osu018.v   OSU018 cells, inv
 
 Every written netlist is read back and checked against the reference model for all
@@ -61,6 +68,11 @@ FAMILIES = {
     "MUX2":  (["A", "B", "S"], ["Y"], lambda m, a, b, s: [(b & s) | (a & ~s & m)]),
     "MUX2I": (["A", "B", "S"], ["Y"], lambda m, a, b, s: [~((b & s) | (a & ~s)) & m]),
     "FA":    (["A", "B", "C"], ["S", "CO"], lambda m, a, b, c: [a ^ b ^ c, (a & b) | (c & (a | b))]),
+    # ALU-specific cells: P = C[2A + B];  CO = P ? CI : A,  Y = K ? P : P xor CI
+    "FB4":   (["A", "B", "C0", "C1", "C2", "C3"], ["P"],
+              lambda m, a, b, c0, c1, c2, c3: [(~a & ~b & c0 | ~a & b & c1 | a & ~b & c2 | a & b & c3) & m]),
+    "CS":    (["P", "A", "CI", "K"], ["CO", "Y"],
+              lambda m, p, a, ci, k: [(p & ci) | (~p & a & m), (k & p) | (~k & (p ^ ci) & m)]),
 }
 
 
@@ -110,17 +122,45 @@ class Builder:
         return self.inv(y + "_n", y)
 
 
-def build(arch, avail, width=W):
-    """Instance list of the ALU for one architecture and the available cell families."""
+def build(arch, avail, width=W, selbuf=False):
+    """Instance list of the ALU for one architecture and the available cell families.
+
+    selbuf: buffer the operation-select lines inside the ALU (one buffer per two bits for
+    a line that goes to every slice), as a designer would; the netlists for place and
+    route leave this to the tool's fan-out buffering.
+    """
     b = Builder(avail)
     s0, s1, s2 = "s_0", "s_1", "s_2"
     cy = ["cy_%d" % i for i in range(width + 1)]
     b.cell("XOR2", [s1, s0], [cy[0]])
+    ngroup = (width + 1) // 2
+    s0g, s1g, s2b = [s0] * ngroup, [s1] * ngroup, s2
+    if selbuf:
+        s2b = b.cell("BUF", [s2], ["s2b"])
+        if arch in ("plain", "inv"):
+            s0g = [b.cell("BUF", [s0], ["s0b_%d" % g]) for g in range(ngroup)]
+            s1g = [b.cell("BUF", [s1], ["s1b_%d" % g]) for g in range(ngroup)]
     if arch == "inv":
-        b.inv(s0, "s0n")
+        if selbuf:
+            s0ng = [b.inv(s0g[g], "s0n_%d" % g) for g in range(ngroup)]
+        else:
+            s0ng = [b.inv(s0, "s0n")] * ngroup
+    if arch == "fb":
+        # function codes C[2a + b] of P for the eight operations (s2 s1 s0), x = s1 xor s0:
+        #   C0 = s0 and not (s2 and not s1)      C1 = s2 ? s1 or s0 : not x
+        #   C2 = s2 ? x : not s0                 C3 = s2 ? not s1 : x
+        b.inv(cy[0], "xn")
+        b.inv(s1, "s1n")
+        b.cell("NAND2", [s2b, "s1n"], ["dt"])
+        b.and2(s0, "dt", "fc0")
+        b.cell("NOR2", [s1, s0], ["dnor"])
+        b.cell("MUX2I", [cy[0], "dnor", s2b], ["fc1"])
+        b.cell("MUX2I", [s0, "xn", s2b], ["fc2"])
+        b.cell("MUX2I", ["xn", s1, s2b], ["fc3"])
     for i in range(width):
         a, bb, y = "a_%d" % i, "b_%d" % i, "y_%d" % i
         t = lambda name: "%s_%d" % (name, i)        # noqa: E731
+        s0, s1, s2 = s0g[i // 2], s1g[i // 2], s2b
         if arch == "plain":
             b.cell("XOR2", [bb, s0], [t("bxs")])
             b.mux2(t("bxs"), s0, s1, t("bx"))
@@ -141,7 +181,7 @@ def build(arch, avail, width=W):
                 b.inv(bb, t("bn"))
                 b.cell("XOR2", [t("bn"), s0], [t("bxsn")])
                 b.cell("XOR2", [a, t("bn")], [t("lxn")])
-            b.cell("MUX2I", [t("bxsn"), "s0n", s1], [t("bx")])
+            b.cell("MUX2I", [t("bxsn"), s0ng[i // 2], s1], [t("bx")])
             b.cell("FA", [a, t("bx"), cy[i]], [t("sum"), cy[i + 1]])
             b.cell("NAND2", [a, bb], [t("lnand")])
             b.cell("NOR2", [a, bb], [t("lnor")])
@@ -150,13 +190,16 @@ def build(arch, avail, width=W):
             b.cell("MUX2I", [t("m0"), t("m1"), s1], [t("lgn")])
             b.inv(t("sum"), t("sumn"))
             b.cell("MUX2I", [t("sumn"), t("lgn"), s2], [y])
+        elif arch == "fb":
+            b.cell("FB4", [a, bb, "fc0", "fc1", "fc2", "fc3"], [t("p")])
+            b.cell("CS", [t("p"), a, cy[i], s2], [cy[i + 1], y])
         else:
             raise ValueError("unknown architecture %s" % arch)
     # flags: c and v only for the arithmetic operations (s2 = 0)
     b.inv(cy[width], "cyn")
-    b.cell("NOR2", [s2, "cyn"], ["c"])
+    b.cell("NOR2", [s2b, "cyn"], ["c"])
     b.xnor2(cy[width - 1], cy[width], "vxn")
-    b.cell("NOR2", [s2, "vxn"], ["v"])
+    b.cell("NOR2", [s2b, "vxn"], ["v"])
     terms = []
     for i in range(0, width, 2):
         terms.append(b.cell("NOR2", ["y_%d" % i, "y_%d" % (i + 1)], ["zn_%d" % (i // 2)]))
@@ -183,25 +226,46 @@ def cellnet_set(spec):
     return out
 
 
-def set_gate():
+def spec_gate():
     k, r = cellnet.GATE_LEVEL_K, cellnet.GATE_LEVEL_R
-    return cellnet_set({"INV": ("inv_cmos", k, r), "NAND2": ("nand2_cmos", k, r),
-                        "NOR2": ("nor2_cmos", k, r), "AND2": ("and2_cmos", k, r),
-                        "OR2": ("or2_cmos", k, r), "XOR2": ("xor_nand16", k, r),
-                        "MUX2": ("mux_gate20", k, r), "FA": ("fa_nand44", k, r)})
+    return {"INV": ("inv_cmos", k, r), "NAND2": ("nand2_cmos", k, r),
+            "NOR2": ("nor2_cmos", k, r), "AND2": ("and2_cmos", k, r),
+            "OR2": ("or2_cmos", k, r), "XOR2": ("xor_nand16", k, r),
+            "MUX2": ("mux_gate20", k, r), "FA": ("fa_nand44", k, r),
+            "BUF": ("buf_cmos", k, r)}
+
+
+def spec_conv():
+    return {"INV": ("inv_cmos", 1, 2), "NAND2": ("nand2_cmos", 1, 2),
+            "NOR2": ("nor2_cmos", 1, 2), "AND2": ("and2_cmos", 1, 2),
+            "OR2": ("or2_cmos", 1, 2), "XOR2": ("xor_cmos12", 1, 2),
+            "MUX2": ("mux_cmos12", 1, 2), "FA": ("fa_cmos28", 1, 2),
+            "BUF": ("buf_cmos", 1, 2)}
+
+
+def spec_opt():
+    lib = json.load(open(os.path.join(ROOT, "step4_layout", "library.json")))["optimized"]
+    spec = {fam: (c["cell"], c["k"], c["r"]) for fam, c in lib.items() if fam in FAMILIES}
+    spec["BUF"] = ("buf_cmos", 1.0, 2.5)        # the output buffer of the pl018 library
+    return spec
+
+
+def spec_alu_cells():
+    """Sizes of the two ALU-specific cells, selected by Step 3c (step3_cells/alu_cells.json)."""
+    sel = json.load(open(os.path.join(ROOT, "step3_cells", "alu_cells.json")))["cells"]
+    return {fam: (sel[fam]["cell"], sel[fam]["k"], sel[fam]["r"]) for fam in ("FB4", "CS")}
+
+
+def set_gate():
+    return cellnet_set(spec_gate())
 
 
 def set_conv():
-    return cellnet_set({"INV": ("inv_cmos", 1, 2), "NAND2": ("nand2_cmos", 1, 2),
-                        "NOR2": ("nor2_cmos", 1, 2), "AND2": ("and2_cmos", 1, 2),
-                        "OR2": ("or2_cmos", 1, 2), "XOR2": ("xor_cmos12", 1, 2),
-                        "MUX2": ("mux_cmos12", 1, 2), "FA": ("fa_cmos28", 1, 2)})
+    return cellnet_set(spec_conv())
 
 
 def set_opt():
-    lib = json.load(open(os.path.join(ROOT, "step4_layout", "library.json")))["optimized"]
-    return cellnet_set({fam: (spec["cell"], spec["k"], spec["r"]) for fam, spec in lib.items()
-                        if fam in FAMILIES})
+    return cellnet_set(spec_opt())
 
 
 def set_pl():
@@ -215,11 +279,21 @@ def set_pl():
     return out
 
 
+def set_fb():
+    """pl018 with its laid-out FB4 and CS cells; the netlists of cellnet.py at the Step 3c
+    sizes stand in when the library has not been generated with them."""
+    cells = set_pl()
+    for fam, c in cellnet_set(spec_alu_cells()).items():
+        cells.setdefault(fam, c)
+    return cells
+
+
 SPICE_DESIGNS = [
     ("gate", "plain", set_gate, "gate-level cells of the LTspice cell set (NAND-based), k = 0.4, r = 2"),
     ("conv", "plain", set_conv, "conventional static CMOS cells at the reference size (k = 1, r = 2)"),
     ("opt", "plain", set_opt, "minimum-PDP cells of Step 3 (step4_layout/library.json)"),
     ("pl", "inv", set_pl, "automated-flow library pl018 as laid out, inverting-multiplexer slice"),
+    ("fb", "fb", set_fb, "function-block slice: FB4 and CS cells per bit, pl018 cells for decoder and flags"),
 ]
 
 # Verilog targets: cell name and pin names per family (generic pin -> library pin)
@@ -227,6 +301,7 @@ PL018 = {
     "INV": ("pl_inv", {}), "NAND2": ("pl_nand2", {}), "NOR2": ("pl_nor2", {}),
     "AND2": ("pl_and2", {}), "OR2": ("pl_or2", {}), "XOR2": ("pl_xor2", {}),
     "MUX2": ("pl_mux2", {}), "MUX2I": ("pl_mux2i", {}), "FA": ("pl_fa", {}),
+    "FB4": ("pl_fb4", {}), "CS": ("pl_cs", {}),
 }
 # OSU018: MUX2X1 is Y = !(S ? A : B), so the data pins are exchanged; FAX1 names its outputs YS, YC
 OSU018 = {
@@ -248,6 +323,7 @@ OSU018_FUNC = {
 }
 VERILOG_DESIGNS = [
     ("alu4_map_pl018.v", "inv", PL018, "project library pl018"),
+    ("alu4_fb_pl018.v", "fb", PL018, "project library pl018"),
     ("alu4_map_osu018.v", "inv", OSU018, "OSU018 standard cells"),
 ]
 
@@ -295,7 +371,9 @@ def write_verilog(path, arch, target, note, inst):
         for n in nets:
             if n not in ports and n not in wires:
                 wires.append(n)
-    L = ["// 4-bit ALU, hand-mapped onto the %s (slice with inverting multiplexers)." % note,
+    slice_note = {"inv": "slice with inverting multiplexers",
+                  "fb": "function-block slice: one FB4 and one CS cell per bit"}[arch]
+    L = ["// 4-bit ALU, hand-mapped onto the %s (%s)." % (note, slice_note),
          "// Function as rtl/alu4.v. Generated and checked by sim/gen_alu.py (all 2048 vectors);",
          "// source of the hand-mapped place-and-route run.",
          "module alu4 (a, b, s, y, c, v, z, n);",
@@ -438,7 +516,7 @@ def main():
     for name, arch, make, note in SPICE_DESIGNS:
         path = os.path.join(SPICE_DIR, "alu4_%s.sp" % name)
         cells = make()
-        inst = build(arch, cells.keys())
+        inst = build(arch, cells.keys(), selbuf=True)
         if not args.check:
             write_spice(path, name, arch, cells, note, inst)
         ntr, bad = check_spice(path) if os.path.isfile(path) else (0, ["file missing"])
@@ -449,7 +527,8 @@ def main():
                        "check": "ok" if not bad else "; ".join(bad)}
         print("%-22s %-6s %6d %5d  %s" % ("alu4_%s.sp" % name, arch, len(inst), logical,
                                          "correct (switch level)" if not bad else "; ".join(bad)))
-    funcs = {"alu4_map_pl018.v": pl018_funcs(), "alu4_map_osu018.v": OSU018_FUNC}
+    funcs = {"alu4_map_pl018.v": pl018_funcs(), "alu4_fb_pl018.v": pl018_funcs(),
+             "alu4_map_osu018.v": OSU018_FUNC}
     for fname, arch, target, note in VERILOG_DESIGNS:
         path = os.path.join(RTL_DIR, fname)
         inst = build(arch, target.keys())

@@ -136,18 +136,29 @@ def parse_meas(text):
     return vals
 
 
+RESUME = False        # --resume: keep the results of an interrupted run found in out/
+
+
 def evaluate(cell, vdd, period, workdir, k=1.0, r=2.0, dut_text=None, tag=""):
     """Simulate one cell and return its figures of merit as a dict."""
     tb, meta, levels, twin = build_tb(cell, vdd, period, dut_text)
     path = os.path.join(workdir, "tb_%s%s_%dmV_k%g_r%g.sp"
                         % (cell.name, tag, round(vdd * 1000), k, r))
-    with open(path, "w") as f:
-        f.write(tb)
-    res = subprocess.run(["ngspice", "-b", path], capture_output=True, text=True,
-                         cwd=workdir, timeout=1800)
-    log = res.stdout + res.stderr
-    with open(path.replace(".sp", ".log"), "w") as f:
-        f.write(log)
+    logpath = path.replace(".sp", ".log")
+    log = ""
+    if RESUME and os.path.isfile(logpath):
+        log = open(logpath).read()
+        if not re.search(r"^edrv\s*=", log, re.M) or (os.path.isfile(path) and open(path).read() != tb):
+            log = ""                              # incomplete log or a different testbench
+    if not log:
+        with open(path, "w") as f:
+            f.write(tb)
+        res = subprocess.run(["ngspice", "-b", path], capture_output=True, text=True,
+                             cwd=workdir, timeout=1800)
+        log = res.stdout + res.stderr
+        with open(logpath + ".tmp", "w") as f:
+            f.write(log)
+        os.replace(logpath + ".tmp", logpath)
     v = parse_meas(log)
 
     d_in, d_drv, missing = [], [], 0
@@ -366,7 +377,11 @@ def main():
     ap.add_argument("--tag", default="")
     ap.add_argument("--sweep", action="store_true", help="size every candidate (k x r grid)")
     ap.add_argument("--report", action="store_true", help="reprint the sweep summary from out/")
+    ap.add_argument("--resume", action="store_true",
+                    help="continue an interrupted run: reuse the finished simulations in out/")
     args = ap.parse_args()
+    global RESUME
+    RESUME = args.resume
 
     workdir = os.path.join(HERE, "out")
     os.makedirs(workdir, exist_ok=True)

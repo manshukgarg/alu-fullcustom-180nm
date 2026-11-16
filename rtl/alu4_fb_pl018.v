@@ -1,0 +1,43 @@
+// 4-bit ALU, hand-mapped onto the project library pl018 (function-block slice: one FB4 and one CS cell per bit).
+// Function as rtl/alu4.v. Generated and checked by sim/gen_alu.py (all 2048 vectors);
+// source of the hand-mapped place-and-route run.
+module alu4 (a, b, s, y, c, v, z, n);
+    input  [3:0] a;
+    input  [3:0] b;
+    input  [2:0] s;
+    output [3:0] y;
+    output c;
+    output v;
+    output z;
+    output n;
+    wire cy_0, xn, s1n, dt, fc0, dnor, fc1, fc2;
+    wire fc3, p_0, cy_1, p_1, cy_2, p_2, cy_3, p_3;
+    wire cy_4, cyn, vxn_n, vxn, zn_0, zn_1, nn;
+    pl_xor2 u_xor21 (.A(s[1]), .B(s[0]), .Y(cy_0));
+    pl_inv u_inv1 (.A(cy_0), .Y(xn));
+    pl_inv u_inv2 (.A(s[1]), .Y(s1n));
+    pl_nand2 u_nand21 (.A(s[2]), .B(s1n), .Y(dt));
+    pl_and2 u_and21 (.A(s[0]), .B(dt), .Y(fc0));
+    pl_nor2 u_nor21 (.A(s[1]), .B(s[0]), .Y(dnor));
+    pl_mux2i u_mux2i1 (.A(cy_0), .B(dnor), .S(s[2]), .Y(fc1));
+    pl_mux2i u_mux2i2 (.A(s[0]), .B(xn), .S(s[2]), .Y(fc2));
+    pl_mux2i u_mux2i3 (.A(xn), .B(s[1]), .S(s[2]), .Y(fc3));
+    pl_fb4 u_fb41 (.A(a[0]), .B(b[0]), .C0(fc0), .C1(fc1), .C2(fc2), .C3(fc3), .P(p_0));
+    pl_cs u_cs1 (.P(p_0), .A(a[0]), .CI(cy_0), .K(s[2]), .CO(cy_1), .Y(y[0]));
+    pl_fb4 u_fb42 (.A(a[1]), .B(b[1]), .C0(fc0), .C1(fc1), .C2(fc2), .C3(fc3), .P(p_1));
+    pl_cs u_cs2 (.P(p_1), .A(a[1]), .CI(cy_1), .K(s[2]), .CO(cy_2), .Y(y[1]));
+    pl_fb4 u_fb43 (.A(a[2]), .B(b[2]), .C0(fc0), .C1(fc1), .C2(fc2), .C3(fc3), .P(p_2));
+    pl_cs u_cs3 (.P(p_2), .A(a[2]), .CI(cy_2), .K(s[2]), .CO(cy_3), .Y(y[2]));
+    pl_fb4 u_fb44 (.A(a[3]), .B(b[3]), .C0(fc0), .C1(fc1), .C2(fc2), .C3(fc3), .P(p_3));
+    pl_cs u_cs4 (.P(p_3), .A(a[3]), .CI(cy_3), .K(s[2]), .CO(cy_4), .Y(y[3]));
+    pl_inv u_inv3 (.A(cy_4), .Y(cyn));
+    pl_nor2 u_nor22 (.A(s[2]), .B(cyn), .Y(c));
+    pl_xor2 u_xor22 (.A(cy_3), .B(cy_4), .Y(vxn_n));
+    pl_inv u_inv4 (.A(vxn_n), .Y(vxn));
+    pl_nor2 u_nor23 (.A(s[2]), .B(vxn), .Y(v));
+    pl_nor2 u_nor24 (.A(y[0]), .B(y[1]), .Y(zn_0));
+    pl_nor2 u_nor25 (.A(y[2]), .B(y[3]), .Y(zn_1));
+    pl_and2 u_and22 (.A(zn_0), .B(zn_1), .Y(z));
+    pl_inv u_inv5 (.A(y[3]), .Y(nn));
+    pl_inv u_inv6 (.A(nn), .Y(n));
+endmodule

@@ -390,6 +390,60 @@ def fa_tgab24(k=1.0, r=2.0):
     return c
 
 
+# --------------------------------------------------------------------------
+# ALU-specific cells: function block and carry-sum cell
+# --------------------------------------------------------------------------
+# The two operand bits select one of four function-code lines (the function block of
+# Mead and Conway's OM-2 data path, here as a restoring transmission-gate cell). With
+# the code lines set by the operation, P is the adder's propagate signal for ADD, SUB,
+# INC and DEC, and the result itself for AND, OR, XOR and NOT:
+#     P = C[2A + B]      codes (C0 C1 C2 C3):  ADD 0110  SUB 1001  INC 0011  DEC 1100
+#                                              AND 0001  OR  0111  XOR 0110  NOT 1100
+# The carry-sum cell completes the bit: CO = P ? CI : A (when P is 0 the two adder
+# operands are equal, so the generate term equals A) and Y = K ? P : P xor CI, where K
+# is 1 for the logic operations.
+def ffb4(v):
+    return {"P": v["C%d" % (2 * v["A"] + v["B"])]}
+
+
+def fcs(v):
+    return {"CO": v["CI"] if v["P"] else v["A"], "Y": v["P"] if v["K"] else v["P"] ^ v["CI"]}
+
+
+def fb4_tg20(k=1.0, r=2.0):
+    c = Cell("fb4_tg20", ["A", "B", "C0", "C1", "C2", "C3"], ["P"], ffb4, "FB4",
+             "function block: 4:1 TG tree selected by the operands, restored output", r=r)
+    c.inv("A", "An", 0.5 * k, 1.0 * k)
+    c.inv("B", "Bn", 0.5 * k, 1.0 * k)
+    c.tg("C0", "u0", "Bn", "B", 0.5 * k, 1.0 * k)          # u0 = B ? C1 : C0
+    c.tg("C1", "u0", "B", "Bn", 0.5 * k, 1.0 * k)
+    c.tg("C2", "u1", "Bn", "B", 0.5 * k, 1.0 * k)          # u1 = B ? C3 : C2
+    c.tg("C3", "u1", "B", "Bn", 0.5 * k, 1.0 * k)
+    c.tg("u0", "x", "An", "A", 0.5 * k, 1.0 * k)           # x = A ? u1 : u0
+    c.tg("u1", "x", "A", "An", 0.5 * k, 1.0 * k)
+    c.inv("x", "Pn", 0.5 * k, 1.0 * k)
+    c.inv("Pn", "P", 1.0 * k, 2.0 * k)
+    return c
+
+
+def cs_tg24(k=1.0, r=2.0):
+    c = Cell("cs_tg24", ["P", "A", "CI", "K"], ["CO", "Y"], fcs, "CS",
+             "carry-sum cell: TG carry multiplexer and TG sum/result selection, restored outputs", r=r)
+    c.inv("P", "Pn", 0.5 * k, 1.0 * k)
+    c.inv("K", "Kn", 0.5 * k, 1.0 * k)
+    c.inv("CI", "CIn", 0.5 * k, 1.0 * k)
+    c.tg("CI", "cx", "P", "Pn", 0.5 * k, 1.0 * k)          # cx = P ? CI : A
+    c.tg("A", "cx", "Pn", "P", 0.5 * k, 1.0 * k)
+    c.inv("cx", "COn", 0.5 * k, 1.0 * k)
+    c.inv("COn", "CO", 1.0 * k, 2.0 * k)
+    c.tg("CI", "xn", "P", "Pn", 0.5 * k, 1.0 * k)          # xn = not (P xor CI)
+    c.tg("CIn", "xn", "Pn", "P", 0.5 * k, 1.0 * k)
+    c.tg("xn", "yn", "Kn", "K", 0.5 * k, 1.0 * k)          # yn = K ? not P : xn
+    c.tg("Pn", "yn", "K", "Kn", 0.5 * k, 1.0 * k)
+    c.inv("yn", "Y", 1.0 * k, 2.0 * k)
+    return c
+
+
 # gate-level cells of the LTspice cell set (compositions of NAND2, NOR2 and inverters):
 # reference style of the comparison, not laid out as library cells
 GATE_LEVEL = ("xor_nand16", "mux_gate20", "fa_nand44")
@@ -399,3 +453,6 @@ CANDIDATES = [inv_cmos, nand2_cmos, nor2_cmos, and2_cmos, or2_cmos,
               xor_cmos12, xor_nand16, xor_tg8, xor_tgb10, xor_cpl14,
               mux_cmos12, mux_gate20, mux_tg6, mux_tgb10, muxi_cmos10, muxi_tg8, muxi_npt7,
               fa_cmos28, fa_nand44, fa_tga20, fa_tgab24]
+
+# ALU-specific cells: measured with their own step (many inputs), not part of the family sweep
+ALU_CELLS = [fb4_tg20, cs_tg24]

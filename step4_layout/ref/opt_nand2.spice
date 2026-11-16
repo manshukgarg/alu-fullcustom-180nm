@@ -1,7 +1,7 @@
-* LVS reference for opt_nand2: nand2_cmos at k = 1, r = 2.5 (devices as laid out)
+* LVS reference for opt_nand2: nand2_cmos at k = 0.6, r = 3 (devices as laid out)
 .subckt opt_nand2 A B Y vdd gnd
-M0 gnd B x gnd nfet w=2u l=0.2u
-M1 vdd B Y vdd pfet w=2.5u l=0.2u
-M2 x A Y gnd nfet w=2u l=0.2u
-M3 Y A vdd vdd pfet w=2.5u l=0.2u
+M0 gnd B x gnd nfet w=1.2u l=0.2u
+M1 vdd B Y vdd pfet w=1.8u l=0.2u
+M2 x A Y gnd nfet w=1.2u l=0.2u
+M3 Y A vdd vdd pfet w=1.8u l=0.2u
 .ends opt_nand2

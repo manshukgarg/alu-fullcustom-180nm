@@ -1,0 +1,40 @@
+===============================================================================
+STEP 6 SUMMARY  4-bit ALU at transistor level from each cell style (pre-layout)
+===============================================================================
+  gate  gate-level cells of the LTspice cell set (NAND-based), k = 0.4, r = 2
+  conv  conventional static CMOS cells at the reference size (k = 1, r = 2)
+  opt   minimum-PDP cells of Step 3 (step4_layout/library.json)
+  pl    automated-flow library pl018 as laid out, inverting-multiplexer slice
+  fb    function-block slice: FB4 and CS cells per bit, pl018 cells for decoder
+-------------------------------------------------------------------------------
+Ngspice, 1.8 V, 27 C, FO4     gate      conv      opt       pl        fb       
+cells / transistors           60 / 842  60 / 578  69 / 402  66 / 458  28 / 272 
+logic check (2048 vectors)    ok        ok        ok        ok        ok       
+cycles correct                229/229   229/229   229/229   229/229   229/229  
+weak output levels            0         0         0         0         0        
+worst delay (ps)              2925.4    2979.6    2267.5    2310.7    2076.2   
+  full carry ripples (ps)     2736.6    2967.5    2237.4    2278.5    2076.2   
+  random operand changes      2445.5    2691.1    2071.6    2234.0    1994.5   
+mean delay (ps)               1539.5    1461.2    1257.9    1133.3    1050.4   
+energy per operation (fJ)     2039.6    3509.8    1102.1    1312.8    870.6    
+input-driver energy (fJ)      357.1     738.8     528.3     411.5     217.8    
+leakage power (nW)            1.41      2.02      0.81      0.93      0.47     
+energy x delay (fJ ns)        5966.7    10457.9   2499.1    3033.6    1807.5   
+-------------------------------------------------------------------------------
+Against conv                  gate      conv      opt       pl        fb       
+  worst delay                 -2 %      +0 %      -24 %     -22 %     -30 %    
+  energy per operation        -42 %     +0 %      -69 %     -63 %     -75 %    
+  energy x worst delay        -43 %     +0 %      -76 %     -71 %     -83 %    
+  leakage power               -30 %     +0 %      -60 %     -54 %     -76 %    
+-------------------------------------------------------------------------------
+E (fJ)         ADD     SUB     INC     DEC     AND      OR     XOR     NOT
+  gate        2669    3074    1257    2268    1866    2100    1296    1786
+  conv        4722    4047    2592    3944    3784    3432    2672    2886
+  opt         1259    1343     840    1319    1157    1034     810    1055
+  pl          1886    1620    1063    1393    1384    1125     969    1062
+  fb          1034    1054     916    1109     717     646     733     754
+  worst gate  ADD a=1 b=15 -> SUB a=1 b=1, last output z
+  worst conv  INC a=15 b=0 -> SUB a=0 b=0, last output z
+  worst opt   ADD a=1 b=15 -> SUB a=0 b=1, last output n
+  worst pl    ADD a=1 b=15 -> SUB a=0 b=1, last output v
+  worst fb    ADD a=0 b=0 -> SUB a=0 b=0, last output z

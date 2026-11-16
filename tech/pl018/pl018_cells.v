@@ -51,3 +51,14 @@ module pl_fa (A, B, C, S, CO);
     assign S = (A^B^C);
     assign CO = ((A&B)|(A&C)|(B&C));
 endmodule
+module pl_fb4 (A, B, C0, C1, C2, C3, P);
+    input A, B, C0, C1, C2, C3;
+    output P;
+    assign P = ((A&B&C3)|(A&~B&C2)|(~A&B&C1)|(~A&~B&C0));
+endmodule
+module pl_cs (P, A, CI, K, CO, Y);
+    input P, A, CI, K;
+    output CO, Y;
+    assign CO = ((P&CI)|(~P&A));
+    assign Y = ((P&K)|(P&~CI)|(~P&CI&~K));
+endmodule

@@ -97,6 +97,24 @@ PLANS = {
                  G("P", "Pn"), D("S", "S"), G("Pn", "P"), D("C", "C"),
                  G("P", "Pn"), D("CO", "CO"), G("Pn", "P"), D("A", "A")],
 
+    # function block: the four code lines enter two TG pairs selected by B (nodes u0, u1),
+    # a third TG pair selected by A joins them at x; inverters for An, Bn and the output
+    "fb4_tg20": [D("C1", "C1"), G("B", "Bn"), D("u0", "u0"), G("Bn", "B"), D("C0", "C0"), BRK,
+                 D("C2", "C2"), G("Bn", "B"), D("u1", "u1"), G("B", "Bn"), D("C3", "C3"), BRK,
+                 D("u0", "u0"), G("An", "A"), D("x", "x"), G("A", "An"), D("u1", "u1"), BRK,
+                 D("An", "An"), G("A"), D("gnd", "vdd"), G("B"), D("Bn", "Bn"), BRK,
+                 D("Pn", "Pn"), G("x"), D("gnd", "vdd"), G("Pn"), D("P", "P")],
+
+    # carry-sum cell: one strip holds the carry TG pair (A, cx, CI), the XNOR TG pair
+    # (CI, xn, CIn), the CI and P inverters and the result TG pair (Pn, yn, xn);
+    # the K and cx inverters and the two output inverters follow
+    "cs_tg24": [D("A", "A"), G("Pn", "P"), D("cx", "cx"), G("P", "Pn"), D("CI", "CI"),
+                G("P", "Pn"), D("xn", "xn"), G("Pn", "P"), D("CIn", "CIn"), G("CI"),
+                D("gnd", "vdd"), G("P"), D("Pn", "Pn"), G("K", "Kn"), D("yn", "yn"),
+                G("Kn", "K"), D("xn", "xn"), BRK,
+                D("Kn", "Kn"), G("K"), D("gnd", "vdd"), G("cx"), D("COn", "COn"), BRK,
+                D("CO", "CO"), G("COn"), D("gnd", "vdd"), G("yn"), D("Y", "Y")],
+
     # mirror adder: carry network folded in two, sum network folded in three (taller channel),
     # output inverters joined to the carry strip through the shared rails
     "fa_cmos28": [D("CO", "CO"), G("COn"), D("gnd", "vdd"), BRK,

@@ -17,6 +17,13 @@ M10 Y A p2 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
 M11 p2 Bn vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
 .ends xor_cmos12
 
+.subckt buf_cmos A Y vdd gnd
+M0 Yn A gnd gnd nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Yn A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 Y Yn gnd gnd nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Y Yn vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+.ends buf_cmos
+
 .subckt mux_cmos12 A B S Y vdd gnd
 M0 Sn S gnd gnd nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
 M1 Sn S vdd vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
@@ -95,55 +102,60 @@ M3 x B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
 
 .subckt alu4 a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd gnd
 Xu_xor21 s_1 s_0 cy_0 vdd gnd xor_cmos12
-Xu_xor22 b_0 s_0 bxs_0 vdd gnd xor_cmos12
-Xu_mux21 bxs_0 s_0 s_1 bx_0 vdd gnd mux_cmos12
+Xu_buf1 s_2 s2b vdd gnd buf_cmos
+Xu_buf2 s_0 s0b_0 vdd gnd buf_cmos
+Xu_buf3 s_0 s0b_1 vdd gnd buf_cmos
+Xu_buf4 s_1 s1b_0 vdd gnd buf_cmos
+Xu_buf5 s_1 s1b_1 vdd gnd buf_cmos
+Xu_xor22 b_0 s0b_0 bxs_0 vdd gnd xor_cmos12
+Xu_mux21 bxs_0 s0b_0 s1b_0 bx_0 vdd gnd mux_cmos12
 Xu_fa1 a_0 bx_0 cy_0 sum_0 cy_1 vdd gnd fa_cmos28
 Xu_and21 a_0 b_0 land_0 vdd gnd and2_cmos
 Xu_or21 a_0 b_0 lor_0 vdd gnd or2_cmos
 Xu_xor23 a_0 b_0 lxor_0 vdd gnd xor_cmos12
 Xu_inv1 a_0 lnot_0 vdd gnd inv_cmos
-Xu_mux22 land_0 lor_0 s_0 m0_0 vdd gnd mux_cmos12
-Xu_mux23 lxor_0 lnot_0 s_0 m1_0 vdd gnd mux_cmos12
-Xu_mux24 m0_0 m1_0 s_1 lg_0 vdd gnd mux_cmos12
-Xu_mux25 sum_0 lg_0 s_2 y_0 vdd gnd mux_cmos12
-Xu_xor24 b_1 s_0 bxs_1 vdd gnd xor_cmos12
-Xu_mux26 bxs_1 s_0 s_1 bx_1 vdd gnd mux_cmos12
+Xu_mux22 land_0 lor_0 s0b_0 m0_0 vdd gnd mux_cmos12
+Xu_mux23 lxor_0 lnot_0 s0b_0 m1_0 vdd gnd mux_cmos12
+Xu_mux24 m0_0 m1_0 s1b_0 lg_0 vdd gnd mux_cmos12
+Xu_mux25 sum_0 lg_0 s2b y_0 vdd gnd mux_cmos12
+Xu_xor24 b_1 s0b_0 bxs_1 vdd gnd xor_cmos12
+Xu_mux26 bxs_1 s0b_0 s1b_0 bx_1 vdd gnd mux_cmos12
 Xu_fa2 a_1 bx_1 cy_1 sum_1 cy_2 vdd gnd fa_cmos28
 Xu_and22 a_1 b_1 land_1 vdd gnd and2_cmos
 Xu_or22 a_1 b_1 lor_1 vdd gnd or2_cmos
 Xu_xor25 a_1 b_1 lxor_1 vdd gnd xor_cmos12
 Xu_inv2 a_1 lnot_1 vdd gnd inv_cmos
-Xu_mux27 land_1 lor_1 s_0 m0_1 vdd gnd mux_cmos12
-Xu_mux28 lxor_1 lnot_1 s_0 m1_1 vdd gnd mux_cmos12
-Xu_mux29 m0_1 m1_1 s_1 lg_1 vdd gnd mux_cmos12
-Xu_mux210 sum_1 lg_1 s_2 y_1 vdd gnd mux_cmos12
-Xu_xor26 b_2 s_0 bxs_2 vdd gnd xor_cmos12
-Xu_mux211 bxs_2 s_0 s_1 bx_2 vdd gnd mux_cmos12
+Xu_mux27 land_1 lor_1 s0b_0 m0_1 vdd gnd mux_cmos12
+Xu_mux28 lxor_1 lnot_1 s0b_0 m1_1 vdd gnd mux_cmos12
+Xu_mux29 m0_1 m1_1 s1b_0 lg_1 vdd gnd mux_cmos12
+Xu_mux210 sum_1 lg_1 s2b y_1 vdd gnd mux_cmos12
+Xu_xor26 b_2 s0b_1 bxs_2 vdd gnd xor_cmos12
+Xu_mux211 bxs_2 s0b_1 s1b_1 bx_2 vdd gnd mux_cmos12
 Xu_fa3 a_2 bx_2 cy_2 sum_2 cy_3 vdd gnd fa_cmos28
 Xu_and23 a_2 b_2 land_2 vdd gnd and2_cmos
 Xu_or23 a_2 b_2 lor_2 vdd gnd or2_cmos
 Xu_xor27 a_2 b_2 lxor_2 vdd gnd xor_cmos12
 Xu_inv3 a_2 lnot_2 vdd gnd inv_cmos
-Xu_mux212 land_2 lor_2 s_0 m0_2 vdd gnd mux_cmos12
-Xu_mux213 lxor_2 lnot_2 s_0 m1_2 vdd gnd mux_cmos12
-Xu_mux214 m0_2 m1_2 s_1 lg_2 vdd gnd mux_cmos12
-Xu_mux215 sum_2 lg_2 s_2 y_2 vdd gnd mux_cmos12
-Xu_xor28 b_3 s_0 bxs_3 vdd gnd xor_cmos12
-Xu_mux216 bxs_3 s_0 s_1 bx_3 vdd gnd mux_cmos12
+Xu_mux212 land_2 lor_2 s0b_1 m0_2 vdd gnd mux_cmos12
+Xu_mux213 lxor_2 lnot_2 s0b_1 m1_2 vdd gnd mux_cmos12
+Xu_mux214 m0_2 m1_2 s1b_1 lg_2 vdd gnd mux_cmos12
+Xu_mux215 sum_2 lg_2 s2b y_2 vdd gnd mux_cmos12
+Xu_xor28 b_3 s0b_1 bxs_3 vdd gnd xor_cmos12
+Xu_mux216 bxs_3 s0b_1 s1b_1 bx_3 vdd gnd mux_cmos12
 Xu_fa4 a_3 bx_3 cy_3 sum_3 cy_4 vdd gnd fa_cmos28
 Xu_and24 a_3 b_3 land_3 vdd gnd and2_cmos
 Xu_or24 a_3 b_3 lor_3 vdd gnd or2_cmos
 Xu_xor29 a_3 b_3 lxor_3 vdd gnd xor_cmos12
 Xu_inv4 a_3 lnot_3 vdd gnd inv_cmos
-Xu_mux217 land_3 lor_3 s_0 m0_3 vdd gnd mux_cmos12
-Xu_mux218 lxor_3 lnot_3 s_0 m1_3 vdd gnd mux_cmos12
-Xu_mux219 m0_3 m1_3 s_1 lg_3 vdd gnd mux_cmos12
-Xu_mux220 sum_3 lg_3 s_2 y_3 vdd gnd mux_cmos12
+Xu_mux217 land_3 lor_3 s0b_1 m0_3 vdd gnd mux_cmos12
+Xu_mux218 lxor_3 lnot_3 s0b_1 m1_3 vdd gnd mux_cmos12
+Xu_mux219 m0_3 m1_3 s1b_1 lg_3 vdd gnd mux_cmos12
+Xu_mux220 sum_3 lg_3 s2b y_3 vdd gnd mux_cmos12
 Xu_inv5 cy_4 cyn vdd gnd inv_cmos
-Xu_nor21 s_2 cyn c vdd gnd nor2_cmos
+Xu_nor21 s2b cyn c vdd gnd nor2_cmos
 Xu_xor210 cy_3 cy_4 vxn_n vdd gnd xor_cmos12
 Xu_inv6 vxn_n vxn vdd gnd inv_cmos
-Xu_nor22 s_2 vxn v vdd gnd nor2_cmos
+Xu_nor22 s2b vxn v vdd gnd nor2_cmos
 Xu_nor23 y_0 y_1 zn_0 vdd gnd nor2_cmos
 Xu_nor24 y_2 y_3 zn_1 vdd gnd nor2_cmos
 Xu_and25 zn_0 zn_1 z vdd gnd and2_cmos

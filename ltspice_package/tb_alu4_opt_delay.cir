@@ -1,0 +1,115 @@
+* tb_alu4_opt_delay.cir  slowest transition of the 4-bit ALU, minimum-PDP cells (transmission-gate XOR, multiplexer, full adder)
+* The transition with the largest settling delay among the 229 transitions of the project
+* test: 18 full-length carry propagations, 24 random operand changes per operation and the
+* changes between them.
+*   before: ADD a=1 b=15     y =  0, flags cvzn = 1010
+*   after:  SUB a=0 b=1      y = 15, flags cvzn = 0001   (inputs change at 5 ns)
+* Data are saved from 5 ns. Measurements:
+*   tin_<input>   time at which the input of the last driver inverter crosses 50 %
+*   t_<output>    time of the last 50 % crossing of an output (glitches included)
+*   e_fJ          energy drawn by the ALU for this transition, in fJ
+*   delay = latest t_<output> - latest tin_<input>
+* Ngspice 46 (project flow): delay 2267.5 ps, last output n, energy 3540 fJ
+.include tsmc018.lib
+.include cells_opt.lib
+.include alu4_opt.lib
+.options plotwinsize=0
+.subckt inv_x1 A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends inv_x1
+Vdut vdd_dut 0 1.8
+Vdrv vdrv 0 1.8
+Vld vld 0 1.8
+Vs_a_0 s_a_0 0 PWL(0n 1.8 5n 1.8 5.05n 0)
+Xd1_a_0 s_a_0 d_a_0 vdrv 0 inv_x1
+Xd2_a_0 d_a_0 a_0 vdrv 0 inv_x1
+Vs_a_1 s_a_1 0 PWL(0n 0)
+Xd1_a_1 s_a_1 d_a_1 vdrv 0 inv_x1
+Xd2_a_1 d_a_1 a_1 vdrv 0 inv_x1
+Vs_a_2 s_a_2 0 PWL(0n 0)
+Xd1_a_2 s_a_2 d_a_2 vdrv 0 inv_x1
+Xd2_a_2 d_a_2 a_2 vdrv 0 inv_x1
+Vs_a_3 s_a_3 0 PWL(0n 0)
+Xd1_a_3 s_a_3 d_a_3 vdrv 0 inv_x1
+Xd2_a_3 d_a_3 a_3 vdrv 0 inv_x1
+Vs_b_0 s_b_0 0 PWL(0n 1.8)
+Xd1_b_0 s_b_0 d_b_0 vdrv 0 inv_x1
+Xd2_b_0 d_b_0 b_0 vdrv 0 inv_x1
+Vs_b_1 s_b_1 0 PWL(0n 1.8 5n 1.8 5.05n 0)
+Xd1_b_1 s_b_1 d_b_1 vdrv 0 inv_x1
+Xd2_b_1 d_b_1 b_1 vdrv 0 inv_x1
+Vs_b_2 s_b_2 0 PWL(0n 1.8 5n 1.8 5.05n 0)
+Xd1_b_2 s_b_2 d_b_2 vdrv 0 inv_x1
+Xd2_b_2 d_b_2 b_2 vdrv 0 inv_x1
+Vs_b_3 s_b_3 0 PWL(0n 1.8 5n 1.8 5.05n 0)
+Xd1_b_3 s_b_3 d_b_3 vdrv 0 inv_x1
+Xd2_b_3 d_b_3 b_3 vdrv 0 inv_x1
+Vs_s_0 s_s_0 0 PWL(0n 0 5n 0 5.05n 1.8)
+Xd1_s_0 s_s_0 d_s_0 vdrv 0 inv_x1
+Xd2_s_0 d_s_0 s_0 vdrv 0 inv_x1
+Vs_s_1 s_s_1 0 PWL(0n 0)
+Xd1_s_1 s_s_1 d_s_1 vdrv 0 inv_x1
+Xd2_s_1 d_s_1 s_1 vdrv 0 inv_x1
+Vs_s_2 s_s_2 0 PWL(0n 0)
+Xd1_s_2 s_s_2 d_s_2 vdrv 0 inv_x1
+Xd2_s_2 d_s_2 s_2 vdrv 0 inv_x1
+Xalu a_0 a_1 a_2 a_3 b_0 b_1 b_2 b_3 s_0 s_1 s_2 y_0 y_1 y_2 y_3 c v z n vdd_dut 0 alu4_opt
+Xl_y_0_0 y_0 ld_y_0_0 vld 0 inv_x1
+Xl_y_0_1 y_0 ld_y_0_1 vld 0 inv_x1
+Xl_y_0_2 y_0 ld_y_0_2 vld 0 inv_x1
+Xl_y_0_3 y_0 ld_y_0_3 vld 0 inv_x1
+Xl_y_1_0 y_1 ld_y_1_0 vld 0 inv_x1
+Xl_y_1_1 y_1 ld_y_1_1 vld 0 inv_x1
+Xl_y_1_2 y_1 ld_y_1_2 vld 0 inv_x1
+Xl_y_1_3 y_1 ld_y_1_3 vld 0 inv_x1
+Xl_y_2_0 y_2 ld_y_2_0 vld 0 inv_x1
+Xl_y_2_1 y_2 ld_y_2_1 vld 0 inv_x1
+Xl_y_2_2 y_2 ld_y_2_2 vld 0 inv_x1
+Xl_y_2_3 y_2 ld_y_2_3 vld 0 inv_x1
+Xl_y_3_0 y_3 ld_y_3_0 vld 0 inv_x1
+Xl_y_3_1 y_3 ld_y_3_1 vld 0 inv_x1
+Xl_y_3_2 y_3 ld_y_3_2 vld 0 inv_x1
+Xl_y_3_3 y_3 ld_y_3_3 vld 0 inv_x1
+Xl_c_0 c ld_c_0 vld 0 inv_x1
+Xl_c_1 c ld_c_1 vld 0 inv_x1
+Xl_c_2 c ld_c_2 vld 0 inv_x1
+Xl_c_3 c ld_c_3 vld 0 inv_x1
+Xl_v_0 v ld_v_0 vld 0 inv_x1
+Xl_v_1 v ld_v_1 vld 0 inv_x1
+Xl_v_2 v ld_v_2 vld 0 inv_x1
+Xl_v_3 v ld_v_3 vld 0 inv_x1
+Xl_z_0 z ld_z_0 vld 0 inv_x1
+Xl_z_1 z ld_z_1 vld 0 inv_x1
+Xl_z_2 z ld_z_2 vld 0 inv_x1
+Xl_z_3 z ld_z_3 vld 0 inv_x1
+Xl_n_0 n ld_n_0 vld 0 inv_x1
+Xl_n_1 n ld_n_1 vld 0 inv_x1
+Xl_n_2 n ld_n_2 vld 0 inv_x1
+Xl_n_3 n ld_n_3 vld 0 inv_x1
+* decimal words for plotting and measuring: operands, operation, result, flags (8c+4v+2z+n)
+Baw aw 0 V=(1*V(a_0)+2*V(a_1)+4*V(a_2)+8*V(a_3))/1.8
+Bbw bw 0 V=(1*V(b_0)+2*V(b_1)+4*V(b_2)+8*V(b_3))/1.8
+Bsw sw 0 V=(V(s_0)+2*V(s_1)+4*V(s_2))/1.8
+Byw yw 0 V=(1*V(y_0)+2*V(y_1)+4*V(y_2)+8*V(y_3))/1.8
+Bfw fw 0 V=(8*V(c)+4*V(v)+2*V(z)+V(n))/1.8
+Befj efj 0 V=-I(Vdut)*9e+06
+.save V(aw) V(bw) V(sw) V(yw) V(fw) V(a_0) V(a_1) V(a_2) V(a_3) V(b_0) V(b_1) V(b_2) V(b_3) V(s_0)
++ V(s_1) V(s_2) V(y_0) V(y_1) V(y_2) V(y_3) V(c) V(v) V(z) V(n) V(d_a_0) V(d_b_1) V(d_b_2) V(d_b_3)
++ V(d_s_0) V(efj) I(Vdut)
+.tran 10p 10n 5n 20p
+.meas tran tin_a_0 WHEN V(d_a_0)=0.9 RISE=1
+.meas tran tin_b_1 WHEN V(d_b_1)=0.9 RISE=1
+.meas tran tin_b_2 WHEN V(d_b_2)=0.9 RISE=1
+.meas tran tin_b_3 WHEN V(d_b_3)=0.9 RISE=1
+.meas tran tin_s_0 WHEN V(d_s_0)=0.9 FALL=1
+.meas tran t_y_0 WHEN V(y_0)=0.9 CROSS=LAST
+.meas tran t_y_1 WHEN V(y_1)=0.9 CROSS=LAST
+.meas tran t_y_2 WHEN V(y_2)=0.9 CROSS=LAST
+.meas tran t_y_3 WHEN V(y_3)=0.9 CROSS=LAST
+.meas tran t_c WHEN V(c)=0.9 CROSS=LAST
+.meas tran t_v WHEN V(v)=0.9 CROSS=LAST
+.meas tran t_z WHEN V(z)=0.9 CROSS=LAST
+.meas tran t_n WHEN V(n)=0.9 CROSS=LAST
+.meas tran e_fJ AVG V(efj)
+.end

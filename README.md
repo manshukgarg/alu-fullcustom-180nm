@@ -1,11 +1,17 @@
 # Design and Performance Analysis of a Full-Custom ALU Using Optimized Standard Cells
 
-Full-custom design of a 4-bit bit-sliced ALU in 180 nm CMOS, built from a custom
-standard-cell library whose cells are optimized for minimum power-delay product.
-The design is compared after layout with a conventional static-CMOS implementation
-and with automated standard-cell implementations of the same ALU: one with the OSU
-0.18 um cells and one with the project's own cell library. (The project
-started as an 8-bit ALU; it was reduced to 4 bits after the review of 31 October 2026.)
+Design of a 4-bit bit-sliced ALU in 180 nm CMOS from a custom standard-cell library
+whose cells are optimized for minimum power-delay product, and of two cells made for
+this ALU (a function block and a carry-sum cell) that together form one ALU bit with
+44 transistors. The ALU built from them is compared with the same ALU built from
+conventional static-CMOS cells, from the optimized cells in the conventional slice,
+and with automated standard-cell implementations: one with the OSU 0.18 um cells and
+one with the project's own cell library. (The project started as an 8-bit ALU; it
+was reduced to 4 bits after the review of 31 October 2026.)
+
+Result before layout (Ngspice 46, 1.8 V, 27 C, same test for every design): the
+proposed ALU has 272 transistors against 578 for the conventional design, with 30 %
+less worst-case delay, 75 % less energy per operation and 76 % less leakage.
 
 ## Technology and tools
 
@@ -16,7 +22,7 @@ started as an 8-bit ALU; it was reduced to 4 bits after the review of 31 October
 | Layout rules | MOSIS SCMOS SCN6M_SUBM, lambda = 0.1 um (OSU018 kit in Qflow) |
 | Layout, DRC, extraction | Magic 8.3 |
 | LVS | Netgen |
-| Simulation | Ngspice 46 (circuits), iverilog (logic) |
+| Simulation | Ngspice 46 (circuits), iverilog (logic); LTspice decks for the cell designers |
 | Automated implementation | Yosys, Qflow, OpenSTA with the OSU 0.18 um standard cells |
 
 All tools run in the NIELIT ChipCraft Virtual Lab; the OSU018 kit is read from
@@ -36,6 +42,11 @@ Current progress and the plan are in [STATUS.md](STATUS.md).
 | `sim/alutb.py` | Transistor-level ALU testbench used for every design (Ngspice) |
 | `sim/gen_alu.py` | Generator of the structural ALU from a cell set (SPICE and Verilog), with exhaustive checks |
 | `sim/switchsim.py` | Switch-level logic check of transistor netlists (no simulator needed) |
+| `sim/cellbench.py` | Cell measurement from the waveforms, for cells with many inputs |
+| `sim/make_ltspice_package.py` | Writes and checks `ltspice_package/`: cells, ALUs and test decks that run in LTspice |
+| `ltspice_package/` | The package handed to the LTspice designers (models, cell files, ALU netlists, 53 decks, expected results, guide) |
+| `results/` | Stored results of the simulation steps |
+| `docs/alu_cells.md` | The two ALU-specific cells: function, circuits, sizing, comparison, layout, prior art |
 | `layout/` | Cell layout generator: Magic writer, cell plans, placer and router, rule checker, extractor |
 | `mag/` | Generated Magic layouts |
 | `step1_flowcheck/` | End-to-end flow check on one inverter |
@@ -44,7 +55,7 @@ Current progress and the plan are in [STATUS.md](STATUS.md).
 | `step5_library/` | Project cell library pl018 (generator, characterization) and the automated implementation D4 with it |
 | `tech/pl018/` | Qflow technology of the project library: LEF, Liberty (written in the lab), SPICE, Verilog, setup files |
 | `docs/ltspice_cells.md` | Conventions for cells designed in LTspice |
-| `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates), their switch-level check, Ngspice comparison and sizing sweep |
+| `step3_cells/` | Candidate cell circuits (XOR2, MUX2, FA, gates) and the two ALU-specific cells, their switch-level check, Ngspice comparison and sizing sweeps |
 | `step4_layout/` | Layouts of the optimized and conventional libraries: Magic DRC, Netgen LVS, post-layout simulation |
 | `docs/figures/` | Layout views for the report and slides |
 
@@ -93,6 +104,8 @@ and the library pl018 takes the minimum-PDP restoring candidate of every functio
 | MUX2 | `pl_mux2` | transmission gates + two inverters |
 | MUX2I | `pl_mux2i` | transmission gates + output inverter |
 | FA | `pl_fa` | transmission-gate adder, buffered outputs |
+| FB4 | `pl_fb4` | function block: tree of six transmission gates, restored output (ALU-specific) |
+| CS | `pl_cs` | carry multiplexer and sum/result selection with transmission gates, restored outputs (ALU-specific) |
 | BUF | `pl_buf` | two inverters (X1, X2), output buffering by Qflow |
 | fill | `pl_fill` | rails and well only |
 
@@ -105,29 +118,61 @@ cell is checked (Magic DRC, Netgen LVS) and characterized with Ngspice from its
 extracted layout into a 5 x 5 NLDM Liberty file (delay and transition against output
 load and input transition, input capacitance, leakage), in the conventions of the
 OSU018 library. The same three descriptions then go through the same flow as D3, and
-the summary compares D4 with D3 after layout.
+the summary compares D4 with D3 after layout. A fourth design, `fb`, is the proposed
+function-block ALU as a hand-mapped netlist (`rtl/alu4_fb_pl018.v`, 27 cells).
 
 ![pl_xor2, generated layout; + marks the routing-track crossings](docs/figures/cells/pl_xor2.png)
 
-## The ALU from each cell style (Step 6)
+## ALU-specific cells (Step 3c)
 
-To compare cell styles at ALU level, `sim/gen_alu.py` composes the same 4-bit ALU from
-four cell sets and writes one transistor-level netlist each
-(`step6_alu_schematic/netlists/`):
+Two cells were designed for the bit slice of this ALU (`docs/alu_cells.md`):
 
-| Netlist | Cells | Transistors |
-| --- | --- | --- |
-| `alu4_gate.sp` | gate-level cells: XOR from four NAND2, multiplexer from AND/OR gates, full adder from eleven NAND2 (k = 0.4, r = 2) | 822 |
-| `alu4_conv.sp` | conventional static CMOS: 12-transistor XOR and multiplexer, 28-transistor mirror adder (k = 1, r = 2) | 558 |
-| `alu4_opt.sp` | minimum-PDP cells of Step 3, unbuffered transmission-gate cells included | 382 |
-| `alu4_pl.sp` | cells of the library pl018 as laid out, slice with inverting multiplexers | 436 |
+* FB4 (20 transistors): P = C0, C1, C2 or C3 for (A, B) = 00, 01, 10, 11. Four code
+  lines, common to all bits and set by a small decoder from the operation select, make
+  P any function of the operand bits: the propagate signal for ADD, SUB, INC and DEC,
+  the result for AND, OR, XOR and NOT.
+* CS (24 transistors): CO = CI if P = 1, else A; Y = P if K = 1, else P xor CI. When
+  the propagate signal is 0 the carry out equals the operand bit, so no generate
+  signal is needed; K = s2 selects the logic result or the sum.
 
-The first three use the slice of `rtl/alu4_slice.v`; the last is the hand-mapped
-netlist of design D4. Every netlist is read back and evaluated at switch level
+Both are transmission-gate circuits with restored outputs, so they are ordinary
+library cells. They are sized like every other cell (minimum PDP at FO4) and laid
+out by the cell generator as `pl_fb4` and `pl_cs`. The function block follows the
+OM-2 data path of Mead and Conway (1980) and the carry multiplexer the carry logic
+of FPGA logic cells; the project's part is their combination into two restoring
+standard cells, their sizing and layout, and the measured comparison.
+
+![pl_fb4, generated layout](docs/figures/cells/pl_fb4.png)
+
+## The ALU from each cell set (Step 6)
+
+`sim/gen_alu.py` composes the 4-bit ALU from five cell sets and writes one
+transistor-level netlist each (`step6_alu_schematic/netlists/`). Results of
+`sim/alutb.py` before layout (229 transitions, all correct in every design):
+
+| Netlist | Cells | Transistors | Worst delay (ps) | Energy per operation (fJ) | Leakage (nW) |
+| --- | --- | --- | --- | --- | --- |
+| `alu4_gate.sp` | gate-level cells: XOR from four NAND2, multiplexer from AND/OR gates, full adder from eleven NAND2 (k = 0.4, r = 2) | 842 | 2925.4 | 2039.6 | 1.41 |
+| `alu4_conv.sp` | conventional static CMOS: 12-transistor XOR and multiplexer, 28-transistor mirror adder (k = 1, r = 2) | 578 | 2979.6 | 3509.8 | 2.02 |
+| `alu4_opt.sp` | minimum-PDP cells of Step 3, unbuffered transmission-gate cells included | 402 | 2267.5 | 1102.1 | 0.81 |
+| `alu4_pl.sp` | cells of the library pl018 as laid out, slice with inverting multiplexers | 458 | 2310.7 | 1312.8 | 0.93 |
+| `alu4_fb.sp` | proposed: one FB4 and one CS cell per bit, pl018 cells for decoder and flags | 272 | 2076.2 | 870.6 | 0.47 |
+
+The first three use the slice of `rtl/alu4_slice.v`, the fourth the hand-mapped
+netlist of design D4, the fifth the function-block slice. The select lines are
+buffered inside each ALU. Every netlist is read back and evaluated at switch level
 (`sim/switchsim.py`: an NMOS conducts when its gate is 1, a PMOS when it is 0, all
 2048 vectors at once) and must reproduce the reference model before it is committed.
-The lab step simulates the four netlists with the ALU testbench below and reports
-delay, energy per operation and leakage against the conventional design.
+
+## LTspice package
+
+`sim/make_ltspice_package.py` writes `ltspice_package/`: the model file with
+LEVEL = 8 (BSIM3v3 in LTspice and Ngspice), the five cell sets, the five ALUs, a test
+deck for each of the 38 cells and three decks per ALU (32-vector function test with
+the results as decimal words, the slowest transition, energy per operation), the
+expected values and a guide. The decks contain only statements common to LTspice and
+Ngspice; the script runs every deck with Ngspice and compares its measurements with
+the project flow. The decks have not been run in LTspice.
 
 ## ALU-level measurement (`sim/alutb.py`)
 
@@ -144,7 +189,9 @@ delay, energy per operation and leakage against the conventional design.
   times VDD; the energy of the input drivers is reported separately. Energy per
   operation is the mean over the random transitions of that operation.
 * Output levels are checked at the end of every cycle (logic value and swing within
-  10 % of the rails). Leakage is the mean of 16 DC operating points.
+  10 % of the rails). Leakage is the mean of 16 DC operating points, each from two
+  runs at gmin 1e-12 and 1e-13 S extrapolated to gmin = 0, because the simulator's
+  gmin adds a current of the order of the leakage itself.
 * The netlist may be a Magic extraction (flat or hierarchical) or a cell-level netlist
   with its cell library: the top subcircuit is unwrapped, bus names are converted,
   and supply, substrate and well nodes are joined to the measured supplies. Cells
@@ -168,7 +215,10 @@ so every input transition occurs once. The worst delay over all transitions is
 measured from the input of the last driver inverter, so the load a cell places on
 its driver counts; power includes the drivers. Each candidate is simulated at 8
 width scales (k = 0.3 to 2) and 5 P/N ratios (r = 1 to 3); the size with minimum
-power-delay product, full output swing and correct logic is selected.
+power-delay product, full output swing and correct logic is selected. The two
+ALU-specific cells have six and four inputs; they are measured with every change of
+one input in every state of the other inputs, evaluated from the waveforms
+(`sim/cellbench.py`, `step3_cells/run_alu_cells.py`).
 
 ## Cell layout generation (Step 4)
 
@@ -200,9 +250,10 @@ bash step1_flowcheck/run.sh        # inverter flow check
 bash step2_rtl_baseline/run.sh     # automated implementation D3, three designs (15-25 min)
 bash step3_cells/run.sh            # candidate cells at reference size
 bash step3_cells/run_sweep.sh      # sizing sweep, selects the optimized library
+bash step3_cells/run_alu_cells.sh  # the two ALU-specific cells: sizing and comparison
 bash step4_layout/run.sh           # DRC, LVS and post-layout simulation of both libraries
-bash step5_library/run.sh          # project library pl018 and automated implementation D4 (20-30 min)
-bash step6_alu_schematic/run.sh    # the ALU from each cell style at transistor level (5-10 min)
+bash step5_library/run.sh          # project library pl018, D4 and the proposed ALU (30-40 min)
+bash step6_alu_schematic/run.sh    # the ALU from each cell set at transistor level (10 min)
 python3 step3_cells/check_netlists.py   # switch-level check of every cell netlist (seconds)
 ```
 
@@ -224,7 +275,8 @@ klayout step2_rtl_baseline/qflow_slice/layout/alu4_full.gds              # route
 | --- | --- | --- |
 | 1 | Inverter flow check | DRC clean, LVS match, post-layout delay +6.9 % over schematic |
 | 2 | Automated implementation D3 | 8-bit version (30 Oct): 524,288 vectors pass, 136 cells, 4090 um2, 1.59 ns, DRC and LVS clean; 4-bit flow with post-layout ALU simulation ready for the lab |
-| 3 | Cell topology comparison and sizing | TG styles lowest PDP; 21 candidates, all correct at switch level; sizing sweep rerun pending |
-| 4 | Layouts of both libraries | 13 of 14 cells generated (conventional full adder outstanding), rule check and connectivity clean; lab verification pending |
-| 5 | Project library pl018 and D4 | 11 cells generated (grid mode), rule check and connectivity clean; characterization and flow ready for the lab |
-| 6 | The ALU from each cell style, transistor level | four netlists generated, correct on all 2048 vectors at switch level; simulation ready for the lab |
+| 3 | Cell topology comparison and sizing | TG styles lowest PDP; 21 candidates sized (16 Nov, Ngspice 46 outside the lab): XOR2 -53 %, MUX2 -65 %, FA -60 % PDP against static CMOS |
+| 3c | ALU-specific cells FB4 and CS | sized; PDP -12 % and -18 % against the same functions from library cells, -73 % and -64 % against static CMOS |
+| 4 | Layouts of both libraries | 13 of 14 cells generated with the final sizes (conventional full adder outstanding), rule check and connectivity clean; lab verification pending |
+| 5 | Project library pl018, D4 and the proposed ALU | 12 cells and filler generated (grid mode), rule check and connectivity clean; characterization and flow for four designs ready for the lab |
+| 6 | The ALU from each cell set, transistor level | five netlists correct on all 2048 vectors and simulated: proposed ALU 272 T, 2076 ps, 871 fJ per operation against 578 T, 2980 ps, 3510 fJ conventional |

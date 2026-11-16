@@ -32,9 +32,11 @@ def tests(name):
     return {"tests": int(m.group(1)), "errors": int(m.group(2))} if m else None
 
 
-def fmt_tests(r):
+def fmt_tests(r, short=False):
     if r is None:
         return "no result"
+    if short:
+        return "all %d" % r["tests"] if not r["errors"] else "%d fail" % r["errors"]
     return "%d/%d pass" % (r["tests"] - r["errors"], r["tests"])
 
 
@@ -145,13 +147,19 @@ def is_ok(c):
     return c.get("status") == "ok"
 
 
+def flow_row(n):
+    """Row format of the flow tables: label and one column per design, at most 79 columns."""
+    return ("%-33s" + " %-14s" * n) if n <= 3 else ("%-30s" + " %-11s" * n)
+
+
 def print_flow(res, designs, titles):
     """Synthesis and layout rows, one column per design."""
-    row = "%-33s" + " %-14s" * len(designs)
+    row = flow_row(len(designs))
     cols = [res[d] for d in designs]
     print(row % (("",) + tuple(titles)))
-    print(row % (("Netlist simulation, exhaustive",) + tuple(fmt_tests(r["rtl"]) for r in cols)))
-    print(row % (("Gate-level simulation",) + tuple(fmt_tests(r["gate"]) for r in cols)))
+    short = len(designs) > 3
+    print(row % (("Netlist simulation, exhaustive",) + tuple(fmt_tests(r["rtl"], short) for r in cols)))
+    print(row % (("Gate-level simulation",) + tuple(fmt_tests(r["gate"], short) for r in cols)))
     print(row % (("Yosys: cells, area (um2)",) + tuple(
         "%s, %s" % (f(r["yosys"]["cells"], "%d"), f(r["yosys"]["area_um2"])) for r in cols)))
     print(row % (("OpenSTA worst delay (ns)",) + tuple(f(r["sta"]["delay_ns"], "%.3f") for r in cols)))
@@ -173,22 +181,35 @@ def print_sim(res, designs, titles):
     print("Ngspice, %s V, %s C, FO4 loads: %s transitions, %s full carry ripples"
           % (ref.get("vdd", "1.8"), f(ref.get("temp"), "%g"), ref.get("transitions", "n/a"),
              ref.get("critical_transitions", "n/a")))
-    row = "%-24s" + " %8s" * (2 * len(designs))
+    wide = len(designs) <= 3
+    row = ("%-24s" + " %8s" * (2 * len(designs))) if wide else ("%-22s" + " %6s" * (2 * len(designs)))
     heads = []
     for t in titles:
-        heads += ["%s pre" % t[:3], "%s post" % t[:3]]
-    print(row % (("",) + tuple(heads)))
+        heads += ["%s pre" % t[:3], "%s post" % t[:3]] if wide else [t[:5], "post"]
+    print(row % (("" if wide else "before | after layout",) + tuple(heads)))
     cols = [res[d][k] for d in designs for k in ("pre", "post")]
 
     def line(text, fn):
         print(row % ((text,) + tuple(fn(c) if is_ok(c) else "-" for c in cols)))
-    line("cycles correct", lambda c: "%d/%d" % (c["transitions"] - c["wrong_cycles"], c["transitions"]))
-    line("worst delay (ps)", lambda c: f(c.get("t_max_ps")))
-    line("mean delay (ps)", lambda c: f(c.get("t_avg_ps")))
-    line("energy per op (fJ)", lambda c: f(c.get("e_avg_fJ")))
-    line("driver energy (fJ)", lambda c: f(c.get("e_drv_avg_fJ")))
-    line("leakage power (nW)", lambda c: f(c.get("p_leak_nW"), "%.2f"))
-    line("energy x delay (fJ ns)", lambda c: f(c.get("edp_fJns")))
+
+    def num(x, fmt="%.1f"):
+        """A value in at most six characters in the narrow table."""
+        if x is None:
+            return "n/a"
+        return fmt % x if wide or len(fmt % x) <= 6 else "%.0f" % x
+
+    def cycles(c):
+        good = c["transitions"] - c["wrong_cycles"]
+        if wide:
+            return "%d/%d" % (good, c["transitions"])
+        return "all" if not c["wrong_cycles"] else "%d bad" % c["wrong_cycles"]
+    line("cycles correct", cycles)
+    line("worst delay (ps)", lambda c: num(c.get("t_max_ps")))
+    line("mean delay (ps)", lambda c: num(c.get("t_avg_ps")))
+    line("energy per op (fJ)", lambda c: num(c.get("e_avg_fJ")))
+    line("driver energy (fJ)", lambda c: num(c.get("e_drv_avg_fJ")))
+    line("leakage power (nW)", lambda c: num(c.get("p_leak_nW"), "%.2f"))
+    line("energy x delay (fJ ns)", lambda c: num(c.get("edp_fJns")))
     for d in designs:
         pre, post = res[d]["pre"], res[d]["post"]
         if is_ok(pre) and is_ok(post) and pre.get("t_max_ps") and pre.get("e_avg_fJ"):

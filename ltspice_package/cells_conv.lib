@@ -1,0 +1,129 @@
+* cells_conv.lib
+* Conventional static CMOS cells at the reference size (inverter Wn 1.0 / Wp 2.0 um).
+* 180 nm (TSMC 0.18 um BSIM3 models in tsmc018.lib, devices nfet and pfet), L = 0.2 um.
+* Pin order of every cell: inputs, outputs, vdd, vss.
+*
+* cell       T    function / circuit
+* conv_inv   2    Y = not A
+*                 static CMOS; width scale k = 1, P/N ratio r = 2
+* conv_buf   4    Y = A
+*                 static CMOS, two inverters; width scale k = 1, P/N ratio r = 2
+* conv_nand2 4    Y = not (A and B)
+*                 static CMOS; width scale k = 1, P/N ratio r = 2
+* conv_nor2  4    Y = not (A or B)
+*                 static CMOS; width scale k = 1, P/N ratio r = 2
+* conv_and2  6    Y = A and B
+*                 static CMOS, NAND2 + inverter; width scale k = 1, P/N ratio r = 2
+* conv_or2   6    Y = A or B
+*                 static CMOS, NOR2 + inverter; width scale k = 1, P/N ratio r = 2
+* conv_xor2  12   Y = A xor B
+*                 static CMOS, input inverters; width scale k = 1, P/N ratio r = 2
+* conv_mux2  12   Y = B if S = 1, else A
+*                 static CMOS, AOI22 + inverter; width scale k = 1, P/N ratio r = 2
+* conv_fa    28   S = A xor B xor C, CO = carry of A + B + C
+*                 mirror adder (static CMOS); width scale k = 1, P/N ratio r = 2
+
+.subckt conv_inv A Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_inv
+
+.subckt conv_buf A Y vdd vss
+M0 Yn A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Yn A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 Y Yn vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Y Yn vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+.ends conv_buf
+
+.subckt conv_nand2 A B Y vdd vss
+M0 Y A x vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M1 x B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 Y A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Y B vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_nand2
+
+.subckt conv_nor2 A B Y vdd vss
+M0 Y A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Y B vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M2 Y A x vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M3 x B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+.ends conv_nor2
+
+.subckt conv_and2 A B Y vdd vss
+M0 Yn A x vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M1 x B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 Yn A vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 Yn B vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M4 Y Yn vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M5 Y Yn vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_and2
+
+.subckt conv_or2 A B Y vdd vss
+M0 Yn A vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M1 Yn B vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M2 Yn A x vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M3 x B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M4 Y Yn vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M5 Y Yn vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_or2
+
+.subckt conv_xor2 A B Y vdd vss
+M0 An A vss vss nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M1 An A vdd vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M2 Bn B vss vss nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M3 Bn B vdd vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M4 Y A n1 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M5 n1 B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M6 Y An n2 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M7 n2 Bn vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M8 Y An p1 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M9 p1 B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M10 Y A p2 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M11 p2 Bn vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+.ends conv_xor2
+
+.subckt conv_mux2 A B S Y vdd vss
+M0 Sn S vss vss nfet w=0.5u l=0.2u ad=0.25p as=0.25p pd=2u ps=2u
+M1 Sn S vdd vdd pfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M2 Yb A n1 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 n1 Sn vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M4 Yb B n2 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M5 n2 S vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M6 Yb A p1 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M7 Yb Sn p1 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M8 p1 B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M9 p1 S vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M10 Y Yb vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M11 Y Yb vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_mux2
+
+.subckt conv_fa A B C S CO vdd vss
+M0 COn A n1 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M1 n1 B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M2 COn C n2 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M3 n2 A vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M4 n2 B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M5 COn A p1 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M6 p1 B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M7 COn C p2 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M8 p2 A vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M9 p2 B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M10 Sn A n3 vss nfet w=3u l=0.2u ad=1.5p as=1.5p pd=7u ps=7u
+M11 n3 B n4 vss nfet w=3u l=0.2u ad=1.5p as=1.5p pd=7u ps=7u
+M12 n4 C vss vss nfet w=3u l=0.2u ad=1.5p as=1.5p pd=7u ps=7u
+M13 Sn COn n5 vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M14 n5 A vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M15 n5 B vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M16 n5 C vss vss nfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M17 Sn A p3 vdd pfet w=6u l=0.2u ad=3p as=3p pd=13u ps=13u
+M18 p3 B p4 vdd pfet w=6u l=0.2u ad=3p as=3p pd=13u ps=13u
+M19 p4 C vdd vdd pfet w=6u l=0.2u ad=3p as=3p pd=13u ps=13u
+M20 Sn COn p5 vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M21 p5 A vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M22 p5 B vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M23 p5 C vdd vdd pfet w=4u l=0.2u ad=2p as=2p pd=9u ps=9u
+M24 CO COn vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M25 CO COn vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+M26 S Sn vss vss nfet w=1u l=0.2u ad=0.5p as=0.5p pd=3u ps=3u
+M27 S Sn vdd vdd pfet w=2u l=0.2u ad=1p as=1p pd=5u ps=5u
+.ends conv_fa

@@ -1,0 +1,19 @@
+{
+ "note": "Sizes of the ALU-specific cells: minimum PDP of Step 3c (step3_cells/run_alu_cells.py). Read by sim/gen_alu.py.",
+ "cells": {
+  "FB4": {
+   "cell": "fb4_tg20",
+   "k": 0.4,
+   "r": 2.5,
+   "t_max_ps": 450.2,
+   "pdp_fJ": 18.95
+  },
+  "CS": {
+   "cell": "cs_tg24",
+   "k": 0.8,
+   "r": 1.5,
+   "t_max_ps": 458.6,
+   "pdp_fJ": 33.64
+  }
+ }
+}
