@@ -95,6 +95,11 @@ for the paper and should reproduce them.
 Proposed against conventional: transistors -53 %, delay -30 %, energy -75 %, leakage -76 %,
 energy x delay -83 %. Proposed against opt: transistors -32 %, delay -8 %, energy -21 %.
 
+Lab run of Step 6 (ChipCraft, 16 November): all five designs 229/229 correct; energy per
+operation and leakage identical to the table; worst delays 2925.4, 2979.3, 2270.8, 2310.4 and
+2076.2 ps (gate, conv, opt, pl, fb), within 0.15 % of the table. The lab values are the ones
+to quote in the paper.
+
 Sizing sweep (Step 3b, 21 candidates x 40 sizes), minimum-PDP size of every function:
 
 | Function | Selected cell | k | r | tmax (ps) | PDP (fJ) | Static CMOS at k 1, r 2 |
@@ -165,7 +170,7 @@ numpy) and committed; the lab verifies them.
 | 3c | ALU-specific cells FB4 and CS: sizing and comparison with composed library cells (`step3_cells/run_alu_cells.sh`) | done outside the lab (16 Nov); lab run for the record | FB4 k 0.4, r 2.5; CS k 0.8, r 1.5 |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated, optimized cells regenerated with the final sizes (16 Nov) | conventional full adder outstanding; `opt_fa` is laid out on the placement grid (the free-width placement does not route at k 0.3); lab verification pending |
 | 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | scripts ready (16 Nov) | 12 cells and the filler generated with the final sizes, clean in the generator's checks; four designs (`beh`, `slice`, `map`, `fb`); characterization of `pl_fb4` and `pl_cs` tested with Ngspice 46; lab run of `step5_library/run.sh` next |
-| 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done outside the lab (16 Nov); lab run for the record | table above |
+| 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | after the lab runs of Steps 2 and 5 |
 | 8 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
