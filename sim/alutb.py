@@ -231,7 +231,10 @@ def spice_value(text):
 
 def sanitize(line):
     line = line.replace("\\", "")
-    line = re.sub(r"(?<=\s)\$", "_", line)       # "$SUB": Ngspice may read " $" as a comment
+    # " $ text" is an end-of-line comment (Magic marks unconnected nodes "$ **FLOATING");
+    # a name that starts with $ ("$SUB") would be read as one, so its $ becomes _
+    line = re.sub(r"\s\$(\s.*)?$", "", line)
+    line = re.sub(r"(?<=\s)\$", "_", line)
     line = re.sub(r"\[(\d+)\]", r"_\1", line)
     return re.sub(r"<(\d+)>", r"_\1", line)
 

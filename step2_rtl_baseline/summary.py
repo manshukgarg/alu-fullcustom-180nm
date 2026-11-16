@@ -90,9 +90,17 @@ def layout(d):
     route = [l.split("Final:", 1)[1].strip() for l in read(os.path.join(q, "log", "route.log")).splitlines()
              if "Final:" in l]
     res["route"] = route[-1] if route else "n/a"
-    lvs = [l.strip() for l in read(os.path.join(q, "log", "lvs.log")).splitlines()
-           if re.search(r"circuits match|netlists match|do not match|mismatch|final result", l, re.I)]
-    res["lvs"] = lvs[-1] if lvs else "n/a"
+    # Qflow counts the LVS errors itself ("Total errors = N"; its message for a clean
+    # run reads "... no net, device, pin, or property mismatches"); Netgen's own result
+    # line is the fallback
+    log = read(os.path.join(q, "log", "lvs.log"))
+    total = re.findall(r"Total errors = (\d+)", log)
+    if total:
+        res["lvs"] = "match" if int(total[-1]) == 0 else "%s errors" % total[-1]
+    else:
+        lvs = [l.strip() for l in log.splitlines()
+               if re.search(r"circuits match|netlists match|do not match|final result", l, re.I)]
+        res["lvs"] = lvs[-1] if lvs else "n/a"
     mag = read(os.path.join(OUT, "magic_%s.log" % d))
     m = re.search(r"^DRC_ERRORS (\d+)", mag, re.M)
     res["drc_errors"] = int(m.group(1)) if m else None
@@ -100,7 +108,8 @@ def layout(d):
     res["extracted"] = "EXTRACTED" in mag
     res["magic_errors"] = [l.strip() for l in mag.splitlines() if l.startswith("ERROR")][:3]
     res["qflow_errors"] = [l.strip() for l in read(os.path.join(OUT, "qflow_%s.log" % d)).splitlines()
-                           if re.search(r"\berror\b", l, re.I)][:3]
+                           if re.search(r"\berror\b", l, re.I) and "(ignor" not in l
+                           and not re.match(r"\s*Total errors = 0", l)][:3]
     return res
 
 
@@ -118,7 +127,9 @@ def f(x, fmt="%.1f"):
 
 def short_lvs(text):
     low = text.lower()
-    if "do not match" in low or "mismatch" in low:
+    if re.match(r"\d+ errors", low):
+        return text
+    if "do not match" in low or "mismatch" in low or "failed" in low:
         return "MISMATCH"
     if "match" in low:
         return "match"

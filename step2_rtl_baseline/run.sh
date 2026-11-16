@@ -14,6 +14,8 @@
 #   7. Ngspice: every layout and its cell-level netlist (before layout) with the
 #      project's ALU testbench (sim/alutb.py): function, delay, energy per operation, leakage
 # Usage (from the repository root):  bash step2_rtl_baseline/run.sh       (about 15-25 minutes)
+#        bash step2_rtl_baseline/run.sh sim   repeats only the simulation of the layouts of the
+#                                             last run and the summary (a few minutes)
 cd "$(dirname "$0")" || exit 1
 TECH=/apps/vlsi/share/qflow/tech/osu018
 LIB=$TECH/osu018_stdcells.lib
@@ -25,6 +27,16 @@ rtl() {
         *) echo ../rtl/alu4_map_osu018.v ;;
     esac
 }
+if [ "$1" = sim ]; then
+    echo "transistor-level simulation of the layouts of the last run (ngspice), a few minutes"
+    for d in $DESIGNS; do
+        python3 ../sim/alutb.py qflow_$d/layout/alu4_pex.spice --top alu4 --width 4 \
+            --label ${d}_post --out out/sim > out/sim/${d}_post.out 2>&1 &
+    done
+    wait
+    python3 summary.py | tee out/summary.txt
+    exit 0
+fi
 rm -rf out qflow qflow_beh qflow_slice qflow_map
 mkdir -p out/sim
 
