@@ -1,0 +1,262 @@
+{
+ "source": "lab run of step5_library/run.sh, NIELIT ChipCraft, 21 Nov 2026, third run (cells with free metal2 escape columns, commit 35afaeb); transcribed from the summary screenshots",
+ "cells": {
+  "pl_inv": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 2,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.5,
+   "tpd_rise_fall_ps": "84/80",
+   "leak_nW": 0.007
+  },
+  "pl_buf": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "131/136",
+   "leak_nW": 0.028
+  },
+  "pl_nand2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.4,
+   "tpd_rise_fall_ps": "107/90",
+   "leak_nW": 0.01
+  },
+  "pl_nor2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "117/130",
+   "leak_nW": 0.009
+  },
+  "pl_and2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.6,
+   "tpd_rise_fall_ps": "153/180",
+   "leak_nW": 0.015
+  },
+  "pl_or2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.9,
+   "tpd_rise_fall_ps": "178/177",
+   "leak_nW": 0.015
+  },
+  "pl_xor2": {
+   "sites": 7,
+   "area_um2": 44.8,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 13.9,
+   "tpd_rise_fall_ps": "268/264",
+   "leak_nW": 0.016
+  },
+  "pl_mux2": {
+   "sites": 9,
+   "area_um2": 57.6,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 15.0,
+   "tpd_rise_fall_ps": "279/323",
+   "leak_nW": 0.012
+  },
+  "pl_mux2i": {
+   "sites": 6,
+   "area_um2": 38.4,
+   "transistors": 8,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 18.0,
+   "tpd_rise_fall_ps": "225/210",
+   "leak_nW": 0.009
+  },
+  "pl_fa": {
+   "sites": 18,
+   "area_um2": 115.2,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 15.5,
+   "tpd_rise_fall_ps": "575/664",
+   "leak_nW": 0.029
+  },
+  "pl_fb4": {
+   "sites": 18,
+   "area_um2": 115.2,
+   "transistors": 20,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 21.7,
+   "tpd_rise_fall_ps": "378/456",
+   "leak_nW": 0.014
+  },
+  "pl_cs": {
+   "sites": 17,
+   "area_um2": 108.8,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 26.7,
+   "tpd_rise_fall_ps": "405/418",
+   "leak_nW": 0.03
+  }
+ },
+ "cell_conditions": "worst arc at 16 fF load and 80 ps input slope, from the extracted layouts",
+ "designs": {
+  "beh": {
+   "yosys_cells": 146,
+   "yosys_area_um2": 3168.0,
+   "sta_ns": 1.625,
+   "placed": 198,
+   "die_um": [
+    84.0,
+    54.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "4 errors",
+   "magic_drc": 0,
+   "extracted_T": 716,
+   "extracted_C_fF": 658,
+   "pre": {
+    "correct": "all",
+    "t_max_ps": 1654.3,
+    "t_mean_ps": 1136.5,
+    "e_avg_fJ": 2466.0,
+    "p_leak_nW": 1.9
+   },
+   "post": {
+    "correct": "51 bad",
+    "t_max_ps": 1872.8,
+    "e_avg_fJ": 3572.7,
+    "p_leak_nW": 154203,
+    "valid": false
+   }
+  },
+  "slice": {
+   "yosys_cells": 87,
+   "yosys_area_um2": 1977.6,
+   "sta_ns": 2.324,
+   "placed": 110,
+   "die_um": [
+    78.4,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "2 errors",
+   "magic_drc": 0,
+   "extracted_T": 454,
+   "extracted_C_fF": 426,
+   "pre": {
+    "correct": "all",
+    "t_max_ps": 1897.1,
+    "t_mean_ps": 1093.5,
+    "e_avg_fJ": 1887.4,
+    "p_leak_nW": 1.18
+   },
+   "post": {
+    "correct": "50 bad",
+    "t_max_ps": 2250.7,
+    "e_avg_fJ": 3511.4,
+    "p_leak_nW": 312329,
+    "valid": false
+   }
+  },
+  "map": {
+   "yosys_cells": 60,
+   "yosys_area_um2": 2182.4,
+   "sta_ns": 2.709,
+   "placed": 95,
+   "die_um": [
+    70.4,
+    46.0
+   ],
+   "routing": "1 failed (bx_0)",
+   "qflow_lvs": "3 errors",
+   "magic_drc": 5,
+   "extracted_T": 484,
+   "extracted_C_fF": 526,
+   "pre": {
+    "correct": "all",
+    "t_max_ps": 2420.3,
+    "t_mean_ps": 1189.2,
+    "e_avg_fJ": 1702.2,
+    "p_leak_nW": 1.0
+   },
+   "post": {
+    "correct": "89 bad",
+    "t_max_ps": 4830.7,
+    "e_avg_fJ": 2765.5,
+    "p_leak_nW": 114378,
+    "valid": false
+   }
+  },
+  "fb": {
+   "yosys_cells": 27,
+   "yosys_area_um2": 1382.4,
+   "sta_ns": 3.02,
+   "placed": 55,
+   "die_um": [
+    60.0,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 5,
+   "extracted_T": 316,
+   "extracted_C_fF": 331,
+   "pre": {
+    "correct": "all",
+    "t_max_ps": 2132.9,
+    "t_mean_ps": 1092.2,
+    "e_avg_fJ": 1246.0,
+    "p_leak_nW": 0.67
+   },
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2759.0,
+    "t_mean_ps": 1373.8,
+    "e_avg_fJ": 1477.9,
+    "p_leak_nW": 0.69,
+    "valid": true,
+    "energy_by_op_fJ": {
+     "ADD": 1822,
+     "SUB": 1904,
+     "INC": 1605,
+     "DEC": 2038,
+     "AND": 1120,
+     "OR": 979,
+     "XOR": 1151,
+     "NOT": 1205
+    },
+    "worst": "ADD a=0 b=0 -> SUB a=0 b=0, last output v"
+   }
+  }
+ },
+ "findings": [
+  "beh LVS: nets layout/netlist 179/180, unmatched s[2], _17_; 154 uW static current",
+  "slice LVS: nets 101/102, unmatched pl_or2_3/A; 312 uW static current",
+  "map: failed net bx_0; LVS unmatched s[0] pl_fa_1/B pl_mux2i_1/Y m0; 114 uW static current",
+  "map and fb: Magic DRC Metal2 spacing < 3 (5 each)"
+ ]
+}

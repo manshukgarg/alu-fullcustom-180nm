@@ -171,6 +171,40 @@ Findings:
 * Qflow's fanout buffering (`fanout_options -l 100 -c 20`, as for OSU018) inserts many
   buffers with a single-strength library: fb 27 cells before, 57 placed.
 
+## Third lab run of Step 5 (21 November 2026, cells with metal2 escape columns)
+
+Transcribed in `results/lab/step5_2026-11-21.json`. All 12 cells: DRC 0, LVS match (pl_fb4
+378/456 ps, pl_cs 405/418 ps worst arc). The escape columns made beh and slice route
+completely; their DRC is 0.
+
+| | beh | slice | map | fb (proposed) |
+| --- | --- | --- | --- | --- |
+| Yosys cells, area (um2) | 146, 3168.0 | 87, 1977.6 | 60, 2182.4 | 27, 1382.4 |
+| Cells placed, die (um) | 198, 84.0 x 54.0 | 110, 78.4 x 38.0 | 95, 70.4 x 46.0 | 55, 60.0 x 38.0 |
+| Routing, Qflow LVS | complete, 4 errors | complete, 2 errors | 1 net failed, 3 errors | complete, match |
+| Magic DRC with real cells | 0 | 0 | 5 (metal2 spacing) | 5 (metal2 spacing) |
+| Before layout: worst delay (ps), energy (fJ) | 1654.3, 2466.0 | 1897.1, 1887.4 | 2420.3, 1702.2 | 2132.9, 1246.0 |
+| After layout | 51 wrong cycles | 50 wrong cycles | 89 wrong cycles | 229/229; 2759.0 ps, 1477.9 fJ, 0.69 nW |
+
+* The proposed ALU after layout: worst delay +29.4 %, energy +18.6 % over its netlist before
+  layout; die 2280 um2.
+* beh, slice and map: LVS finds one net fewer than the netlist (two nets merged) and the
+  simulation a static current of 0.1-0.3 mW: a short in each routed layout.
+  `layout/find_shorts.py` (21 Nov) locates shorts and spacing faults from the routed DEF and
+  the LEF views; its lab output gives the cause. The library's abstract views were checked
+  for shapes of different nets that meet when cells abut (all pairs, all mirrorings): none.
+
+## Presentation (28 November 2026) and demonstration
+
+* `demo/show.sh` (see `demo/README.md`): Xschem schematics of FB4 and CS (generated and
+  checked against `tech/pl018/pl018_cells.sp` by `demo/tools/schematics.py`), Magic DRC,
+  extraction and LVS of a cell against its schematic, the routed ALUs in KLayout and Magic,
+  and Ngspice simulations with waveform windows (cells, ALUs, the extracted routed ALU).
+  First lab test pending.
+* Figures for the slides in `docs/figures/presentation/`: cell layouts
+  (`docs/figures/render_layout.py`), schematics, result charts (`docs/figures/make_charts.py`)
+  and waveforms (`docs/figures/make_waveforms.py`).
+
 ## LTspice package (16 November 2026)
 
 `ltspice_package/` (zip `ALU4_180nm_LTspice.zip`, written by `sim/make_ltspice_package.py`):
@@ -221,7 +255,7 @@ numpy) and committed; the lab verifies them.
 | 3b | Sizing sweep of every candidate (21 candidates, 8 widths x 5 P/N ratios) | done; the lab run of 21 Nov gives identical results | sizes above; `run_cells.py --resume` continues an interrupted sweep |
 | 3c | ALU-specific cells FB4 and CS: sizing and comparison with composed library cells (`step3_cells/run_alu_cells.sh`) | done; the lab run of 16 Nov gives identical results | FB4 k 0.4, r 2.5; CS k 0.8, r 1.5 |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated, optimized cells regenerated with the final sizes (16 Nov) | conventional full adder outstanding; `opt_fa` is laid out on the placement grid (the free-width placement does not route at k 0.3); lab verification pending |
-| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | first lab run 21 Nov; rerun with the tap fix next | all 13 cells DRC 0 and LVS match; proposed ALU routed, LVS match, correct after layout; ALU DRC errors from the rail taps fixed; beh, slice and map fail after layout (cause pending, see above) |
+| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | three lab runs on 21 Nov | all 13 cells DRC 0 and LVS match; proposed ALU routed, LVS match, correct after layout (2759 ps, 1478 fJ, 0.69 nW); beh, slice and map have one short each (being located with `layout/find_shorts.py`) |
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | after the lab runs of Steps 2 and 5 |

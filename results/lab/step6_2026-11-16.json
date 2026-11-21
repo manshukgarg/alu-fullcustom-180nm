@@ -1,0 +1,51 @@
+{
+ "source": "lab run of step6_alu_schematic/run.sh, NIELIT ChipCraft, 16 Nov 2026 (summary screenshot); energies and leakage identical to results/ngspice46_2026-11-16/step6_summary.txt",
+ "conditions": "Ngspice, 1.8 V, 27 C, FO4 loads, 229 transitions, before layout",
+ "designs": {
+  "gate": {
+   "cells": 60,
+   "transistors": 842,
+   "t_max_ps": 2925.4,
+   "e_avg_fJ": 2039.6,
+   "p_leak_nW": 1.41,
+   "correct": "229/229",
+   "edp_fJns": 5966.6
+  },
+  "conv": {
+   "cells": 60,
+   "transistors": 578,
+   "t_max_ps": 2979.3,
+   "e_avg_fJ": 3509.8,
+   "p_leak_nW": 2.02,
+   "correct": "229/229",
+   "edp_fJns": 10456.7
+  },
+  "opt": {
+   "cells": 69,
+   "transistors": 402,
+   "t_max_ps": 2270.8,
+   "e_avg_fJ": 1102.1,
+   "p_leak_nW": 0.81,
+   "correct": "229/229",
+   "edp_fJns": 2502.6
+  },
+  "pl": {
+   "cells": 66,
+   "transistors": 458,
+   "t_max_ps": 2310.4,
+   "e_avg_fJ": 1312.8,
+   "p_leak_nW": 0.93,
+   "correct": "229/229",
+   "edp_fJns": 3033.1
+  },
+  "fb": {
+   "cells": 28,
+   "transistors": 272,
+   "t_max_ps": 2076.2,
+   "e_avg_fJ": 870.6,
+   "p_leak_nW": 0.47,
+   "correct": "229/229",
+   "edp_fJns": 1807.5
+  }
+ }
+}
