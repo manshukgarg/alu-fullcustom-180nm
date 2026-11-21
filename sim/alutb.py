@@ -806,6 +806,8 @@ def analyze(cols, vecs, tags, W, vdd, period):
                              key=lambda x: -1 if x is None else x),
         "worst": worst,
         "period_ps": period * 1e12,
+        "wrong_by_output": {o: sum(o in r["wrong_outputs"].split() for r in rows) for o in outs
+                            if any(o in r["wrong_outputs"].split() for r in rows)},
     }
     e_op, e_drv_op = {}, {}
     for name in OPS:

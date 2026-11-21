@@ -329,11 +329,16 @@ class CellBuilder:
         S.append(("m1", 0, -RAIL, W, RAIL, "gnd"))
         S.append(("m1", 0, H - RAIL, W, H + RAIL, "vdd"))
         S.append(("nwell", -6, NW_Y0, W + 6, NW_Y1, None))
-        x = 3
-        while x + 4 <= W - 3:
+        # Well and substrate taps sit in the rails, which neighbouring rows share. In grid
+        # mode every site gets one tap centred on it, so the taps of all cells in all rows
+        # and orientations fall on the same global positions: taps of different cells
+        # either coincide exactly or are 4 lambda apart (Magic: contacts of different
+        # subcells may not partially overlap, diffusion contact spacing 4).
+        x, pitch = (SITE // 2 - 2, SITE) if self.grid else (3, 12)
+        while x + 4 <= W - (SITE // 2 - 2 if self.grid else 3):
             S.append(("psc", x, -2, x + 4, 2, "gnd"))
             S.append(("nsc", x, H - 2, x + 4, H + 2, "vdd"))
-            x += 12
+            x += pitch
         self.labels.append((0, H - RAIL, EDGE, H + RAIL, "vdd", "power", "bidirectional"))
         self.labels.append((0, -RAIL, EDGE, RAIL, "gnd", "ground", "bidirectional"))
 

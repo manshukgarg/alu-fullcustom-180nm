@@ -72,6 +72,30 @@ def sta(d):
             "path": "%s->%s" % (sp.group(1), ep.group(1)) if sp and ep else ""}
 
 
+def lvs_detail(path):
+    """Mismatch details of the top cell in Netgen's JSON report: net and device counts of
+    layout and netlist, and the names of the first unmatched nets."""
+    try:
+        data = json.load(open(path))
+    except (OSError, ValueError):
+        return None
+    if not data:
+        return None
+    top = data[-1]
+    out = {}
+    if "nets" in top:
+        out["nets"] = top["nets"]
+    names = []
+    for group in top.get("badnets", []):
+        for side in group[:2]:
+            for net in side:
+                if net and isinstance(net, list) and net[0] not in names:
+                    names.append(str(net[0]))
+    out["bad_nets"] = names
+    out["bad_devices"] = len(top.get("badelements", []))
+    return out
+
+
 def layout(d):
     q = os.path.join(HERE, "qflow_" + d)
     text = read(os.path.join(q, "layout", "alu4.def"))
@@ -87,9 +111,21 @@ def layout(d):
         types = Counter(m.group(2) for m in re.finditer(r"-\s+(\S+)\s+(\S+)", comps.group(1)))
         res["fill"] = sum(v for t, v in types.items() if t.upper().startswith("FILL"))
         res["cells"] = sum(types.values()) - res["fill"]
-    route = [l.split("Final:", 1)[1].strip() for l in read(os.path.join(q, "log", "route.log")).splitlines()
-             if "Final:" in l]
+    rlog = read(os.path.join(q, "log", "route.log"))
+    route = [l.split("Final:", 1)[1].strip() for l in rlog.splitlines() if "Final:" in l]
     res["route"] = route[-1] if route else "n/a"
+    # pins the router could not reach, and the nets it could not finish
+    res["no_taps"] = sorted(set(re.findall(r"Node (\S+) of net \"?([^\s\"]+)\"? has no tap", rlog)))
+    res["forced_taps"] = len(re.findall(r"forcing a tap point", rlog))
+    failed = []
+    tail = rlog.split("List of failed nets follows:")
+    if len(tail) > 1:
+        for l in tail[-1].splitlines()[1:]:
+            if not l.strip() or l.startswith("-"):
+                break
+            failed.append(l.strip())
+    res["failed_nets"] = failed
+    res["lvs_detail"] = lvs_detail(os.path.join(q, "layout", "comp.json"))
     # Qflow counts the LVS errors itself ("Total errors = N"; its message for a clean
     # run reads "... no net, device, pin, or property mismatches"); Netgen's own result
     # line is the fallback
@@ -245,7 +281,22 @@ def messages(res, designs):
         for k in ("rtl", "gate"):
             if r[k] is None or r[k]["errors"]:
                 msgs.append("%s %s simulation: %s" % (d, k, fmt_tests(r[k])))
-        msgs += ["%s qflow: %s" % (d, e) for e in r["layout"]["qflow_errors"]]
+        lay = r["layout"]
+        if lay.get("no_taps"):
+            msgs.append("%s route: %d pins without access: %s" % (
+                d, len(lay["no_taps"]), " ".join(n for n, _ in lay["no_taps"][:6])))
+        if lay.get("forced_taps"):
+            msgs.append("%s route: %d forced tap points" % (d, lay["forced_taps"]))
+        if lay.get("failed_nets"):
+            msgs.append("%s route: failed nets %s" % (d, " ".join(lay["failed_nets"][:8])))
+        det = lay.get("lvs_detail")
+        if det and (det.get("bad_nets") or det.get("bad_devices")):
+            nets = det.get("nets")
+            msgs.append("%s LVS: nets layout/netlist %s, unmatched: %s" % (
+                d, "/".join(str(x) for x in nets) if isinstance(nets, list) else "?",
+                " ".join(det["bad_nets"][:8]) or "-"))
+        msgs += ["%s qflow: %s" % (d, e) for e in r["layout"]["qflow_errors"]
+                 if "See lvs.log" not in e]
         msgs += ["%s magic: %s" % (d, e) for e in r["layout"]["magic_errors"]]
         msgs += ["%s DRC: %s" % (d, e) for e in r["layout"]["drc_types"]]
         for k in ("pre", "post"):
@@ -260,8 +311,14 @@ def messages(res, designs):
             if c.get("warning"):
                 msgs.append("%s_%s: %s" % (d, k, c["warning"]))
             if is_ok(c) and (c["wrong_cycles"] or c["weak_levels"] or c["missing_references"]):
-                msgs.append("%s_%s: %d wrong cycles, %d weak levels, %d missing references (see CSV)" % (
-                    d, k, c["wrong_cycles"], c["weak_levels"], c["missing_references"]))
+                wo = c.get("wrong_by_output") or {}
+                msgs.append("%s_%s: %d wrong cycles, %d weak levels%s" % (
+                    d, k, c["wrong_cycles"], c["weak_levels"],
+                    ("; wrong outputs " + " ".join("%s:%d" % kv for kv in sorted(
+                        wo.items(), key=lambda kv: -kv[1]))) if wo else ""))
+            if is_ok(c) and (c.get("p_leak_nW") or 0) > 1000:
+                msgs.append("%s_%s: static current %.0f uW: a short or a floating node" % (
+                    d, k, c["p_leak_nW"] / 1000))
     return msgs + notes
 
 

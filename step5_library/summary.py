@@ -84,6 +84,11 @@ def num(v):
     return "%.1f" % v if v >= 10 else "%.2f" % v
 
 
+def failing(c):
+    """A post-layout simulation that is not usable for comparison (wrong outputs)."""
+    return not c or c.get("status") != "ok" or bool(c.get("wrong_cycles"))
+
+
 def change(a, b):
     """Value of this step with its change against Step 2, e.g. '1234 (-18%)'."""
     if a is None:
@@ -131,9 +136,15 @@ def main():
                           ("energy per operation (fJ)", ("post", "e_avg_fJ")),
                           ("leakage power (nW)", ("post", "p_leak_nW")),
                           ("energy x delay (fJ ns)", ("post", "edp_fJns"))):
-            print(row % (("  " + text,) + tuple(
-                change(res[d][key[0]].get(key[1]), d3.get(d, {}).get(key[0], {}).get(key[1]))
-                for d in designs)))
+            def cell(d):
+                a = res[d][key[0]].get(key[1])
+                b = d3.get(d, {}).get(key[0], {}).get(key[1])
+                if key[0] == "post" and failing(res[d]["post"]):
+                    return (num(a) + " fail") if a is not None else "fail"
+                if key[0] == "post" and d in d3 and failing(d3[d].get("post", {})):
+                    return num(a) if a is not None else "n/a"
+                return change(a, b)
+            print(row % (("  " + text,) + tuple(cell(d) for d in designs)))
         areas = []
         for d in designs:
             da, db = res[d]["layout"]["die_um"], d3.get(d, {}).get("layout", {}).get("die_um")
@@ -145,7 +156,7 @@ def main():
     msgs += s2.messages(res, designs)
     if msgs:
         print("-" * W)
-        for m in msgs[:14]:
+        for m in msgs[:24]:
             print("  " + m[:W - 2])
     res["library"] = lib
     with open(os.path.join(OUT, "step5_results.json"), "w") as fh:
