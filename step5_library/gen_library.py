@@ -156,6 +156,10 @@ def lef_macro(g):
     L = ["MACRO %s" % g["name"], "  CLASS CORE ;", "  FOREIGN %s 0.000 0.000 ;" % g["name"],
          "  ORIGIN 0.000 0.000 ;", "  SIZE %s BY %s ;" % (um(g["width_lambda"]), um(g["height_lambda"])),
          "  SYMMETRY X Y ;", "  SITE %s ;" % SITE_NAME]
+    # Signal pins are their access pads alone (a metal1 square centred on a routing-track
+    # crossing, with free metal2 above or below). The rest of every net, pin nets included,
+    # is obstruction, so the router keeps its full via clearance from it: off-track metal of
+    # a pin net written as pin geometry let the router place vias of other nets against it.
     for p in pins + ["vdd", "gnd"]:
         L.append("  PIN %s" % p)
         if p in g["inputs"]:
@@ -167,19 +171,21 @@ def lef_macro(g):
                   "    SHAPE ABUTMENT ;"]
         L.append("    PORT")
         pad = g["pads"].get(p)
-        for layer in ("metal1", "metal2"):
-            boxes = by.get((p, layer))
-            if boxes:
-                L.append("      LAYER %s ;" % layer)
-                # the access pad first and whole (centred on a track crossing), then the net
-                if pad and {"m1": "metal1", "m2": "metal2"}[pad[0]] == layer:
-                    L += lef_rects([tuple(pad[1:5])], "        ")
-                L += lef_rects(rect_cover(boxes), "        ")
+        if p in pins:
+            if not pad:
+                raise SystemExit("%s: pin %s has no access pad" % (g["name"], p))
+            L.append("      LAYER %s ;" % {"m1": "metal1", "m2": "metal2"}[pad[0]])
+            L += lef_rects([tuple(pad[1:5])], "        ")
+        else:
+            boxes = by.get((p, "metal1"))
+            L.append("      LAYER metal1 ;")
+            L += lef_rects(rect_cover(boxes), "        ")
         L += ["    END", "  END %s" % p]
     obs = []
     for layer in ("metal1", "metal2"):
-        boxes = [b for (n, ly), bs in by.items() if ly == layer and n not in pins + ["vdd", "gnd"]
-                 for b in bs]
+        boxes = [b for (n, ly), bs in by.items() if ly == layer and n not in ("vdd", "gnd") for b in bs]
+        boxes += [b for (n, ly), bs in by.items() if ly == layer and n in ("vdd", "gnd") and layer == "metal2"
+                  for b in bs]
         if boxes:
             obs.append("    LAYER %s ;" % layer)
             obs += lef_rects(rect_cover(boxes), "      ")

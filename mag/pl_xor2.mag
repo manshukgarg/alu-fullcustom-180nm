@@ -172,9 +172,9 @@ rect 10 64 14 68
 << metal2 >>
 rect 17 14 20 63
 rect 10 36 13 64
-rect 48 59 51 72
-rect 10 68 13 72
-rect 10 72 51 75
+rect 48 59 51 71
+rect 10 68 13 71
+rect 10 71 51 74
 << labels >>
 rlabel metal1 s 2 33 6 37 0 A
 port 1 nsew signal input

@@ -41,6 +41,9 @@ SPACE = {POLY: 3, M1: 3, M2: 3}               # same-layer spacing
 SITE = 8                                       # placement site width (0.8 um), grid mode
 TRACK_X, TRACK_X0 = 8, 4                       # metal2 tracks: pitch and offset (lambda)
 TRACK_Y, TRACK_Y0 = 10, 5                      # metal1 tracks: pitch and offset (lambda)
+# grid mode: Qflow's power-stripe posts cover the rails on metal2 (rail height, y within
+# RAIL of the rail centre), so cell metal2 keeps the metal2 spacing from that zone
+POST_ZONE = RAIL + SPACE[M2]
 
 
 def base(net):
@@ -389,6 +392,14 @@ class CellBuilder:
         ys = np.arange(Y1 - Y0)[None, :] + Y0
         return (xs >= EDGE) & (xs + w <= W - EDGE) & (ys >= -RAIL) & (ys + w <= H + RAIL)
 
+    def _post_free(self, w):
+        """Grid mode: positions whose w x w metal2 square keeps clear of the power posts."""
+        shape = (self.width, Y1 - Y0)
+        if not self.grid:
+            return np.ones(shape, dtype=bool)
+        ys = np.arange(Y1 - Y0)[None, :] + Y0
+        return np.broadcast_to((ys >= POST_ZONE) & (ys + w <= H - POST_ZONE), shape)
+
     def _legal_fixed(self, nid):
         """Hard legality against the fixed geometry (devices, stubs, rails, taps)."""
         cache = self.__dict__.setdefault("_lf_cache", {})
@@ -406,12 +417,12 @@ class CellBuilder:
         L[POLY] = (~window_any(fp, -3, 5, -3, 5) & ~window_any(mp["act"], -1, 3, -1, 3)
                    & self._inside(2))
         L[M1] = ~window_any(f1, -3, 6, -3, 6) & self._inside(3)
-        L[M2] = ~window_any(f2, -3, 6, -3, 6) & self._inside(3)
+        L[M2] = ~window_any(f2, -3, 6, -3, 6) & self._inside(3) & self._post_free(3)
         L["pc"] = (~window_any(fp, -3, 7, -3, 7) & ~window_any(mp["act"], -1, 5, -1, 5)
                    & ~window_any(mp["dcont"], -2, 6, -2, 6) & ~window_any(f1, -3, 7, -3, 7)
                    & self._inside(4))
         L["v1"] = (~window_any(f1, -3, 7, -3, 7) & ~window_any(f2, -3, 7, -3, 7)
-                   & ~window_any(mp["cut1"], 0, 4, 0, 4) & self._inside(4))
+                   & ~window_any(mp["cut1"], 0, 4, 0, 4) & self._inside(4) & self._post_free(4))
         return L
 
     def _route_masks(self, shapes):
@@ -686,12 +697,12 @@ class CellBuilder:
         L[POLY] = (~window_any(fp, -3, 5, -3, 5) & ~window_any(mp["act"], -1, 3, -1, 3)
                    & self._inside(2))
         L[M1] = ~window_any(f1, -3, 6, -3, 6) & self._inside(3)
-        L[M2] = ~window_any(f2, -3, 6, -3, 6) & self._inside(3)
+        L[M2] = ~window_any(f2, -3, 6, -3, 6) & self._inside(3) & self._post_free(3)
         L["pc"] = (~window_any(fp, -3, 7, -3, 7) & ~window_any(mp["act"], -1, 5, -1, 5)
                    & ~window_any(mp["dcont"], -2, 6, -2, 6) & ~window_any(f1, -3, 7, -3, 7)
                    & ~window_any(mp["via1"], 0, 4, 0, 4) & self._inside(4))
         L["v1"] = (~window_any(f1, -3, 7, -3, 7) & ~window_any(f2, -3, 7, -3, 7)
-                   & ~window_any(mp["cut1"], 0, 4, 0, 4) & self._inside(4))
+                   & ~window_any(mp["cut1"], 0, 4, 0, 4) & self._inside(4) & self._post_free(4))
         return L, mp
 
     def _pads(self):

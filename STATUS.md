@@ -191,8 +191,17 @@ completely; their DRC is 0.
 * beh, slice and map: LVS finds one net fewer than the netlist (two nets merged) and the
   simulation a static current of 0.1-0.3 mW: a short in each routed layout.
   `layout/find_shorts.py` (21 Nov) locates shorts and spacing faults from the routed DEF and
-  the LEF views; its lab output gives the cause. The library's abstract views were checked
-  for shapes of different nets that meet when cells abut (all pairs, all mirrorings): none.
+  the cells. Its lab output (21 Nov, evening): slice and map each have one short, a metal2/
+  metal3 via of another net touching the output pin Y of a pl_mux2i, whose metal2 runs
+  between two metal2 tracks; fb has no short, and its 5 DRC errors are a ground power post
+  (Qflow's power stripes put a metal2 via the width of the stripe over the rail) 0.2 um from
+  metal2 of a pl_cs (map: of a pl_fa). D3 (OSU018) has no short. Cell abutment was also
+  checked from the abstract views (all pairs, all mirrorings): no problem.
+* Fix (21 Nov): (1) the LEF view of every signal pin is now its access pad alone and the
+  rest of every net, pin nets included, is obstruction, so the router keeps full via
+  clearance from off-track pin metal; (2) cell metal2 stays 0.3 um clear of the power-post
+  zone along the rails (`POST_ZONE` in `layout/cellgen.py`): pl_cs, pl_fa (now 17 sites) and
+  pl_xor2 regenerated, the other cells unchanged. Next: lab rerun of Step 5.
 
 ## Presentation (28 November 2026) and demonstration
 

@@ -2,7 +2,8 @@
 """Shorts and spacing faults of a routed Qflow layout, located from its DEF and LEF files.
 
 Rebuilds the layout from the routed DEF (Qflow moves the router output to
-layout/alu4.def) and the abstract views of the cells (LEF pins and obstructions):
+layout/alu4.def) and the cells: the project cells with every metal shape and its net
+(step5_library/build), other cells from their abstract views (LEF pins and obstructions):
 every wire with its layer width and half-width end extensions, every via, every
 I/O pin and every cell pin and obstruction. Shapes on the same layer that overlap
 or touch along an edge are connected in the real layout, so
@@ -182,6 +183,29 @@ def rect_tf(tf, r):
     return (min(ax, bx), min(ay, by), max(ax, bx), max(ay, by))
 
 
+GEO_CACHE = {}
+BUILD = os.path.join(ROOT, "step5_library", "build")
+GEO_LAYERS = {"metal1": {"m1", "ndc", "pdc", "pc", "psc", "nsc", "m2c"}, "metal2": {"m2", "m2c"}}
+
+
+def cell_geometry(macro):
+    """[(layer, rect in um, net)] of a project cell from its build record, or None."""
+    if macro not in GEO_CACHE:
+        path = os.path.join(BUILD, macro + ".json")
+        geo = None
+        if os.path.isfile(path):
+            import json
+            rec = json.load(open(path))
+            geo = []
+            for layer, x1, y1, x2, y2, net in rec.get("shapes", []):
+                for lef_layer, kinds in GEO_LAYERS.items():
+                    if layer in kinds:
+                        geo.append((lef_layer, (x1 / 10.0, y1 / 10.0, x2 / 10.0, y2 / 10.0),
+                                    (net or "-").split("#")[0]))
+        GEO_CACHE[macro] = geo
+    return GEO_CACHE[macro]
+
+
 class Shape:
     __slots__ = ("layer", "x1", "y1", "x2", "y2", "net", "what", "inst")
 
@@ -239,6 +263,22 @@ def build(def_path, lef):
         w, h = m["size"]
         ox, oy = m["origin"]
         tf = orient_tf(orient, x, y, w, h)
+        geo = cell_geometry(macro)
+        if geo is not None:
+            # project cells: every metal shape with its net (step5_library/build/<cell>.json)
+            pins = set(m["pins"])
+            for layer, rect, net in geo:
+                if net in pins:
+                    use = m["use"].get(net, "")
+                    if use in ("POWER", "GROUND") or net.lower() in POWER_NAMES:
+                        n = "gnd" if use == "GROUND" or net.lower().startswith(("gnd", "vss")) else "vdd"
+                    else:
+                        n = pin_net.get((inst, net), "%s/%s (unconnected)" % (inst, net))
+                    what = "pin %s of %s (%s)" % (net, inst, macro)
+                else:
+                    n, what = "OBS " + inst, "internal net %s of %s (%s)" % (net, inst, macro)
+                shapes.append(Shape(layer, rect_tf(tf, rect), n, what, inst))
+            continue
         for pin, rects in m["pins"].items():
             use = m["use"].get(pin, "")
             if use in ("POWER", "GROUND") or pin.lower() in POWER_NAMES:
