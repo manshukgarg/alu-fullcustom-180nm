@@ -28,22 +28,30 @@ rect 7 4 9 6
 rect 15 4 17 6
 rect 31 4 33 6
 rect 39 4 41 6
-rect 7 10 9 33
-rect 31 10 33 29
-rect 39 10 41 33
+rect 7 10 9 36
+rect 31 10 33 11
+rect 39 10 41 11
+rect 26 11 33 13
+rect 37 11 41 13
 rect 15 12 17 13
-rect 15 13 27 15
-rect 25 15 27 18
-rect 7 33 41 35
-rect 7 35 9 43
-rect 31 42 38 44
-rect 36 44 38 63
-rect 7 47 33 49
-rect 7 49 9 66
-rect 31 49 33 66
-rect 15 56 27 58
+rect 15 13 22 15
+rect 26 13 28 19
+rect 37 13 39 37
+rect 20 15 22 21
+rect 19 21 22 23
+rect 13 23 15 49
+rect 19 23 21 29
+rect 19 29 24 31
+rect 19 31 21 56
+rect 31 37 39 39
+rect 7 40 9 66
+rect 28 40 30 63
+rect 15 56 21 58
+rect 42 57 44 63
 rect 15 58 17 59
-rect 36 63 41 65
+rect 28 63 33 65
+rect 39 63 44 65
+rect 31 65 33 66
 rect 39 65 41 66
 rect 7 74 9 76
 rect 15 74 17 76
@@ -74,11 +82,13 @@ rect 26 66 30 74
 rect 34 66 38 74
 rect 42 66 46 74
 << polycontact >>
-rect 24 18 28 22
-rect 27 26 31 30
-rect 27 40 31 44
-rect 6 43 10 47
-rect 24 52 28 56
+rect 12 19 16 23
+rect 25 19 29 23
+rect 24 28 28 32
+rect 6 36 10 40
+rect 27 36 31 40
+rect 12 49 16 53
+rect 41 53 45 57
 << psubstratepcontact >>
 rect 2 -2 6 2
 rect 10 -2 14 2
@@ -105,33 +115,29 @@ rect 46 -2 48 2
 rect 0 2 48 3
 rect 10 3 14 6
 rect 17 9 18 12
-rect 3 10 6 26
-rect 26 10 29 11
-rect 34 10 37 18
+rect 3 10 6 17
+rect 26 10 30 11
+rect 34 10 37 28
 rect 42 10 45 33
-rect 10 13 14 19
-rect 28 18 37 21
-rect 34 21 37 52
-rect 3 26 27 29
-rect 22 29 27 30
-rect 22 30 28 33
-rect 8 33 14 37
-rect 22 33 25 40
+rect 3 17 14 19
+rect 3 19 12 20
+rect 16 19 25 22
+rect 11 20 12 22
+rect 2 23 6 26
+rect 2 26 17 29
+rect 28 28 37 31
+rect 34 31 37 46
+rect 10 33 14 36
 rect 42 33 46 37
-rect 42 37 45 66
-rect 22 40 27 44
-rect 10 43 14 47
-rect 22 44 28 46
-rect 17 46 28 47
-rect 17 47 25 49
-rect 17 49 20 53
-rect 28 52 37 55
-rect 3 53 20 56
-rect 34 55 37 66
+rect 10 36 27 39
+rect 42 37 45 46
+rect 2 43 24 46
+rect 2 46 6 47
+rect 3 53 41 56
 rect 3 56 6 66
-rect 13 59 18 62
-rect 25 63 28 66
-rect 25 66 26 69
+rect 26 63 29 66
+rect 34 63 37 66
+rect 41 66 42 69
 rect 10 74 14 77
 rect 0 77 48 78
 rect 0 78 2 82
@@ -143,30 +149,34 @@ rect 38 78 42 82
 rect 46 78 48 82
 rect 0 82 48 83
 << m2contact >>
-rect 25 11 29 15
+rect 26 11 30 15
 rect 17 12 21 16
-rect 10 19 14 23
-rect 4 33 8 37
-rect 9 59 13 63
-rect 25 59 29 63
+rect 17 26 21 30
+rect 24 43 28 47
+rect 34 46 38 50
+rect 41 46 45 50
+rect 14 59 18 63
+rect 26 59 30 63
+rect 34 59 38 63
+rect 41 62 45 66
 << metal2 >>
-rect 4 7 20 10
-rect 4 10 7 33
-rect 17 10 20 12
-rect 25 15 28 21
-rect 14 21 28 23
-rect 10 23 28 24
-rect 25 24 28 59
-rect 4 37 7 59
-rect 4 59 9 62
+rect 26 15 29 43
+rect 17 16 20 26
+rect 17 30 20 42
+rect 14 42 20 45
+rect 28 43 29 47
+rect 14 45 17 59
+rect 26 47 29 59
+rect 34 50 37 59
+rect 41 50 44 62
 << labels >>
-rlabel metal1 s 10 13 14 17 0 A
+rlabel metal1 s 2 43 6 47 0 A
 port 1 nsew signal input
 rlabel metal1 s 42 33 46 37 0 B
 port 2 nsew signal input
-rlabel metal1 s 10 43 14 47 0 S
+rlabel metal1 s 10 33 14 37 0 S
 port 3 nsew signal input
-rlabel metal1 s 10 33 14 37 0 Y
+rlabel metal1 s 2 23 6 27 0 Y
 port 4 nsew signal output
 rlabel metal1 s 0 77 2 83 0 vdd
 port 5 nsew power bidirectional

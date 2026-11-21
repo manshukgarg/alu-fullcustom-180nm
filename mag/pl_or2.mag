@@ -21,18 +21,15 @@ rect 25 62 26 74
 rect 7 4 9 6
 rect 15 4 17 6
 rect 23 4 25 6
-rect 7 14 9 34
-rect 15 14 17 28
-rect 23 14 25 21
-rect 15 28 25 30
-rect 23 30 25 43
-rect 7 34 16 36
-rect 7 36 9 50
-rect 15 45 22 47
-rect 15 47 17 50
-rect 24 54 26 59
-rect 23 59 26 61
-rect 23 61 25 62
+rect 7 14 9 33
+rect 15 14 17 24
+rect 23 14 25 15
+rect 21 15 25 17
+rect 24 17 25 21
+rect 23 21 25 62
+rect 15 28 17 50
+rect 7 33 8 37
+rect 7 37 9 50
 rect 7 74 9 76
 rect 15 74 17 76
 rect 23 74 25 76
@@ -54,10 +51,9 @@ rect 2 50 6 74
 rect 18 62 22 74
 rect 26 62 30 74
 << polycontact >>
-rect 22 21 26 25
-rect 16 33 20 37
-rect 22 43 26 47
-rect 23 50 27 54
+rect 20 17 24 21
+rect 14 24 18 28
+rect 8 33 12 37
 << psubstratepcontact >>
 rect 2 -2 6 2
 rect 10 -2 14 2
@@ -78,16 +74,15 @@ rect 30 -2 32 2
 rect 0 2 32 3
 rect 2 3 6 6
 rect 18 3 22 6
-rect 25 11 26 14
-rect 10 14 13 21
-rect 10 21 22 24
-rect 10 24 13 50
-rect 20 33 30 36
-rect 26 36 30 37
-rect 26 43 30 47
-rect 6 50 23 53
-rect 10 62 14 67
-rect 25 62 26 65
+rect 10 14 13 17
+rect 27 14 30 33
+rect 2 17 20 20
+rect 2 20 5 50
+rect 10 23 14 27
+rect 12 33 22 36
+rect 26 33 30 37
+rect 18 36 22 37
+rect 27 37 30 62
 rect 18 74 22 77
 rect 0 77 32 78
 rect 0 78 2 82
@@ -96,21 +91,12 @@ rect 14 78 18 82
 rect 22 78 26 82
 rect 30 78 32 82
 rect 0 82 32 83
-<< m2contact >>
-rect 25 14 29 18
-rect 10 58 14 62
-rect 25 58 29 62
-<< metal2 >>
-rect 20 14 25 18
-rect 20 18 26 21
-rect 20 21 23 58
-rect 14 58 25 61
 << labels >>
-rlabel metal1 s 26 33 30 37 0 A
+rlabel metal1 s 18 33 22 37 0 A
 port 1 nsew signal input
-rlabel metal1 s 26 43 30 47 0 B
+rlabel metal1 s 10 23 14 27 0 B
 port 2 nsew signal input
-rlabel metal1 s 10 63 14 67 0 Y
+rlabel metal1 s 26 33 30 37 0 Y
 port 3 nsew signal output
 rlabel metal1 s 0 77 2 83 0 vdd
 port 4 nsew power bidirectional

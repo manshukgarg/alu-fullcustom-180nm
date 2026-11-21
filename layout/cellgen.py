@@ -630,14 +630,41 @@ class CellBuilder:
             ys = np.arange(Y1 - Y0)[None, :] + Y0
             pad_cost = (pres * (window_any(o1, -3, 7, -3, 7) + window_any(o2, -3, 7, -3, 7))
                         + 0.05 * np.abs(ys - (NW_Y0 - 3)) + np.zeros((self.width, 1)))
+            if self.grid:
+                up, down = self._column_load(o2)
+                pad_cost = pad_cost + pres * 4.0 * np.minimum(up, down)
             path = self._search(L, C, tree, [], own_vias=self._via_anchors(shapes),
                                 pad=(pad_ok, pad_cost))
             _, x, y = path[-1]
             shapes.extend(self._path_shapes(path[:-1], net))
             shapes.append(("m1", x, y, x + 4, y + 4, net))
-            shapes.append(("m2k", x, y, x + 4, y + 4, net))
+            shapes.append(self._escape(net, x, y, o2))
             self.pads[net] = ("m1", x, y, x + 4, y + 4)
         return shapes
+
+    def _column_load(self, o2):
+        """Foreign metal2 cells in the escape column above and below every pad corner.
+
+        Grid mode: a pin is reached by a via on its pad and a metal2 wire along the
+        track through the pad centre, up or down out of the cell. The column is the
+        pad width plus the spacing rule on both sides."""
+        col = window_any(o2, -3, 7, 0, 1).astype(np.int32)
+        up = np.cumsum(col[:, ::-1], axis=1)[:, ::-1]            # rows y .. top
+        down = np.cumsum(col, axis=1)                             # rows bottom .. y
+        down = np.concatenate([down[:, 3:], np.repeat(down[:, -1:], 3, axis=1)], axis=1)
+        return up, down                                          # down: rows .. y + 3
+
+    def _escape(self, net, x, y, o2):
+        """Metal2 keep-out of a pin pad: the pad alone, or (grid mode) the pad and its
+        escape column to the top or bottom of the cell, whichever is freer."""
+        if not self.grid:
+            return ("m2k", x, y, x + 4, y + 4, net)
+        up, down = self._column_load(o2)
+        yi = y - Y0
+        u, d = int(up[x, yi]), int(down[x, yi])
+        if (u, Y1 - y) <= (d, y - Y0):
+            return ("m2k", x, y, x + 4, Y1, net)
+        return ("m2k", x, Y0, x + 4, y + 4, net)
 
     def _pad_grid(self):
         """Pad corners allowed for pin pads: everywhere, or (grid mode) only where the
@@ -681,13 +708,18 @@ class CellBuilder:
                 full1 = ~window_any(~o1, 0, 4, 0, 4)
                 touch = window_any(o1, -1, 5, 0, 4) | window_any(o1, 0, 4, -1, 5)
                 grid = self._pad_grid()
+                if self.grid:
+                    f2m = (mp["m2"] != 0) & (mp["m2"] != nid)
+                    up, down = self._column_load(f2m)
+                    grid = grid & ((up == 0) | (down == 0))
                 c1 = np.argwhere(L["v1"] & touch & ~window_any(cut, 0, 4, 0, 4) & grid)
                 mid = (NW_Y0 - 3) - Y0
                 if len(c1):
                     i = min(range(len(c1)), key=lambda i: (not full1[c1[i][0], c1[i][1]],
                                                            abs(int(c1[i][1]) - mid), int(c1[i][0])))
                     x, y = int(c1[i][0]), int(c1[i][1]) + Y0
-                    self._set_route(net, self.routes[net] + [("m1", x, y, x + 4, y + 4, net)])
+                    keep = self._escape(net, x, y, (mp["m2"] != 0) & (mp["m2"] != nid))
+                    self._set_route(net, self.routes[net] + [("m1", x, y, x + 4, y + 4, net), keep])
                     self.pads[net] = ("m1", x, y, x + 4, y + 4)
                     break
                 full2 = ~window_any(~o2, 0, 4, 0, 4) & self._inside(4) & grid
@@ -894,11 +926,31 @@ class CellBuilder:
         L.net_shapes = allsh
         return L
 
+    def escape_problems(self):
+        """Grid mode: pins whose pad has no metal2 column free of other nets (with the
+        spacing rule) up to the top or down to the bottom of the cell."""
+        if not self.grid:
+            return []
+        out = []
+        for net, pad in self.pads.items():
+            layer, x1, y1, x2, y2 = pad
+            if layer != "m1":
+                continue
+            cx = (x1 + x2) / 2.0
+            lo, hi = cx - 2 - 3, cx + 2 + 3
+            other = [sh for sh in self.all_shapes() if sh[0] in ("m2", "m2c") and sh[5] != net
+                     and sh[1] < hi and sh[3] > lo]
+            up = not any(sh[4] > y1 for sh in other)
+            down = not any(sh[2] < y2 for sh in other)
+            if not (up or down):
+                out.append("pin %s: no free metal2 column above or below its pad" % net)
+        return out
+
     def verify(self, L):
         """Design-rule check and LVS-style comparison of the generated layout."""
         import drc
         import extract
-        errors = drc.check(L)
+        errors = drc.check(L) + self.escape_problems()
         problems, ndev = extract.lvs(L, self.all_shapes(), self.fingers, self.pins)
         return errors, problems, ndev
 

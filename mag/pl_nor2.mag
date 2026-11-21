@@ -54,12 +54,14 @@ rect 22 -2 24 2
 rect 0 2 24 3
 rect 2 3 6 6
 rect 18 3 22 6
-rect 10 12 14 15
-rect 3 15 14 17
-rect 3 17 13 18
+rect 10 12 13 15
+rect 3 15 13 18
 rect 3 18 6 26
 rect 18 23 22 27
 rect 10 33 14 37
+rect 7 43 14 44
+rect 6 44 14 46
+rect 10 46 14 47
 rect 18 74 22 77
 rect 0 77 24 78
 rect 0 78 2 82
@@ -77,7 +79,7 @@ rlabel metal1 s 10 33 14 37 0 A
 port 1 nsew signal input
 rlabel metal1 s 18 23 22 27 0 B
 port 2 nsew signal input
-rlabel metal1 s 10 13 14 17 0 Y
+rlabel metal1 s 10 43 14 47 0 Y
 port 3 nsew signal output
 rlabel metal1 s 0 77 2 83 0 vdd
 port 4 nsew power bidirectional
