@@ -119,6 +119,58 @@ Delays include the input driver (two X1 inverters). These sizes are in
 and the ALU netlists were regenerated with them. The sizes of the first lab sweep (30 October)
 are superseded: its summary mislabelled k and it measured the delay from the cell input.
 
+## First lab run of Step 5 (21 November 2026)
+
+Library cells (Magic DRC, Netgen LVS, characterization from the extracted layouts;
+worst arc at 16 fF load and 80 ps input slope):
+
+| Cell | Sites | Area (um2) | T | DRC | LVS | Cin max (fF) | tpd rise/fall (ps) | Leakage (nW) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| pl_inv | 3 | 19.2 | 2 | 0 | match | 9.5 | 84/80 | 0.007 |
+| pl_buf | 4 | 25.6 | 4 | 0 | match | 12.0 | 131/136 | 0.028 |
+| pl_nand2 | 3 | 19.2 | 4 | 0 | match | 10.4 | 107/90 | 0.010 |
+| pl_nor2 | 3 | 19.2 | 4 | 0 | match | 11.9 | 117/129 | 0.009 |
+| pl_and2 | 5 | 32.0 | 6 | 0 | match | 9.6 | 152/179 | 0.015 |
+| pl_or2 | 4 | 25.6 | 6 | 0 | match | 11.0 | 178/177 | 0.015 |
+| pl_xor2 | 7 | 44.8 | 10 | 0 | match | 13.5 | 274/269 | 0.016 |
+| pl_mux2 | 8 | 51.2 | 10 | 0 | match | 13.8 | 269/313 | 0.012 |
+| pl_mux2i | 6 | 38.4 | 8 | 0 | match | 17.1 | 220/206 | 0.009 |
+| pl_fa | 18 | 115.2 | 24 | 0 | match | 14.1 | 545/619 | 0.029 |
+| pl_fb4 | 18 | 115.2 | 20 | 0 | match | 21.8 | 400/465 | 0.014 |
+| pl_cs | 17 | 108.8 | 24 | 0 | match | 26.2 | 414/424 | 0.030 |
+
+Routed ALUs with pl018 (D4) and the proposed ALU:
+
+| | beh | slice | map | fb (proposed) |
+| --- | --- | --- | --- | --- |
+| Exhaustive and gate-level tests | 2048/2048 | 2048/2048 | 2048/2048 | 2048/2048 |
+| Yosys cells, area (um2) | 147, 3219.2 | 89, 2003.2 | 60, 2188.8 | 27, 1395.2 |
+| OpenSTA worst delay (ns) | 1.709 | 2.353 | 2.626 | 3.022 |
+| Cells placed (Qflow buffers included) | 201 | 116 | 94 | 57 |
+| Die (um) | 84.8 x 54.0 | 66.4 x 46.0 | 70.4 x 46.0 | 60.8 x 38.0 |
+| Routing | complete | 2 nets failed | 1 net failed | complete |
+| Qflow LVS | 5 errors | 4 errors | 27 errors | match |
+| Magic DRC with real cells | 1145 | 515 | 800 | 416 |
+| Before layout: worst delay (ps), energy (fJ) | 1651.8, 2473.0 | 1887.9, 1863.3 | 2420.3, 1702.2 | 2132.9, 1246.0 |
+| After layout: cycles correct | 141/229 | 55/229 | 13/229 | 229/229 |
+| After layout: worst delay (ps), energy (fJ), leakage (nW) | not valid | not valid | not valid | 2727.3, 1471.5, 0.69 |
+
+Findings:
+* Both ALU-specific cells pass Magic DRC and Netgen LVS; the proposed ALU routes completely,
+  matches LVS and is correct after layout (worst delay +27.9 %, energy +18.1 % over its
+  pre-layout netlist, which has no Qflow buffers).
+* Magic DRC errors of all four ALUs: the well and substrate taps in the rails shared by
+  neighbouring rows did not line up (contacts of different cells partly overlapping or
+  1-3 lambda apart). Fixed on 21 Nov: one tap per site, centred on it (taps of all cells
+  coincide or are 4 lambda apart); `layout/abut_check.py` reproduces the lab errors with
+  the old cells and finds none with the new ones. The abstract views did not change.
+* beh, slice and map fail after layout: failed routes in slice and map, LVS errors in all
+  three and static currents of 0.4-1.1 mW (unconnected or shorted nets). The proposed
+  design is not affected. The summaries now list the unreachable pins, failed nets,
+  unmatched nets and wrong outputs; the next lab run of Step 5 gives the cause.
+* Qflow's fanout buffering (`fanout_options -l 100 -c 20`, as for OSU018) inserts many
+  buffers with a single-strength library: fb 27 cells before, 57 placed.
+
 ## LTspice package (16 November 2026)
 
 `ltspice_package/` (zip `ALU4_180nm_LTspice.zip`, written by `sim/make_ltspice_package.py`):
@@ -169,7 +221,7 @@ numpy) and committed; the lab verifies them.
 | 3b | Sizing sweep of every candidate (21 candidates, 8 widths x 5 P/N ratios) | done outside the lab (16 Nov); lab rerun for the record | sizes above; `run_cells.py --resume` continues an interrupted sweep |
 | 3c | ALU-specific cells FB4 and CS: sizing and comparison with composed library cells (`step3_cells/run_alu_cells.sh`) | done outside the lab (16 Nov); lab run for the record | FB4 k 0.4, r 2.5; CS k 0.8, r 1.5 |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated, optimized cells regenerated with the final sizes (16 Nov) | conventional full adder outstanding; `opt_fa` is laid out on the placement grid (the free-width placement does not route at k 0.3); lab verification pending |
-| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | scripts ready (16 Nov) | 12 cells and the filler generated with the final sizes, clean in the generator's checks; four designs (`beh`, `slice`, `map`, `fb`); characterization of `pl_fb4` and `pl_cs` tested with Ngspice 46; lab run of `step5_library/run.sh` next |
+| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | first lab run 21 Nov; rerun with the tap fix next | all 13 cells DRC 0 and LVS match; proposed ALU routed, LVS match, correct after layout; ALU DRC errors from the rail taps fixed; beh, slice and map fail after layout (cause pending, see above) |
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | after the lab runs of Steps 2 and 5 |
