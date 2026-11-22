@@ -421,7 +421,7 @@ pres.addSection({ title: "Cell design" });
 pres.addSection({ title: "ALU" });
 {
   const s = content("ALU", "ALU bit slice",
-    "One FB4 and one CS per bit (44 transistors); a shared decoder of ten library cells sets the code lines");
+    "One FB4 and one CS per bit (44 transistors); a shared decoder of nine library cells sets the code lines");
   // bit slice
   const fx = 2.05, fy = 2.75, fw = 1.55, fh = 1.0, cx = 4.75, cy = 2.75, cw = 1.55, ch = 2.15;
   box(s, fx, fy, fw, fh, [{ text: "FB4", options: { bold: true, fontSize: 18, breakLine: true } },
@@ -458,7 +458,7 @@ pres.addSection({ title: "ALU" });
   });
   // chain of the 4-bit ALU
   const chainY = 5.55, chH = 0.78;
-  const blocks = [["Decoder", "10 cells"], ["bit 0", "FB4 + CS"], ["bit 1", "FB4 + CS"], ["bit 2", "FB4 + CS"],
+  const blocks = [["Decoder", "9 cells"], ["bit 0", "FB4 + CS"], ["bit 1", "FB4 + CS"], ["bit 2", "FB4 + CS"],
     ["bit 3", "FB4 + CS"], ["Flags", "C V Z N"]];
   const bwid = 0.98, bgap = 0.22;
   blocks.forEach(([h, d], i) => {
@@ -469,7 +469,7 @@ pres.addSection({ title: "ALU" });
       extra: { objectName: "Chain " + h } });
     if (i < blocks.length - 1) arrow(s, xx + bwid + 0.02, chainY + chH / 2, xx + bwid + bgap - 0.02, chainY + chH / 2);
   });
-  caption(s, "4-bit ALU: 272 transistors (the select lines are buffered inside the ALU)", MX, chainY + chH + 0.08, 7.0);
+  caption(s, "4-bit ALU at transistor level: 272 transistors, including one buffer on s2", MX, chainY + chH + 0.08, 7.0);
   // operation table
   table(s, ["Op", "P", "C3..C0", "c0", "K"], [
     ["ADD", "a xor b", "0110", "0", "0"], ["SUB", "a xnor b", "1001", "1", "0"], ["INC", "a", "1100", "1", "0"],

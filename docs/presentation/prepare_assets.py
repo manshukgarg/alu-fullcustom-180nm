@@ -40,7 +40,7 @@ SCREENS = {  # screenshot: (output, crop box left, top, right, bottom)
     "ngspice_chip_fb.png": ("scr_ngspice_chip_fb.png", (0, 31, 1426, 581)),
     "xschem_fb4.png": ("scr_xschem_fb4.png", (0, 37, 1320, 860)),
     "magic_fb4.png": ("scr_magic_fb4.png", (0, 38, 1430, 930)),
-    "ngspice_fb4.png": ("scr_ngspice_fb4.png", (0, 26, 1917, 973)),
+    "ngspice_fb4.png": ("scr_ngspice_fb4.png", (0, 38, 1917, 985)),
 }
 
 
