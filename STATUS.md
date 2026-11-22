@@ -245,7 +245,7 @@ final Step 5 run (`results/lab/after_layout_comparison.md`):
 * D4 against D3, same description: energy -36 to -45 %, leakage -36 to -52 %, energy x delay
   -32 to -49 %, die area -8 to -23 %, worst delay +3 %, +5 % and -7 %.
 * P against the best D3 value of each quantity: die area -37 % (map), transistors -40 % (slice),
-  energy -56 % (slice), leakage -69 % (slice), energy x delay -47 % (slice). Its worst delay
+  energy -56 % (slice), leakage -68 % (map), energy x delay -47 % (slice). Its worst delay
   (select change ADD to SUB, through the decoder and the four-bit carry chain to V) is 44 %
   above D3 beh and 22 % above D3 slice, 25 % below D3 map.
 
@@ -255,7 +255,10 @@ final Step 5 run (`results/lab/after_layout_comparison.md`):
   checked against `tech/pl018/pl018_cells.sp` by `demo/tools/schematics.py`), Magic DRC,
   extraction and LVS of a cell against its schematic, the routed ALUs in KLayout and Magic,
   and Ngspice simulations with waveform windows (cells, ALUs, the extracted routed ALU).
-  First lab test pending.
+  Lab test of 22 Nov: all views work (KLayout: press `*` to show the cell contents).
+* Slides: `docs/presentation/ALU4_180nm_presentation.pptx` (18 slides and 3 backup slides with speaker
+  notes), built by `docs/presentation/build_deck.js` from `docs/presentation/prepare_assets.py` and the lab
+  screenshots in `docs/presentation/screens/`; every number is from `results/lab/`.
 * Figures for the slides in `docs/figures/presentation/`: cell layouts
   (`docs/figures/render_layout.py`), schematics, result charts (`docs/figures/make_charts.py`)
   and waveforms (`docs/figures/make_waveforms.py`).
