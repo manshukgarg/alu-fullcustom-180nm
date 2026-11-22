@@ -607,7 +607,7 @@ pres.addSection({ title: "Implementation and results" });
     "Placed and routed by Qflow with the pl018 cells; the extracted netlist passes the full ALU test");
   const a = img(s, path.join(ASSETS, "scr_klayout_fb.png"), MX, TOP, 8.1, 4.6, { frame: true,
     alt: "KLayout view of the routed proposed ALU", name: "KLayout screenshot" });
-  caption(s, "KLayout: alu4_full.gds written by Magic (routing and cell instances)", MX, a.y + a.h + 0.05, a.w);
+  caption(s, "KLayout: alu4_full.gds written by Magic, with the cell layouts and the routing", MX, a.y + a.h + 0.05, a.w);
   const x2 = a.x + a.w + 0.35, w2 = W - MX - x2;
   txt(s, [
     { text: "55 placed cells: 27 netlist cells and the buffers inserted by Qflow", options: { bullet: true, breakLine: true } },
