@@ -66,8 +66,12 @@ def ngspice_batch(deck, raw, cwd):
 def open_plots(raw, lets, plots):
     """Ngspice in interactive mode: load the waveforms and open one window per plot."""
     ctl = os.path.splitext(raw)[0] + "_plot.sp"
-    L = ["* waveform view (demo/tools/wave.py)", ".control", "set color0=white", "set color1=black",
-         "set xbrushwidth=2", "load %s" % raw]
+    # white background, black grid and text; dark trace colours that stay readable on a projector
+    # (Ngspice's defaults include khaki and pink); the first trace of a plot is red
+    colours = ["red", "blue", "darkgreen", "darkorange", "purple", "brown", "black", "magenta"]
+    L = ["* waveform view (demo/tools/wave.py)", ".control", "set color0=white", "set color1=black"]
+    L += ["set color%d=%s" % (k + 2, c) for k, c in enumerate(colours)]
+    L += ["set xbrushwidth=2", "load %s" % raw]
     L += ["let %s = %s" % (n, e) for n, e in lets]
     L += ["plot %s title \"%s\"" % (" ".join(vs), title) for title, vs in plots]
     L += ["echo", "echo \"Plot windows are open. Type quit to leave Ngspice.\"", ".endc", ".end"]
@@ -244,7 +248,9 @@ def cell_demo(which, plot):
             nm = p.lower() + ("_out" if p in outputs else "_in")
             lets.append((nm, "v(%s)+%d" % (p.lower(), 2 * (n - 1 - i))))
             names.append(nm)
-        open_plots(raw, lets, [("%s: inputs (top) and outputs (bottom), offset 2 V each" % name, names)])
+        # outputs first, so that they get the first trace colours
+        order = names[len(inputs):] + names[:len(inputs)]
+        open_plots(raw, lets, [("%s: inputs (top) and outputs (bottom), offset 2 V each" % name, order)])
 
 
 # ----------------------------------------------------------------------------
