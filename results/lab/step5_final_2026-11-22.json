@@ -1,0 +1,335 @@
+{
+ "source": "lab run of step5_library/run.sh, NIELIT ChipCraft, 22 Nov 2026 08:09, sixth and final run (commit 1482049: LEF views as in the third run, router blockers in the router configuration); transcribed from the summary screenshots. Routing, extraction and simulation results identical to the fifth run; Qflow LVS now match for all four designs.",
+ "cells": {
+  "pl_inv": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 2,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.5,
+   "tpd_rise_fall_ps": "84/80",
+   "leak_nW": 0.007
+  },
+  "pl_buf": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "131/136",
+   "leak_nW": 0.028
+  },
+  "pl_nand2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.4,
+   "tpd_rise_fall_ps": "107/90",
+   "leak_nW": 0.01
+  },
+  "pl_nor2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "117/130",
+   "leak_nW": 0.009
+  },
+  "pl_and2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.6,
+   "tpd_rise_fall_ps": "153/180",
+   "leak_nW": 0.015
+  },
+  "pl_or2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.9,
+   "tpd_rise_fall_ps": "178/177",
+   "leak_nW": 0.015
+  },
+  "pl_xor2": {
+   "sites": 7,
+   "area_um2": 44.8,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 13.9,
+   "tpd_rise_fall_ps": "269/264",
+   "leak_nW": 0.016
+  },
+  "pl_mux2": {
+   "sites": 9,
+   "area_um2": 57.6,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 15.0,
+   "tpd_rise_fall_ps": "279/323",
+   "leak_nW": 0.012
+  },
+  "pl_mux2i": {
+   "sites": 6,
+   "area_um2": 38.4,
+   "transistors": 8,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 18.0,
+   "tpd_rise_fall_ps": "225/210",
+   "leak_nW": 0.009
+  },
+  "pl_fa": {
+   "sites": 17,
+   "area_um2": 108.8,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 14.0,
+   "tpd_rise_fall_ps": "545/633",
+   "leak_nW": 0.029
+  },
+  "pl_fb4": {
+   "sites": 18,
+   "area_um2": 115.2,
+   "transistors": 20,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 21.7,
+   "tpd_rise_fall_ps": "378/456",
+   "leak_nW": 0.014
+  },
+  "pl_cs": {
+   "sites": 17,
+   "area_um2": 108.8,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 26.0,
+   "tpd_rise_fall_ps": "395/400",
+   "leak_nW": 0.03
+  }
+ },
+ "designs": {
+  "beh": {
+   "placed": 198,
+   "die_um": [
+    84.0,
+    54.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 716,
+   "extracted_C_fF": 655,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 1874.0,
+    "t_mean_ps": 1274.6,
+    "e_avg_fJ": 2798.5,
+    "driver_fJ": 424.8,
+    "p_leak_nW": 1.98,
+    "edp": 5244.4,
+    "energy_by_op_fJ": [
+     3209,
+     3228,
+     2304,
+     2906,
+     2764,
+     2439,
+     2725,
+     2813
+    ]
+   },
+   "vs_D3": {
+    "placed": "+35%",
+    "t_max": "+3%",
+    "energy": "-43%",
+    "leak": "-36%",
+    "edp": "-41%",
+    "die_um2": "4536 (-17%)"
+   }
+  },
+  "slice": {
+   "placed": 110,
+   "die_um": [
+    78.4,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 454,
+   "extracted_C_fF": 429,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2257.1,
+    "t_mean_ps": 1259.4,
+    "e_avg_fJ": 2140.4,
+    "driver_fJ": 356.6,
+    "p_leak_nW": 1.22,
+    "edp": 4831.1,
+    "energy_by_op_fJ": [
+     2519,
+     2962,
+     1621,
+     2282,
+     2129,
+     2044,
+     1734,
+     1833
+    ]
+   },
+   "vs_D3": {
+    "placed": "+6%",
+    "t_max": "+5%",
+    "energy": "-36%",
+    "leak": "-45%",
+    "edp": "-32%",
+    "die_um2": "2979 (-23%)"
+   }
+  },
+  "map": {
+   "placed": 94,
+   "die_um": [
+    69.6,
+    46.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 484,
+   "extracted_C_fF": 528,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 3220.6,
+    "t_mean_ps": 1498.5,
+    "e_avg_fJ": 2077.3,
+    "driver_fJ": 471.4,
+    "p_leak_nW": 1.04,
+    "edp": 6690.1,
+    "energy_by_op_fJ": [
+     3119,
+     2762,
+     1705,
+     2293,
+     2026,
+     1629,
+     1460,
+     1626
+    ]
+   },
+   "vs_D3": {
+    "placed": "+49%",
+    "t_max": "-7%",
+    "energy": "-45%",
+    "leak": "-52%",
+    "edp": "-49%",
+    "die_um2": "3202 (-8%)"
+   }
+  },
+  "fb": {
+   "placed": 55,
+   "die_um": [
+    57.6,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 316,
+   "extracted_C_fF": 324,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2615.4,
+    "t_mean_ps": 1340.1,
+    "e_avg_fJ": 1453.0,
+    "driver_fJ": 248.8,
+    "p_leak_nW": 0.69,
+    "edp": 3800.1,
+    "energy_by_op_fJ": [
+     1807,
+     1857,
+     1610,
+     1953,
+     1104,
+     967,
+     1138,
+     1188
+    ]
+   },
+   "die_um2": 2189
+  }
+ },
+ "pre_layout": {
+  "beh": {
+   "t_max_ps": 1654.3,
+   "t_mean_ps": 1136.5,
+   "e_avg_fJ": 2466.0,
+   "driver_fJ": 393.2,
+   "p_leak_nW": 1.9,
+   "edp": 4079.5,
+   "yosys_cells": 146,
+   "yosys_area_um2": 3168.0,
+   "sta_ns": 1.626
+  },
+  "slice": {
+   "t_max_ps": 1897.1,
+   "t_mean_ps": 1093.5,
+   "e_avg_fJ": 1887.4,
+   "driver_fJ": 328.6,
+   "p_leak_nW": 1.18,
+   "edp": 3580.6,
+   "yosys_cells": 87,
+   "yosys_area_um2": 1977.6,
+   "sta_ns": 2.324
+  },
+  "map": {
+   "t_max_ps": 2420.3,
+   "t_mean_ps": 1189.2,
+   "e_avg_fJ": 1702.2,
+   "driver_fJ": 411.4,
+   "p_leak_nW": 1.0,
+   "edp": 4119.9,
+   "yosys_cells": 60,
+   "yosys_area_um2": 2156.8,
+   "sta_ns": 2.668
+  },
+  "fb": {
+   "t_max_ps": 2132.9,
+   "t_mean_ps": 1092.2,
+   "e_avg_fJ": 1246.0,
+   "driver_fJ": 217.8,
+   "p_leak_nW": 0.67,
+   "edp": 2657.5,
+   "yosys_cells": 27,
+   "yosys_area_um2": 1382.4,
+   "sta_ns": 2.958
+  }
+ },
+ "after_layout_increase": {
+  "beh": "+13.3 % delay, +13.5 % energy",
+  "slice": "+19.0 %, +13.4 %",
+  "map": "+33.1 %, +22.0 %",
+  "fb": "+22.6 %, +16.6 %"
+ },
+ "worst": {
+  "beh": "ADD a=9 b=0 -> ADD a=13 b=3, last output z",
+  "slice": "ADD a=1 b=15 -> SUB a=0 b=1, last output n",
+  "map": "ADD a=1 b=15 -> SUB a=0 b=1, last output v",
+  "fb": "ADD a=1 b=15 -> SUB a=0 b=1, last output v"
+ },
+ "final": true
+}

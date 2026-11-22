@@ -224,7 +224,10 @@ completely; their DRC is 0.
 * Fix (22 Nov): the blockers leave the LEF (identical again to the third run's views) and
   go to the router alone: `step5_library/add_blockers.py` places them with their cells from
   the placed DEF and adds them as obstructions to the router configuration between Qflow's
-  place and route steps (`tech/pl018/pl018_blockers.json`). Next: lab rerun of Step 5.
+  place and route steps (`tech/pl018/pl018_blockers.json`).
+* **Sixth lab run (22 Nov 08:09), final:** all four designs route completely, Qflow LVS
+  match, Magic DRC 0 with the real cells, all 229 transitions correct after layout. Numbers
+  as in the fifth run (`results/lab/step5_final_2026-11-22.json`). The chip flow is frozen.
 
 ## Presentation (28 November 2026) and demonstration
 
@@ -287,7 +290,7 @@ numpy) and committed; the lab verifies them.
 | 3b | Sizing sweep of every candidate (21 candidates, 8 widths x 5 P/N ratios) | done; the lab run of 21 Nov gives identical results | sizes above; `run_cells.py --resume` continues an interrupted sweep |
 | 3c | ALU-specific cells FB4 and CS: sizing and comparison with composed library cells (`step3_cells/run_alu_cells.sh`) | done; the lab run of 16 Nov gives identical results | FB4 k 0.4, r 2.5; CS k 0.8, r 1.5 |
 | 4 | Layouts of both cell libraries, DRC/LVS, post-layout cell numbers | 13 of 14 generated, optimized cells regenerated with the final sizes (16 Nov) | conventional full adder outstanding; `opt_fa` is laid out on the placement grid (the free-width placement does not route at k 0.3); lab verification pending |
-| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | three lab runs on 21 Nov | all 13 cells DRC 0 and LVS match; proposed ALU routed, LVS match, correct after layout (2759 ps, 1478 fJ, 0.69 nW); beh, slice and map have one short each (being located with `layout/find_shorts.py`) |
+| 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | done, final lab run 22 Nov | all 13 cells DRC 0 / LVS match; all four ALUs routed, LVS match, DRC 0, correct after layout; proposed ALU 2615 ps, 1453 fJ, 0.69 nW, 2189 um2; D4 energy -36 to -45 % vs D3 |
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | after the lab runs of Steps 2 and 5 |
