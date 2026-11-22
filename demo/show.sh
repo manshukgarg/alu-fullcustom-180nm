@@ -164,9 +164,22 @@ view_chip() {
     need klayout
     need_display
     chip_facts "$d"
+    # KLayout settings for the demo: open with every hierarchy level (the cell contents) and
+    # fitted to the window; a separate settings file, the user's own KLayout settings stay as they are
+    local rc=$DEMO/out/klayout/klayoutrc
+    mkdir -p "$DEMO/out/klayout"
+    cat > "$rc" <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+ <full-hierarchy-new-cell>true</full-hierarchy-new-cell>
+ <initial-hier-depth>99</initial-hier-depth>
+ <fit-new-cell>true</fit-new-cell>
+</config>
+XML
     echo "Opening the GDS written by Magic (routing and cell layouts) in KLayout"
-    echo "KLayout: press * to show every hierarchy level (cell contents), F2 to fit the window."
-    exec klayout -l "$DEMO/scmos.lyp" "$gds"
+    echo "If the cells show as empty frames: click once inside the KLayout window, then press *"
+    echo "(menu Display > Full Hierarchy) and F2 (Display > Zoom Fit). Keys typed here go to the terminal."
+    exec klayout -c "$rc" -l "$DEMO/scmos.lyp" "$gds"
 }
 
 view_chip_magic() {

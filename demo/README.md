@@ -44,7 +44,9 @@ Simulations accept `--no-plot` for the tables alone.
   clears; `n` writes the netlist, `Shift+A` shows it after netlisting.
 - Magic: `v` fits the cell; type `drc why` in the console for a highlighted rule error,
   `see no metal2` / `see metal2` to hide or show a layer.
-- KLayout: `*` shows every hierarchy level (the cells' contents), `F2` fits the window;
+- KLayout opens with every hierarchy level shown and fitted (settings file `demo/out/klayout/klayoutrc`).
+  If the cells appear as empty frames, click once inside the KLayout window, then `*` (Display >
+  Full Hierarchy) and `F2` (Display > Zoom Fit); keys typed in the terminal do not reach KLayout;
   layers are switched in the layer panel.
 - Ngspice: drag a rectangle in a plot window to zoom; type `quit` in the terminal to close.
 
