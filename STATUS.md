@@ -317,7 +317,7 @@ numpy) and committed; the lab verifies them.
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | comparison done (22 Nov, `results/lab/after_layout_comparison.md`); sweeps and Monte Carlo not done | P has the smallest die, fewest transistors and lowest energy, leakage and energy x delay of all seven routed ALUs; D3 beh is the fastest |
-| 8 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
+| 8 | Figures, paper (IEEE format), slides | figures and slides done (22 Nov, `docs/presentation/`); paper on hold until the owner decides | presentation 28 Nov |
 
 ## Step 5: how the library is made
 
