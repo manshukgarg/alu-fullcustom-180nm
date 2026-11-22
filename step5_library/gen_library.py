@@ -36,6 +36,7 @@ import logic  # noqa: E402
 
 TECHDIR = os.path.join(ROOT, "tech", "pl018")
 BUILD = os.path.join(HERE, "build")
+TRACK_X, TRACK_X0, TRACK_Y, TRACK_Y0 = 8, 4, 10, 5      # routing tracks (lambda)
 M1_LAYERS = {"m1", "ndc", "pdc", "pc", "psc", "nsc", "m2c"}
 M2_LAYERS = {"m2", "m2c"}
 DIFF_UM = 0.5            # diffusion length of the junction estimates, as in step3_cells/cellnet.py
@@ -144,6 +145,46 @@ def base(net):
     return net.split("#")[0] if net else net
 
 
+VIA_HALF, M_SPACE = 2, 3          # via pad 4 x 4 lambda, metal spacing 3 lambda
+
+
+def rect_gap(a, b):
+    dx = max(a[0] - b[2], b[0] - a[2], 0)
+    dy = max(a[1] - b[3], b[1] - a[3], 0)
+    return (dx * dx + dy * dy) ** 0.5
+
+
+def pin_blockers(g, by):
+    """Small obstructions on the routing-grid points where a via or wire of another net would
+    come closer than the spacing rule to the metal of a signal pin without that point lying
+    on the pin's metal. Qrouter keeps a reduced keepout around pin geometry (it may hand such
+    a point to another pin of the cell as an offset tap): the lab run of 21 November had vias
+    of other nets against the off-track output metal of pl_mux2i. An obstruction takes
+    precedence over every tap, and these blockers are 2 x 2 lambda, so the router's clearance
+    around them does not reach the neighbouring grid points. Points of a pin's own metal2
+    escape column near its own metal stay open."""
+    pins = g["inputs"] + g["outputs"]
+    pads = g["pads"]
+    out = {"metal1": [], "metal2": []}
+    for layer in out:
+        metal = [(b, n) for (n, ly), bs in by.items() if ly == layer and n in pins for b in bs]
+        power = [b for (n, ly), bs in by.items() if ly == layer and n in ("vdd", "gnd") for b in bs]
+        for gx in range(TRACK_X0, g["width_lambda"], TRACK_X):
+            for gy in range(TRACK_Y0, g["height_lambda"], TRACK_Y):
+                if any(b[0] <= gx <= b[2] and b[1] <= gy <= b[3] for b, _ in metal) or \
+                        any(b[0] <= gx <= b[2] and b[1] <= gy <= b[3] for b in power):
+                    continue
+                via = (gx - VIA_HALF, gy - VIA_HALF, gx + VIA_HALF, gy + VIA_HALF)
+                near = {n for b, n in metal if rect_gap(via, b) < M_SPACE}
+                if not near:
+                    continue
+                # a pin's own metal2 escape column stays open to the pin (its pad column)
+                if layer == "metal2" and all(pads.get(n) and pads[n][1] + VIA_HALF == gx for n in near):
+                    continue
+                out[layer].append((gx - 1, gy - 1, gx + 1, gy + 1))
+    return out
+
+
 def lef_macro(g):
     by = {}
     for layer, x1, y1, x2, y2, net in g["shapes"]:
@@ -156,10 +197,6 @@ def lef_macro(g):
     L = ["MACRO %s" % g["name"], "  CLASS CORE ;", "  FOREIGN %s 0.000 0.000 ;" % g["name"],
          "  ORIGIN 0.000 0.000 ;", "  SIZE %s BY %s ;" % (um(g["width_lambda"]), um(g["height_lambda"])),
          "  SYMMETRY X Y ;", "  SITE %s ;" % SITE_NAME]
-    # Signal pins are their access pads alone (a metal1 square centred on a routing-track
-    # crossing, with free metal2 above or below). The rest of every net, pin nets included,
-    # is obstruction, so the router keeps its full via clearance from it: off-track metal of
-    # a pin net written as pin geometry let the router place vias of other nets against it.
     for p in pins + ["vdd", "gnd"]:
         L.append("  PIN %s" % p)
         if p in g["inputs"]:
@@ -171,24 +208,24 @@ def lef_macro(g):
                   "    SHAPE ABUTMENT ;"]
         L.append("    PORT")
         pad = g["pads"].get(p)
-        if p in pins:
-            if not pad:
-                raise SystemExit("%s: pin %s has no access pad" % (g["name"], p))
-            L.append("      LAYER %s ;" % {"m1": "metal1", "m2": "metal2"}[pad[0]])
-            L += lef_rects([tuple(pad[1:5])], "        ")
-        else:
-            boxes = by.get((p, "metal1"))
-            L.append("      LAYER metal1 ;")
-            L += lef_rects(rect_cover(boxes), "        ")
+        for layer in ("metal1", "metal2"):
+            boxes = by.get((p, layer))
+            if boxes:
+                L.append("      LAYER %s ;" % layer)
+                # the access pad first and whole (centred on a track crossing), then the net
+                if pad and {"m1": "metal1", "m2": "metal2"}[pad[0]] == layer:
+                    L += lef_rects([tuple(pad[1:5])], "        ")
+                L += lef_rects(rect_cover(boxes), "        ")
         L += ["    END", "  END %s" % p]
     obs = []
+    blocks = pin_blockers(g, by)
     for layer in ("metal1", "metal2"):
-        boxes = [b for (n, ly), bs in by.items() if ly == layer and n not in ("vdd", "gnd") for b in bs]
-        boxes += [b for (n, ly), bs in by.items() if ly == layer and n in ("vdd", "gnd") and layer == "metal2"
-                  for b in bs]
-        if boxes:
+        boxes = [b for (n, ly), bs in by.items() if ly == layer and n not in pins + ["vdd", "gnd"]
+                 for b in bs]
+        if boxes or blocks[layer]:
             obs.append("    LAYER %s ;" % layer)
-            obs += lef_rects(rect_cover(boxes), "      ")
+            obs += lef_rects(rect_cover(boxes), "      ") if boxes else []
+            obs += lef_rects(blocks[layer], "      ")
     if obs:
         L += ["  OBS"] + obs + ["  END"]
     L.append("END %s" % g["name"])

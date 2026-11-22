@@ -201,7 +201,20 @@ completely; their DRC is 0.
   rest of every net, pin nets included, is obstruction, so the router keeps full via
   clearance from off-track pin metal; (2) cell metal2 stays 0.3 um clear of the power-post
   zone along the rails (`POST_ZONE` in `layout/cellgen.py`): pl_cs, pl_fa (now 17 sites) and
-  pl_xor2 regenerated, the other cells unchanged. Next: lab rerun of Step 5.
+  pl_xor2 regenerated, the other cells unchanged.
+* Fourth lab run (22 Nov, `results/lab/step5_2026-11-22.json`): all cells DRC 0 / LVS match;
+  beh, slice and map route completely, LVS match, Magic DRC 0 and are correct after layout
+  (worst delay 1872, 2256, 3229 ps; energy 2824, 2172, 2085 fJ; leakage 1.97, 1.22, 1.04 nW).
+  Against D3 after layout: energy -42/-35/-45 %, leakage -36/-45/-52 %, energy x delay
+  -40/-31/-49 %, delay +3/+5/-7 %, die area -17/-24/-7 %. fb lost the CI pins of its four
+  pl_cs (no access, carry nets cy_0..3 unrouted): with pad-only pins, the via onto the new
+  CI pad comes 0.2 um from the pin's own metal2, which the router then sees as an
+  obstruction.
+* Fix (22 Nov): pins are their full metal again (as in the runs where fb routed) and the LEF
+  obstruction gets 0.2 x 0.2 um blockers on the routing-grid points where another net's via
+  would come within the spacing rule of signal-pin metal without lying on it (Qrouter's
+  reduced pin keepout); a pin's own metal2 escape column stays open. Every pin keeps a
+  metal2 landing point. Next: lab rerun of Step 5.
 
 ## Presentation (28 November 2026) and demonstration
 

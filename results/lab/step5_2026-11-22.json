@@ -1,0 +1,311 @@
+{
+ "source": "lab run of step5_library/run.sh, NIELIT ChipCraft, 22 Nov 2026 05:36, fourth run (commit 57d68eb: LEF signal pins as access pads only, cell metal2 clear of the power-post zone; pl_cs, pl_fa, pl_xor2 regenerated); transcribed from the summary screenshots",
+ "cells": {
+  "pl_inv": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 2,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.5,
+   "tpd_rise_fall_ps": "84/80",
+   "leak_nW": 0.007
+  },
+  "pl_buf": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "131/136",
+   "leak_nW": 0.028
+  },
+  "pl_nand2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.4,
+   "tpd_rise_fall_ps": "107/90",
+   "leak_nW": 0.01
+  },
+  "pl_nor2": {
+   "sites": 3,
+   "area_um2": 19.2,
+   "transistors": 4,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 12.0,
+   "tpd_rise_fall_ps": "117/130",
+   "leak_nW": 0.009
+  },
+  "pl_and2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 9.6,
+   "tpd_rise_fall_ps": "153/180",
+   "leak_nW": 0.015
+  },
+  "pl_or2": {
+   "sites": 4,
+   "area_um2": 25.6,
+   "transistors": 6,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 10.9,
+   "tpd_rise_fall_ps": "178/177",
+   "leak_nW": 0.015
+  },
+  "pl_xor2": {
+   "sites": 7,
+   "area_um2": 44.8,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 13.9,
+   "tpd_rise_fall_ps": "269/264",
+   "leak_nW": 0.016
+  },
+  "pl_mux2": {
+   "sites": 9,
+   "area_um2": 57.6,
+   "transistors": 10,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 15.0,
+   "tpd_rise_fall_ps": "279/323",
+   "leak_nW": 0.012
+  },
+  "pl_mux2i": {
+   "sites": 6,
+   "area_um2": 38.4,
+   "transistors": 8,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 18.0,
+   "tpd_rise_fall_ps": "225/210",
+   "leak_nW": 0.009
+  },
+  "pl_fa": {
+   "sites": 17,
+   "area_um2": 108.8,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 14.0,
+   "tpd_rise_fall_ps": "545/633",
+   "leak_nW": 0.029
+  },
+  "pl_fb4": {
+   "sites": 18,
+   "area_um2": 115.2,
+   "transistors": 20,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 21.7,
+   "tpd_rise_fall_ps": "378/456",
+   "leak_nW": 0.014
+  },
+  "pl_cs": {
+   "sites": 17,
+   "area_um2": 108.8,
+   "transistors": 24,
+   "drc": 0,
+   "lvs": "match",
+   "cin_max_fF": 26.0,
+   "tpd_rise_fall_ps": "395/400",
+   "leak_nW": 0.03
+  }
+ },
+ "designs": {
+  "beh": {
+   "yosys_cells": 146,
+   "yosys_area_um2": 3168.0,
+   "sta_ns": 1.626,
+   "placed": 198,
+   "die_um": [
+    84.0,
+    54.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 716,
+   "extracted_C_fF": 665,
+   "pre": {
+    "t_max_ps": 1654.3,
+    "t_mean_ps": 1136.5,
+    "e_avg_fJ": 2466.0,
+    "p_leak_nW": 1.9,
+    "edp": 4079.5
+   },
+   "post": {
+    "correct": "all",
+    "t_max_ps": 1872.1,
+    "t_mean_ps": 1282.5,
+    "e_avg_fJ": 2823.7,
+    "p_leak_nW": 1.97,
+    "edp": 5286.2,
+    "energy_by_op_fJ": [
+     3252,
+     3242,
+     2325,
+     2929,
+     2795,
+     2452,
+     2763,
+     2832
+    ],
+    "valid": true
+   },
+   "vs_D3": {
+    "placed": "+35%",
+    "t_max": "+3%",
+    "energy": "-42%",
+    "leak": "-36%",
+    "edp": "-40%",
+    "die_um2": "4536 (-17%)"
+   }
+  },
+  "slice": {
+   "yosys_cells": 87,
+   "yosys_area_um2": 1977.6,
+   "sta_ns": 2.324,
+   "placed": 106,
+   "die_um": [
+    77.6,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 454,
+   "extracted_C_fF": 447,
+   "pre": {
+    "t_max_ps": 1897.1,
+    "t_mean_ps": 1093.5,
+    "e_avg_fJ": 1887.4,
+    "p_leak_nW": 1.18,
+    "edp": 3580.6
+   },
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2256.4,
+    "t_mean_ps": 1267.5,
+    "e_avg_fJ": 2172.4,
+    "p_leak_nW": 1.22,
+    "edp": 4901.7,
+    "energy_by_op_fJ": [
+     2580,
+     3044,
+     1636,
+     2308,
+     2164,
+     2067,
+     1739,
+     1841
+    ],
+    "valid": true
+   },
+   "vs_D3": {
+    "placed": "+2%",
+    "t_max": "+5%",
+    "energy": "-35%",
+    "leak": "-45%",
+    "edp": "-31%",
+    "die_um2": "2949 (-24%)"
+   }
+  },
+  "map": {
+   "yosys_cells": 60,
+   "yosys_area_um2": 2156.8,
+   "sta_ns": 2.668,
+   "placed": 99,
+   "die_um": [
+    70.4,
+    46.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "match",
+   "magic_drc": 0,
+   "extracted_T": 484,
+   "extracted_C_fF": 551,
+   "pre": {
+    "t_max_ps": 2420.3,
+    "t_mean_ps": 1189.2,
+    "e_avg_fJ": 1702.2,
+    "p_leak_nW": 1.0,
+    "edp": 4119.9
+   },
+   "post": {
+    "correct": "all",
+    "t_max_ps": 3229.0,
+    "t_mean_ps": 1503.6,
+    "e_avg_fJ": 2085.2,
+    "p_leak_nW": 1.04,
+    "edp": 6733.2,
+    "energy_by_op_fJ": [
+     3130,
+     2745,
+     1718,
+     2293,
+     2039,
+     1642,
+     1473,
+     1642
+    ],
+    "valid": true
+   },
+   "vs_D3": {
+    "placed": "+57%",
+    "t_max": "-7%",
+    "energy": "-45%",
+    "leak": "-52%",
+    "edp": "-49%",
+    "die_um2": "3238 (-7%)"
+   }
+  },
+  "fb": {
+   "yosys_cells": 27,
+   "yosys_area_um2": 1382.4,
+   "sta_ns": 2.958,
+   "placed": 55,
+   "die_um": [
+    60.0,
+    38.0
+   ],
+   "routing": "4 failed (cy_0..cy_3)",
+   "qflow_lvs": "8 errors",
+   "magic_drc": 0,
+   "extracted_T": 316,
+   "extracted_C_fF": 334,
+   "pre": {
+    "t_max_ps": 2132.9,
+    "t_mean_ps": 1092.2,
+    "e_avg_fJ": 1246.0,
+    "p_leak_nW": 0.67,
+    "edp": 2657.5
+   },
+   "post": {
+    "correct": "159 bad",
+    "valid": false
+   },
+   "finding": "4 pins without access: pl_cs_1..4/CI (pad-only LEF pin; the via onto the CI pad would come 0.2 um from the pin's own metal2, which the router saw as an obstruction)"
+  }
+ },
+ "energy_ops": [
+  "ADD",
+  "SUB",
+  "INC",
+  "DEC",
+  "AND",
+  "OR",
+  "XOR",
+  "NOT"
+ ]
+}
