@@ -274,9 +274,10 @@ klayout step2_rtl_baseline/qflow_slice/layout/alu4_full.gds              # route
 | Step | Content | Result |
 | --- | --- | --- |
 | 1 | Inverter flow check | DRC clean, LVS match, post-layout delay +6.9 % over schematic |
-| 2 | Automated implementation D3 | 8-bit version (30 Oct): 524,288 vectors pass, 136 cells, 4090 um2, 1.59 ns, DRC and LVS clean; 4-bit flow with post-layout ALU simulation ready for the lab |
+| 2 | Automated implementation D3 | all three designs routed, LVS match, DRC 0, correct after layout; after layout 1812/2144/3476 ps, 4899/3333/3807 fJ (beh/slice/map) |
 | 3 | Cell topology comparison and sizing | TG styles lowest PDP; 21 candidates sized (16 Nov, Ngspice 46 outside the lab): XOR2 -53 %, MUX2 -65 %, FA -60 % PDP against static CMOS |
 | 3c | ALU-specific cells FB4 and CS | sized; PDP -12 % and -18 % against the same functions from library cells, -73 % and -64 % against static CMOS |
 | 4 | Layouts of both libraries | 13 of 14 cells generated with the final sizes (conventional full adder outstanding), rule check and connectivity clean; lab verification pending |
-| 5 | Project library pl018, D4 and the proposed ALU | 12 cells and filler generated (grid mode), rule check and connectivity clean; characterization and flow for four designs ready for the lab |
+| 5 | Project library pl018, D4 and the proposed ALU | 12 cells DRC 0 and LVS match, characterized; all four ALUs routed, LVS match, DRC 0, correct after layout; proposed ALU 2615 ps, 1453 fJ, 0.69 nW, 2189 um2 |
+| 7 | Comparison after layout | `results/lab/after_layout_comparison.md`: the proposed ALU has the smallest die and the lowest energy, leakage and energy x delay of the seven routed ALUs |
 | 6 | The ALU from each cell set, transistor level | five netlists correct on all 2048 vectors and simulated: proposed ALU 272 T, 2076 ps, 871 fJ per operation against 578 T, 2980 ps, 3510 fJ conventional |

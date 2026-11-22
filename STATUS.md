@@ -229,6 +229,26 @@ completely; their DRC is 0.
   match, Magic DRC 0 with the real cells, all 229 transitions correct after layout. Numbers
   as in the fifth run (`results/lab/step5_final_2026-11-22.json`). The chip flow is frozen.
 
+## Comparison after layout (Step 7, 22 November 2026)
+
+Step 2 (D3, OSU018 cells) in the lab: all three designs pass the exhaustive and gate-level
+tests, route completely, match LVS, have Magic DRC 0 with the real cell layouts and are correct
+on all 229 transitions after layout. `results/compare_after_layout.py` combines it with the
+final Step 5 run (`results/lab/after_layout_comparison.md`):
+
+| Design | Die (um2) | Transistors | Worst delay (ps) | Energy per op (fJ) | Leakage (nW) | Energy x delay (fJ ns) |
+| --- | --- | --- | --- | --- | --- | --- |
+| D3 beh / slice / map (OSU018) | 5466 / 3864 / 3496 | 793 / 525 / 534 | 1812.0 / 2144.4 / 3476.1 | 4898.7 / 3333.0 / 3807.1 | 3.10 / 2.21 / 2.18 | 8876.4 / 7147.1 / 13233.7 |
+| D4 beh / slice / map (pl018) | 4536 / 2979 / 3202 | 716 / 454 / 484 | 1874.0 / 2257.1 / 3220.6 | 2798.5 / 2140.4 / 2077.3 | 1.98 / 1.22 / 1.04 | 5244.4 / 4831.1 / 6690.1 |
+| P fb (pl018, FB4 + CS) | 2189 | 316 | 2615.4 | 1453.0 | 0.69 | 3800.1 |
+
+* D4 against D3, same description: energy -36 to -45 %, leakage -36 to -52 %, energy x delay
+  -32 to -49 %, die area -8 to -23 %, worst delay +3 %, +5 % and -7 %.
+* P against the best D3 value of each quantity: die area -37 % (map), transistors -40 % (slice),
+  energy -56 % (slice), leakage -69 % (slice), energy x delay -47 % (slice). Its worst delay
+  (select change ADD to SUB, through the decoder and the four-bit carry chain to V) is 44 %
+  above D3 beh and 22 % above D3 slice, 25 % below D3 map.
+
 ## Presentation (28 November 2026) and demonstration
 
 * `demo/show.sh` (see `demo/README.md`): Xschem schematics of FB4 and CS (generated and
@@ -285,7 +305,7 @@ numpy) and committed; the lab verifies them.
 | 0 | Lab check, models, GitHub repository | done | all tools present; ChipCraft has internet |
 | 1 | Inverter: simulate, layout, DRC, LVS, post-layout | done | DRC 0, LVS match, delay 95.0 ps schematic / 101.6 ps post-layout |
 | 2, 8-bit | ALU Verilog and automated baseline (30 Oct) | done, superseded | 524,288-vector test passes; 136 cells, 4,090 um2, 1.59 ns; Qflow layout DRC and LVS clean |
-| 2, 4-bit | Automated flow D3, complete: netlist and gate-level tests, Yosys, OpenSTA, Qflow, DRC with real cells, transistor-level extraction, post-layout ALU simulation, for `beh`, `slice` and `map` | scripts ready (15 Nov) | lab run of `step2_rtl_baseline/run.sh` next |
+| 2, 4-bit | Automated flow D3, complete: netlist and gate-level tests, Yosys, OpenSTA, Qflow, DRC with real cells, transistor-level extraction, post-layout ALU simulation, for `beh`, `slice` and `map` | done (lab, `results/lab/step2_2026-11-22.json`) | all three routed, LVS match, DRC 0, 229/229 after layout; after layout 1812/2144/3476 ps, 4899/3333/3807 fJ, 3.10/2.21/2.18 nW |
 | 3a | 16 candidate cell circuits compared (reference size) | done (30 Oct) | TG styles best: XOR2 -51 %, MUX2 -64 %, FA -46 % PDP vs static CMOS; 5 candidates added on 15 Nov (AND2, OR2 and the gate-level XOR, MUX, FA), measured with the sweep |
 | 3b | Sizing sweep of every candidate (21 candidates, 8 widths x 5 P/N ratios) | done; the lab run of 21 Nov gives identical results | sizes above; `run_cells.py --resume` continues an interrupted sweep |
 | 3c | ALU-specific cells FB4 and CS: sizing and comparison with composed library cells (`step3_cells/run_alu_cells.sh`) | done; the lab run of 16 Nov gives identical results | FB4 k 0.4, r 2.5; CS k 0.8, r 1.5 |
@@ -293,7 +313,7 @@ numpy) and committed; the lab verifies them.
 | 5 | Project cell library pl018 and the automated ALU with it, D4, and the proposed ALU P: cell DRC/LVS, Liberty characterization, Yosys, Qflow, DRC with real cells, post-layout ALU simulation, comparison with D3 | done, final lab run 22 Nov | all 13 cells DRC 0 / LVS match; all four ALUs routed, LVS match, DRC 0, correct after layout; proposed ALU 2615 ps, 1453 fJ, 0.69 nW, 2189 um2; D4 energy -36 to -45 % vs D3 |
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
-| 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | pending | after the lab runs of Steps 2 and 5 |
+| 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | comparison done (22 Nov, `results/lab/after_layout_comparison.md`); sweeps and Monte Carlo not done | P has the smallest die, fewest transistors and lowest energy, leakage and energy x delay of all seven routed ALUs; D3 beh is the fastest |
 | 8 | Figures, paper (IEEE format), slides | pending | 21-27 Nov |
 
 ## Step 5: how the library is made
