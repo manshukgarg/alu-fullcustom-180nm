@@ -126,8 +126,12 @@ for d in $DESIGNS; do
     cp "$(rtl $d)" $q/source/alu4.v
     # no post-route timing step (backanno): it does not change the layout, and the timing
     # comes from OpenSTA above and from the transistor-level simulation below
-    (cd $q && QFLOW_TECH_DIR="$TECH" qflow -T pl018 synthesize place route migrate lvs alu4 \
-        > ../out/qflow_$d.log 2>&1)
+    # between placement and routing: router blockers next to signal-pin metal (add_blockers.py)
+    (cd $q && QFLOW_TECH_DIR="$TECH" qflow -T pl018 synthesize place alu4 > ../out/qflow_$d.log 2>&1)
+    if [ -f $q/layout/alu4.cfg ]; then
+        python3 add_blockers.py $q/layout >> out/qflow_$d.log 2>&1
+    fi
+    (cd $q && QFLOW_TECH_DIR="$TECH" qflow -T pl018 route migrate lvs alu4 >> ../out/qflow_$d.log 2>&1)
 done
 
 echo "[5/6] DRC with real cell layouts and transistor-level extraction (magic)"

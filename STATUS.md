@@ -214,7 +214,17 @@ completely; their DRC is 0.
   obstruction gets 0.2 x 0.2 um blockers on the routing-grid points where another net's via
   would come within the spacing rule of signal-pin metal without lying on it (Qrouter's
   reduced pin keepout); a pin's own metal2 escape column stays open. Every pin keeps a
-  metal2 landing point. Next: lab rerun of Step 5.
+  metal2 landing point.
+* Fifth lab run (22 Nov, `results/lab/step5_2026-11-22_run5.json`): all four designs route
+  completely, Magic DRC 0 with the real cells and all 229 transitions correct after layout,
+  leakage 0.7-2 nW (no short anywhere in the real layout). Proposed ALU after layout:
+  2615.4 ps, 1453.0 fJ, 0.69 nW, die 57.6 x 38.0 um. Qflow's own LVS, which extracts the
+  layout with the LEF views, reported 66-253 errors: Magic draws LEF obstructions as metal,
+  so the blockers merged nets in that abstract view only.
+* Fix (22 Nov): the blockers leave the LEF (identical again to the third run's views) and
+  go to the router alone: `step5_library/add_blockers.py` places them with their cells from
+  the placed DEF and adds them as obstructions to the router configuration between Qflow's
+  place and route steps (`tech/pl018/pl018_blockers.json`). Next: lab rerun of Step 5.
 
 ## Presentation (28 November 2026) and demonstration
 

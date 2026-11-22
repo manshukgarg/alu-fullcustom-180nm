@@ -155,14 +155,16 @@ def rect_gap(a, b):
 
 
 def pin_blockers(g, by):
-    """Small obstructions on the routing-grid points where a via or wire of another net would
-    come closer than the spacing rule to the metal of a signal pin without that point lying
-    on the pin's metal. Qrouter keeps a reduced keepout around pin geometry (it may hand such
-    a point to another pin of the cell as an offset tap): the lab run of 21 November had vias
-    of other nets against the off-track output metal of pl_mux2i. An obstruction takes
+    """Small router obstructions on the routing-grid points where a via or wire of another net
+    would come closer than the spacing rule to the metal of a signal pin without that point
+    lying on the pin's metal. Qrouter keeps a reduced keepout around pin geometry (it may hand
+    such a point to another pin of the cell as an offset tap): the lab run of 21 November had
+    vias of other nets against the off-track output metal of pl_mux2i. An obstruction takes
     precedence over every tap, and these blockers are 2 x 2 lambda, so the router's clearance
     around them does not reach the neighbouring grid points. Points of a pin's own metal2
-    escape column near its own metal stay open."""
+    escape column near its own metal stay open. They are given to the router as obstructions
+    of its configuration (add_blockers.py), not in the LEF: in the LEF, Qflow's abstract-view
+    LVS reads them as metal (fifth lab run, 22 November)."""
     pins = g["inputs"] + g["outputs"]
     pads = g["pads"]
     out = {"metal1": [], "metal2": []}
@@ -185,7 +187,8 @@ def pin_blockers(g, by):
     return out
 
 
-def lef_macro(g):
+def by_net_layer(g):
+    """{(net, 'metal1' | 'metal2'): [boxes in lambda]} of a cell."""
     by = {}
     for layer, x1, y1, x2, y2, net in g["shapes"]:
         n = base(net) or "-"
@@ -193,6 +196,24 @@ def lef_macro(g):
             by.setdefault((n, "metal1"), []).append((x1, y1, x2, y2))
         if layer in M2_LAYERS:
             by.setdefault((n, "metal2"), []).append((x1, y1, x2, y2))
+    return by
+
+
+def write_blockers(cells, path):
+    """Routing blockers of every cell (see pin_blockers), in um, for add_blockers.py."""
+    out = {}
+    for g in cells:
+        if g["inputs"] or g["outputs"]:
+            bl = pin_blockers(g, by_net_layer(g))
+            out[g["name"]] = {layer: [[round(v / 10.0, 3) for v in b] for b in bs] for layer, bs in bl.items()}
+    with open(path, "w") as f:
+        json.dump({"note": "router blockers next to signal-pin metal, cell coordinates in um; "
+                           "added to the qrouter configuration by step5_library/add_blockers.py",
+                   "cells": out}, f, indent=1, sort_keys=True)
+
+
+def lef_macro(g):
+    by = by_net_layer(g)
     pins = g["inputs"] + g["outputs"]
     L = ["MACRO %s" % g["name"], "  CLASS CORE ;", "  FOREIGN %s 0.000 0.000 ;" % g["name"],
          "  ORIGIN 0.000 0.000 ;", "  SIZE %s BY %s ;" % (um(g["width_lambda"]), um(g["height_lambda"])),
@@ -218,14 +239,12 @@ def lef_macro(g):
                 L += lef_rects(rect_cover(boxes), "        ")
         L += ["    END", "  END %s" % p]
     obs = []
-    blocks = pin_blockers(g, by)
     for layer in ("metal1", "metal2"):
         boxes = [b for (n, ly), bs in by.items() if ly == layer and n not in pins + ["vdd", "gnd"]
                  for b in bs]
-        if boxes or blocks[layer]:
+        if boxes:
             obs.append("    LAYER %s ;" % layer)
-            obs += lef_rects(rect_cover(boxes), "      ") if boxes else []
-            obs += lef_rects(blocks[layer], "      ")
+            obs += lef_rects(rect_cover(boxes), "      ")
     if obs:
         L += ["  OBS"] + obs + ["  END"]
     L.append("END %s" % g["name"])
@@ -311,6 +330,7 @@ def write_views(lib):
         cells.append(json.load(open(p)))
     os.makedirs(TECHDIR, exist_ok=True)
     write_lef(cells, os.path.join(TECHDIR, "pl018_cells.lef"))
+    write_blockers(cells, os.path.join(TECHDIR, "pl018_blockers.json"))
     write_spice(cells, os.path.join(TECHDIR, "pl018_cells.sp"))
     write_verilog(cells, os.path.join(TECHDIR, "pl018_cells.v"))
     write_index(cells, lib, os.path.join(HERE, "cells.json"))

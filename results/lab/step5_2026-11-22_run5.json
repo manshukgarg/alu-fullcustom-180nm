@@ -1,0 +1,168 @@
+{
+ "source": "lab run of step5_library/run.sh, NIELIT ChipCraft, 22 Nov 2026 07:40, fifth run (commit 643abcf: full pins, router blockers in the LEF obstructions); transcribed from the summary screenshots",
+ "cells": "as in step5_2026-11-22.json (identical summary lines)",
+ "designs": {
+  "beh": {
+   "placed": 198,
+   "die_um": [
+    84.0,
+    54.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "253 errors (abstract view, blockers read as metal)",
+   "magic_drc": 0,
+   "extracted_T": 716,
+   "extracted_C_fF": 655,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 1874.0,
+    "t_mean_ps": 1274.6,
+    "e_avg_fJ": 2798.5,
+    "driver_fJ": 424.8,
+    "p_leak_nW": 1.98,
+    "edp": 5244.4,
+    "energy_by_op_fJ": [
+     3209,
+     3228,
+     2304,
+     2906,
+     2764,
+     2439,
+     2725,
+     2813
+    ]
+   },
+   "vs_D3": {
+    "placed": "+35%",
+    "t_max": "+3%",
+    "energy": "-43%",
+    "leak": "-36%",
+    "edp": "-41%",
+    "die_um2": "4536 (-17%)"
+   }
+  },
+  "slice": {
+   "placed": 110,
+   "die_um": [
+    78.4,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "119 errors",
+   "magic_drc": 0,
+   "extracted_T": 454,
+   "extracted_C_fF": 429,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2257.1,
+    "t_mean_ps": 1259.4,
+    "e_avg_fJ": 2140.4,
+    "driver_fJ": 356.6,
+    "p_leak_nW": 1.22,
+    "edp": 4831.1,
+    "energy_by_op_fJ": [
+     2519,
+     2962,
+     1621,
+     2282,
+     2129,
+     2044,
+     1734,
+     1833
+    ]
+   },
+   "vs_D3": {
+    "placed": "+6%",
+    "t_max": "+5%",
+    "energy": "-36%",
+    "leak": "-45%",
+    "edp": "-32%",
+    "die_um2": "2979 (-23%)"
+   }
+  },
+  "map": {
+   "placed": 94,
+   "die_um": [
+    69.6,
+    46.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "123 errors",
+   "magic_drc": 0,
+   "extracted_T": 484,
+   "extracted_C_fF": 528,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 3220.6,
+    "t_mean_ps": 1498.5,
+    "e_avg_fJ": 2077.3,
+    "driver_fJ": 471.4,
+    "p_leak_nW": 1.04,
+    "edp": 6690.1,
+    "energy_by_op_fJ": [
+     3119,
+     2762,
+     1705,
+     2293,
+     2026,
+     1629,
+     1460,
+     1626
+    ]
+   },
+   "vs_D3": {
+    "placed": "+49%",
+    "t_max": "-7%",
+    "energy": "-45%",
+    "leak": "-52%",
+    "edp": "-49%",
+    "die_um2": "3202 (-8%)"
+   }
+  },
+  "fb": {
+   "placed": 55,
+   "die_um": [
+    57.6,
+    38.0
+   ],
+   "routing": "complete",
+   "qflow_lvs": "66 errors",
+   "magic_drc": 0,
+   "extracted_T": 316,
+   "extracted_C_fF": 324,
+   "post": {
+    "correct": "all",
+    "t_max_ps": 2615.4,
+    "t_mean_ps": 1340.1,
+    "e_avg_fJ": 1453.0,
+    "driver_fJ": 248.8,
+    "p_leak_nW": 0.69,
+    "edp": 3800.1,
+    "energy_by_op_fJ": [
+     1807,
+     1857,
+     1610,
+     1953,
+     1104,
+     967,
+     1138,
+     1188
+    ]
+   },
+   "die_um2": 2189
+  }
+ },
+ "pre_layout": "as in step5_2026-11-22.json",
+ "after_layout_increase": {
+  "beh": "+13.3 % delay, +13.5 % energy",
+  "slice": "+19.0 %, +13.4 %",
+  "map": "+33.1 %, +22.0 %",
+  "fb": "+22.6 %, +16.6 %"
+ },
+ "worst": {
+  "beh": "ADD a=9 b=0 -> ADD a=13 b=3, last output z",
+  "slice": "ADD a=1 b=15 -> SUB a=0 b=1, last output n",
+  "map": "ADD a=1 b=15 -> SUB a=0 b=1, last output v",
+  "fb": "ADD a=1 b=15 -> SUB a=0 b=1, last output v"
+ }
+}
