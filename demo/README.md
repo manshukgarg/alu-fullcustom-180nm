@@ -27,6 +27,11 @@ The chip views use the layouts of the last run of Step 5 (`fb`, `beh`, `slice`, 
 Step 2 (`osu-*`); `layout` and `cell-sim` use the extracted cells of Step 5 when present.
 Simulations accept `--no-plot` for the tables alone.
 
+## Guided tour
+
+`bash demo/tour.sh` opens the views below one after the other (close each window to go on;
+`bash demo/tour.sh --list` lists them, `bash demo/tour.sh 4` starts at view 4).
+
 ## Suggested order (about ten minutes)
 
 1. `schematic fb4`: the circuit of the new cell; A and B select one of the four function
