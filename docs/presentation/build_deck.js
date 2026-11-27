@@ -215,8 +215,8 @@ pres.addSection({ title: "Introduction" });
   ], { x: 7.35, y: TOP, w: 5.38, colW: [1.4, 1.6, 2.38], fontSize: 14, rowH: 0.35 });
   txt(s, "Flags: C carry (1 = no borrow), V overflow, Z zero, N negative.",
     { x: 7.35, y: 5.25, w: 5.38, h: 0.6, fontSize: 14 });
-  txt(s, "TSMC 0.18 µm CMOS, 1.8 V, 27 °C; SCMOS SCN6M_SUBM rules, λ = 0.1 µm. Ngspice 46, Xschem, Magic, Netgen, " +
-    "Yosys, Qflow, OpenSTA, KLayout in the NIELIT ChipCraft lab.", { x: MX, y: 6.3, w: CW, h: 0.55, fontSize: 13, color: MUTED });
+  txt(s, "TSMC 0.18 µm CMOS, 1.8 V, 27 °C; SCMOS SCN6M_SUBM rules [22], λ = 0.1 µm. Ngspice 46 [24], Xschem, " +
+    "Magic [23], Netgen, Yosys [25], Qflow [26], OpenSTA, KLayout in the NIELIT ChipCraft lab.", { x: MX, y: 6.3, w: CW, h: 0.55, fontSize: 13, color: MUTED });
   s.addNotes("Four objectives: optimized cells, two cells made for the ALU bit, a library that the standard open-source " +
     "flow can use, and a fair comparison of complete ALUs. The ALU has eight operations selected by s2 to s0 and four " +
     "flags. Technology: TSMC 0.18 micron at 1.8 volt with the SCMOS rules of the Qflow kit; every tool runs in the " +
@@ -229,26 +229,28 @@ pres.addSection({ title: "Introduction" });
     "Recent work improves single cells or the logic style of a whole ALU; few designs are compared after place and route");
   const cols = [
     ["Arithmetic cells", [
-      ["Hussain et al. 2022", "18T hybrid adder: PDP −67 % (16 nm)"],
-      ["Sadeghi et al. 2022", "TG adder with full-swing carry"],
-      ["Arul, Kathirvelu 2024", "20T hybrid adder, 45 nm"],
-      ["Yin et al. 2023", "PTL adder: −13.8 % power after layout"]]],
+      ["Hussain et al. 2022 [1]", "18T hybrid FA: PDP \u221267\u00a0%"],
+      ["Sadeghi et al. 2022 [2]", "TG FA with full-swing carry"],
+      ["Arul, Kathirvelu 2024 [3]", "20T hybrid FA, 45\u00a0nm"],
+      ["Yin et al. 2023 [4]", "PTL FA: \u221213.8\u00a0% power"],
+      ["Nirmalraj et al. 2023 [5]", "10T GDI FA, ten nodes"],
+      ["Sharma, Jhamb 2024 [6]", "XOR\u2013XNOR cells compared"]]],
     ["ALU designs", [
-      ["Subbulakshmi et al. 2023", "GDI ALU, 65 nm: −91 % power"],
-      ["Jyothi et al. 2024", "adiabatic (ECRL) ALU"],
-      ["Kannan Nithin et al. 2024", "32-bit MUX-based ALU, 180 nm"],
-      ["Karapothula et al. 2026", "ALU at 180, 90 and 45 nm"]]],
+      ["Subbulakshmi et al. 2023 [7]", "GDI ALU, 65\u00a0nm: \u221291\u00a0% power"],
+      ["Jyothi et al. 2024 [8]", "adiabatic (ECRL) ALU"],
+      ["Kannan Nithin et al. 2024 [9]", "32-bit MUX-based ALU, 180\u00a0nm"],
+      ["Karapothula et al. 2026 [10]", "ALU at 180, 90 and 45\u00a0nm"]]],
     ["Cell sizing and libraries", [
-      ["Chen et al. 2022", "65 nm ultralow-voltage library"],
-      ["Lim et al. 2023", "P/N ratio, cell height: −55 % energy"],
-      ["Cao, Guo 2024", "optimal P/N ratio under variation"]]],
+      ["Chen et al. 2022 [11]", "65\u00a0nm ultralow-voltage library"],
+      ["Lim et al. 2023 [12]", "P/N ratio, cell height: \u221255\u00a0% energy"],
+      ["Cao, Guo 2024 [13]", "optimal P/N ratio under variation"]]],
     ["Cell layout and open flows", [
-      ["Ren, Fojtik 2021", "NVCell: cell layout by learning"],
-      ["Lee et al. 2021", "SMT cell place and route, 7 nm"],
-      ["Nishizawa, Nakura 2023", "Libretto cell characterizer"],
-      ["Edwards et al. 2021", "OpenLane: RISC-V SoC, open flow"]]],
+      ["Ren, Fojtik 2021 [14]", "NVCell: cell layout by learning"],
+      ["Lee et al. 2021 [15]", "SMT cell place and route, 7\u00a0nm"],
+      ["Nishizawa, Nakura 2023 [16]", "Libretto cell characterizer"],
+      ["Edwards et al. 2021 [17]", "OpenLane: RISC-V SoC, open flow"]]],
   ];
-  const gw = 0.18, cw = (CW - 3 * gw) / 4, chh = 3.6;
+  const gw = 0.18, cw = (CW - 3 * gw) / 4, chh = 3.72;
   cols.forEach(([head, items], i) => {
     const x = MX + i * (cw + gw);
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: TOP, w: cw, h: chh, rectRadius: 0.06, fill: { color: CARD },
@@ -259,15 +261,15 @@ pres.addSection({ title: "Introduction" });
       runs.push({ text: a, options: { bold: true, breakLine: true } });
       runs.push({ text: b, options: { color: MUTED, breakLine: j < items.length - 1 } });
     });
-    txt(s, runs, { x: x + 0.15, y: TOP + 0.66, w: cw - 0.3, h: chh - 0.8, fontSize: 13, paraSpaceAfter: 5 });
+    txt(s, runs, { x: x + 0.15, y: TOP + 0.62, w: cw - 0.3, h: chh - 0.72, fontSize: 12, paraSpaceAfter: 3 });
   });
-  box(s, MX, TOP + chh + 0.22, CW, 0.92, [
+  box(s, MX, TOP + chh + 0.18, CW, 0.86, [
     { text: "Gaps addressed here:  ", options: { bold: true, color: BLUE } },
     { text: "cells evaluated alone, not in a routed datapath  ·  ALU logic and arithmetic in separate units  ·  open " +
       "flows used only with the libraries of a process kit  →  FB4 and CS cells, the pl018 library, seven ALUs " +
       "compared after layout" }],
   { fill: TINT, line: BLUE, align: "left", extra: { fontSize: 14, objectName: "Research gaps" } });
-  s.addNotes("Seventeen papers from 2021 to 2026, in four groups; the report gives each with its full reference. " +
+  s.addNotes("Seventeen papers from 2021 to 2026, in four groups; the numbers refer to the reference slides at the end. " +
     "Hybrid and transmission-gate adders keep improving the power-delay product of single cells, but at different " +
     "nodes and loads, and mostly without layout. Recent ALUs use GDI, adiabatic or multiplexer-based logic, with " +
     "arithmetic and logic in separate units. Library papers size the P/N ratio per cell, and layout generators and " +
@@ -352,7 +354,7 @@ pres.addSection({ title: "Cell design" });
     objectName: "Cell PDP chart" }));
   txt(s, "21 candidate circuits × 40 sizes (width scale k = 0.3–2, P/N ratio r = 1–3). Each cell is driven by two X1 " +
     "inverters and loaded with four (FO4); every input transition is applied; the worst delay and the power including " +
-    "the drivers give the PDP. Selected: minimum PDP with full output swing.",
+    "the drivers give the PDP. Selected: minimum PDP with full output swing. Logic styles and metrics: [19]\u2013[21].",
   { x: MX, y: 5.75, w: CW, h: 0.95, fontSize: 13, color: MUTED });
   s.addNotes("Each function had several candidate circuits: static CMOS, gate-level, transmission-gate, buffered " +
     "transmission-gate, CPL and pass-transistor variants, 21 in all. Each was simulated at 40 sizes and the size with the " +
@@ -377,7 +379,7 @@ pres.addSection({ title: "Cell design" });
     options: { bold: true, fontSize: 16 } }], { fill: TINT, line: BLUE, align: "left",
     extra: { objectName: "CS function", margin: [12, 8, 4, 4] } });
   txt(s, [
-    { text: "A and B select one of the four code lines C0..C3, so P can be any function of A and B.",
+    { text: "A and B select one of the four code lines C0..C3, so P can be any function of A and B (function-block principle [18]).",
       options: { bullet: true, breakLine: true } },
     { text: "450 ps, PDP 18.95 fJ; three MUX2I cells 21.58 fJ, static CMOS 70.78 fJ.", options: { bullet: true } },
   ], { x: MX, y: yb + 0.78, w: cw, h: 1.2, fontSize: 14, paraSpaceAfter: 4 });
@@ -615,23 +617,33 @@ pres.addSection({ title: "Conclusion" });
     "drivers, plus corner and Monte Carlo analysis.");
 }
 
-// ======================================================================== 18 references
-if (FULL) {
-  const s = content("Conclusion", "References", null);
-  const refs = [
-    "C. Mead and L. Conway, Introduction to VLSI Systems. Reading, MA: Addison-Wesley, 1980.",
-    "N. H. E. Weste and D. M. Harris, CMOS VLSI Design: A Circuits and Systems Perspective, 4th ed. Boston: Addison-Wesley, 2011.",
-    "J. M. Rabaey, A. Chandrakasan and B. Nikolić, Digital Integrated Circuits: A Design Perspective, 2nd ed. Upper Saddle River, NJ: Prentice Hall, 2003.",
-    "R. Zimmermann and W. Fichtner, “Low-power logic styles: CMOS versus pass-transistor logic,” IEEE J. Solid-State Circuits, vol. 32, no. 7, pp. 1079–1090, Jul. 1997.",
-    "Xilinx, 7 Series FPGAs Configurable Logic Block User Guide, UG474 (carry logic).",
-    "MOSIS, Scalable CMOS (SCMOS) Design Rules, revision 8.",
-    "R. T. Edwards, Qflow, Magic, Netgen and Qrouter, Open Circuit Design; C. Wolf, Yosys Open SYnthesis Suite; Ngspice; KLayout; Xschem.",
-    "Literature survey: seventeen papers from 2021 to 2026 (slide 3), with full references in the project report.",
-  ];
-  txt(s, refs.map((r, i) => ({ text: r, options: { bullet: { type: "number" }, breakLine: i < refs.length - 1 } })),
-    { x: MX, y: 1.2, w: CW, h: 5.5, fontSize: 15, paraSpaceAfter: 10 });
-  s.addNotes("Mead and Conway for the function-block principle, the FPGA user guide for the propagate-steered carry " +
-    "multiplexer, the standard textbooks for cell design, and Zimmermann and Fichtner for the comparison of logic styles.");
+// ======================================================================== references
+{
+  // IEEE references as in the project report: the 17 papers of the literature survey, then the background
+  const R = require(path.join(ROOT, "docs", "report", "report_content.js")).refs;
+  const keys = ["hussain2022", "sadeghi2022", "arul2023", "yin2023", "gdi10t2023", "sharma2024", "subbulakshmi2023",
+    "jyothi2024", "eai2024", "karapothula2026", "chen2022", "lim2023", "sizing2024", "ren2021", "lee2021",
+    "nishizawa2023", "edwards2021", "meadconway1980", "weste2011", "rabaey2003", "zimmermann1997", "mosis",
+    "ousterhout1984", "ngspice", "yosys", "qflow"];
+  // "*...*" in the report strings marks italics
+  const rich = (str) => str.split("*").map((t, k) => ({ text: t, options: k % 2 ? { italic: true } : {} }))
+    .filter((r) => r.text.length);
+  const none = { type: "none" };
+  const parts = [[0, 12], [12, keys.length]];
+  parts.forEach(([a, b], pi) => {
+    const s = content("Conclusion", "References (" + (pi + 1) + "/" + parts.length + ")", null);
+    const rows = keys.slice(a, b).map((k, i) => {
+      if (!R[k]) throw new Error("reference " + k);
+      return [
+        { text: "[" + (a + i + 1) + "]", options: { color: INK, valign: "top", border: [none, none, none, none] } },
+        { text: rich(R[k]), options: { color: INK, valign: "top", border: [none, none, none, none] } }];
+    });
+    s.addTable(rows, { x: MX, y: 1.2, w: CW, colW: [0.55, CW - 0.55], fontSize: 11, fontFace: THEME.bodyFontFace,
+      margin: [0.02, 0.04, 0.05, 0.02], autoPage: false, objectName: "References " + (pi + 1) });
+    s.addNotes(pi === 0 ? "References [1] to [17] are the seventeen papers of the literature survey (2021 to 2026), " +
+      "numbered as on slide 3." : "Background references: the function-block principle (Mead and Conway), the " +
+      "standard texts on CMOS circuits, the comparison of logic styles, the design rules and the open-source tools.");
+  });
 }
 
 // ---------------------------------------------------------------- write

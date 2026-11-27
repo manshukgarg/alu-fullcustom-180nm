@@ -256,9 +256,10 @@ final Step 5 run (`results/lab/after_layout_comparison.md`):
   extraction and LVS of a cell against its schematic, the routed ALUs in KLayout and Magic,
   and Ngspice simulations with waveform windows (cells, ALUs, the extracted routed ALU).
   Lab test of 22 Nov: all views work (KLayout: press `*` to show the cell contents).
-* Slides: `docs/presentation/ALU4_180nm_presentation.pptx` (10 slides with speaker notes: title with the Thapar
-  logo, team with roll numbers and the supervisor; objectives, literature survey, cell optimization, FB4/CS, ALU bit
-  slice, Verilog-to-layout flow, layout, results, conclusions; the flow, waveform and reference slides can be switched
+* Slides: `docs/presentation/ALU4_180nm_presentation.pptx` (12 slides with speaker notes: title with the Thapar
+  logo, team with roll numbers and the supervisor; objectives, literature survey (17 papers, numbered), cell
+  optimization, FB4/CS, ALU bit slice, Verilog-to-layout flow, layout, results, conclusions, two slides of IEEE
+  references taken from the report; the flow, waveform and reference slides can be switched
   back on with `FULL` in the builder), built by `docs/presentation/build_deck.js` from
   `docs/presentation/prepare_assets.py` and the lab screenshots in `docs/presentation/screens/`; every number
   is from `results/lab/`. `bash demo/verilog.sh` shows the Verilog part live (RTL and netlist tests, Yosys).
