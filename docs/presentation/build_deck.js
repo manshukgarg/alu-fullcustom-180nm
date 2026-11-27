@@ -484,7 +484,7 @@ pres.addSection({ title: "Implementation and results" });
     ["D4 beh", "behavioural (alu4.v)", "pl018", "198"],
     ["D4 slice", "bit-sliced (alu4_slice.v)", "pl018", "110"],
     ["D4 map", "hand-mapped netlist", "pl018", "94"],
-    { highlight: true, cells: ["P (proposed)", "FB4/CS netlist, 28 cells", "pl018", "55"] },
+    { highlight: true, cells: ["P (proposed)", "FB4/CS netlist, 27 cells", "pl018", "55"] },
   ], { x: MX, y: TOP, w: 5.9, colW: [1.35, 2.55, 0.95, 1.05], fontSize: 14, rowH: 0.4,
     align: ["left", "left", "left", "center"] });
   txt(s, [
@@ -513,7 +513,7 @@ pres.addSection({ title: "Implementation and results" });
   s.addNotes("This is the automated part. We wrote the ALU in Verilog three ways: a behavioural description where " +
     "Yosys decides the structure, a bit-sliced description, and a hand-mapped netlist that instantiates library " +
     "cells directly. Each was implemented twice, with the OSU 0.18 micron cells of the Qflow kit (D3) and with our " +
-    "own library pl018 (D4); the proposed ALU P is a structural netlist of our 28 cells. Every design first passes " +
+    "own library pl018 (D4); the proposed ALU P is a structural netlist of our cells. Every design first passes " +
     "an exhaustive self-checking Verilog test bench with Icarus Verilog, all 2048 input combinations, before and " +
     "after synthesis. Qflow then places and routes it, Netgen and Magic check LVS and DRC, Magic extracts every " +
     "transistor and parasitic capacitance, and the extracted netlist is simulated in Ngspice with the same 229-" +

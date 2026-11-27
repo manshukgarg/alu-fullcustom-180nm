@@ -22,6 +22,7 @@ bash demo/show.sh                      # list of the views
 | `bash demo/show.sh alu-sim fb` | Ngspice | the ALU from one cell set at transistor level (`fb`, `pl`, `opt`, `conv`, `gate`) |
 | `bash demo/show.sh alu-delay fb` | Ngspice | the slowest transition of that ALU, waveforms |
 | `bash demo/show.sh results` | terminal | result tables of Steps 3c, 5 and 6 |
+| `bash demo/verilog.sh` | Icarus Verilog, Yosys | RTL test and test of the proposed netlist (2048 cases each), Yosys synthesis onto OSU018 and pl018 |
 
 The chip views use the layouts of the last run of Step 5 (`fb`, `beh`, `slice`, `map`) and
 Step 2 (`osu-*`); `layout` and `cell-sim` use the extracted cells of Step 5 when present.
