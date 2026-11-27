@@ -150,6 +150,8 @@ function hbar(s, x, y, w, h, labels, values, colors, o = {}) {
   }));
 }
 const GRAY = HEX.accent2, EMPH = HEX.accent1;
+// short version (9 slides): the flow, waveform and reference slides are kept in the code but not built
+const FULL = false;
 
 // ======================================================================== 1 title
 pres.addSection({ title: "Introduction" });
@@ -262,7 +264,7 @@ pres.addSection({ title: "Introduction" });
 }
 
 // ======================================================================== 4 flow
-{
+if (FULL) {
   const s = content("Introduction", "Design flow",
     "Cells and ALUs are measured with one transistor-level test, from schematic to extracted layout");
   const bw = 1.78, gap = 0.29, y = 3.0, bh = 1.45;
@@ -451,7 +453,7 @@ pres.addSection({ title: "ALU" });
 }
 
 // ======================================================================== waveforms
-{
+if (FULL) {
   const s = content("ALU", "Simulation waveforms",
     "FB4 forms every function of A and B from its code lines; the ALU matches the reference model on all 32 vectors");
   const L1 = img(s, path.join(ASSETS, "wave_fb4_slide.png"), MX, TOP, 5.9, 4.25, { center: true,
@@ -555,7 +557,7 @@ pres.addSection({ title: "Conclusion" });
 }
 
 // ======================================================================== 18 references
-{
+if (FULL) {
   const s = content("Conclusion", "References", null);
   const refs = [
     "C. Mead and L. Conway, Introduction to VLSI Systems. Reading, MA: Addison-Wesley, 1980.",

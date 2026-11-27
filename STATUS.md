@@ -256,8 +256,8 @@ final Step 5 run (`results/lab/after_layout_comparison.md`):
   extraction and LVS of a cell against its schematic, the routed ALUs in KLayout and Magic,
   and Ngspice simulations with waveform windows (cells, ALUs, the extracted routed ALU).
   Lab test of 22 Nov: all views work (KLayout: press `*` to show the cell contents).
-* Slides: `docs/presentation/ALU4_180nm_presentation.pptx` (12 slides with speaker notes, including the
-  literature survey and white-background waveforms), built by `docs/presentation/build_deck.js` from
+* Slides: `docs/presentation/ALU4_180nm_presentation.pptx` (9 slides with speaker notes, including the
+  literature survey; the flow, waveform and reference slides can be switched back on with `FULL` in the builder), built by `docs/presentation/build_deck.js` from
   `docs/presentation/prepare_assets.py` and the lab screenshots in `docs/presentation/screens/`; every number
   is from `results/lab/`.
 * Project report (27 Nov): `docs/report/ALU_project_report.docx` and `.pdf` (A4, 56 pages): literature survey
@@ -323,7 +323,7 @@ numpy) and committed; the lab verifies them.
 | 6 | 4-bit ALU at transistor level from each cell set, before layout (`step6_alu_schematic`): gate-level, conventional (D1), minimum-PDP (D2), pl018, proposed (P) | done, confirmed in the lab (16 Nov) | table above |
 | 6b | Full-custom layout of the ALU (D1, D2) | not planned | the laid-out designs of the paper are D3, D4 and P (decision of 15 Nov) |
 | 7 | Comparison of all designs after layout with `sim/alutb.py`: delay, energy per operation, leakage, area; supply and temperature sweep; Monte Carlo | comparison done (22 Nov, `results/lab/after_layout_comparison.md`); sweeps and Monte Carlo not done | P has the smallest die, fewest transistors and lowest energy, leakage and energy x delay of all seven routed ALUs; D3 beh is the fastest |
-| 8 | Figures, report, slides, paper (IEEE format) | figures and slides done (22 Nov, `docs/presentation/`, 12 slides since 27 Nov); project report done (27 Nov, `docs/report/`); paper draft in `docs/paper/`, on hold | presentation 28 Nov |
+| 8 | Figures, report, slides, paper (IEEE format) | figures and slides done (22 Nov, `docs/presentation/`, 9 slides since 27 Nov); project report done (27 Nov, `docs/report/`); paper draft in `docs/paper/`, on hold | presentation 28 Nov |
 
 ## Step 5: how the library is made
 

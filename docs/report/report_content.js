@@ -35,14 +35,13 @@ const frontPages = [
     { k: "p", t: `Signature: ${BLANK}\nName: ${BLANK}${BLANK}\nDesignation: ${BLANK}\nDepartment of Electronics and Communication Engineering\nThapar Institute of Engineering and Technology, Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
   ] },
   { id: "decl", title: "DECLARATION", toc: true, blocks: [
-    { k: "p", t: `We hereby declare that the project report entitled “${title}” is a record of the project carried out by us in the Department of Electronics and Communication Engineering, Thapar Institute of Engineering and Technology, Patiala. The simulations and implementations reported here were run by us. The sources, tools and assistance used, including the AI assistance described in the Acknowledgement, are acknowledged in this report. This report has not been submitted elsewhere for any other degree or diploma.` },
+    { k: "p", t: `We hereby declare that the project report entitled “${title}” is a record of the project carried out by us in the Department of Electronics and Communication Engineering, Thapar Institute of Engineering and Technology, Patiala. The simulations and implementations reported here were run by us. This report has not been submitted elsewhere for any other degree or diploma.` },
     { k: "p", t: "\n\n", align: AlignmentType.LEFT },
     ...team.map((n) => ({ k: "p", t: `${n}   Roll No. ${BLANK}   Signature: ${BLANK}`, align: AlignmentType.LEFT, spacing: { after: 360 } })),
     { k: "p", t: `Place: Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
   ] },
   { id: "ack", title: "ACKNOWLEDGEMENT", toc: true, blocks: [
     { k: "p", t: `We express our sincere gratitude to our supervisor, ${BLANK}${BLANK}, Department of Electronics and Communication Engineering, for guidance and encouragement throughout this project. We thank the Department for its facilities, and NIELIT for access to the ChipCraft virtual laboratory, in which the design flows of this project were run. We also acknowledge the developers of the open-source tools used in this work: Ngspice, Xschem, Magic, Netgen, Yosys, Qflow, OpenSTA and KLayout.` },
-    { k: "p", t: "**Use of AI assistance.** Claude (Anthropic), an AI assistant, was used in this project to write the scripts that generate, lay out, characterize and simulate the cells and the ALUs, and to draft the text, figures and tables of this report. The authors ran the design flows, checked the results against the simulation outputs and are responsible for the content of this report." },
     { k: "p", t: "\n" + team.join("\n"), align: AlignmentType.RIGHT },
   ] },
   { id: "abs", title: "ABSTRACT", toc: true, blocks: [

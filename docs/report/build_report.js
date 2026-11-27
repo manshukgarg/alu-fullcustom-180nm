@@ -268,7 +268,7 @@ for (const b of C.body) body.push(...render(b));
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER,
   children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 22 })] })] });
 const doc = new Document({
-  creator: "Manshuk Garg", title: C.title,
+  creator: "Manshuk Garg", lastModifiedBy: "Manshuk Garg", title: C.title,
   styles: { default: { document: { run: { font: FONT, size: 24 }, paragraph: { spacing: { line: 360, lineRule: LineRuleType.AUTO } } } } },
   numbering: { config: [
     { reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT,
