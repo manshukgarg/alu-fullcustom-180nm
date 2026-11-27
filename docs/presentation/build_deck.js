@@ -49,7 +49,7 @@ const W = 13.333, MX = 0.6, CW = W - 2 * MX, TOP = 1.9;
 // ---------------------------------------------------------------- layouts
 pres.defineSlideMaster({
   title: "TITLE",
-  background: { color: HEX.dk2 },
+  background: { color: HEX.lt1 },
   objects: [],
 });
 pres.defineSlideMaster({
@@ -61,7 +61,7 @@ pres.defineSlideMaster({
       color: INK, valign: "top", align: "left", margin: 0 }, text: "" } },
     { placeholder: { options: { name: "msg", type: "body", x: MX, y: 1.04, w: CW, h: 0.66, fontSize: 18, color: MUTED,
       valign: "top", align: "left", margin: 0 }, text: "" } },
-    { text: { text: "Full-custom 4-bit ALU in 180 nm CMOS", options: { x: MX, y: 7.03, w: 6, h: 0.28, fontSize: 10,
+    { text: { text: "Full-Custom ALU Using Optimized Standard Cells", options: { x: MX, y: 7.03, w: 6, h: 0.28, fontSize: 10,
       color: MUTED, margin: 0, valign: "middle" } } },
   ],
   slideNumber: { x: W - MX - 0.6, y: 7.03, w: 0.6, h: 0.28, fontSize: 10, color: MUTED, align: "right", margin: 0 },
@@ -157,28 +157,40 @@ const FULL = false;
 pres.addSection({ title: "Introduction" });
 {
   const s = pres.addSlide({ masterName: "TITLE", sectionTitle: "Introduction" });
-  txt(s, "M.Tech VLSI Design  |  Project presentation", { x: MX, y: 0.62, w: 7.2, h: 0.35, fontSize: 14,
-    color: C.accent6, bold: true });
+  // logo of the institute (supplied by the team), centred at the top
+  const logo = path.join(ROOT, "docs", "figures", "logo", "thapar_logo.png");
+  const lh = 1.7, lsz = pngSize(logo), lw = lh * lsz.w / lsz.h;
+  s.addImage({ path: logo, x: (W - lw) / 2, y: 0.5, w: lw, h: lh, altText: "Thapar Institute of Engineering and Technology",
+    objectName: "Thapar logo" });
   txt(s, "Design and Performance Analysis of a Full-Custom ALU Using Optimized Standard Cells",
-    { x: MX, y: 1.25, w: 6.9, h: 2.3, fontSize: 36, bold: true, color: C.background1, fontFace: THEME.headFontFace });
-  txt(s, "4-bit ALU in 180 nm CMOS: minimum-PDP cell library, two ALU-specific cells, and placed-and-routed " +
-    "implementations compared after layout", { x: MX, y: 3.7, w: 6.6, h: 1.0, fontSize: 17, color: "C9CED6" });
+    { x: 1.0, y: 2.4, w: W - 2.0, h: 1.2, fontSize: 32, bold: true, color: INK, align: "center", valign: "middle",
+      fontFace: THEME.headFontFace, objectName: "Project title" });
+  s.addShape(pres.shapes.LINE, { x: (W - 1.6) / 2, y: 3.85, w: 1.6, h: 0, line: { color: BLUE, width: 2 },
+    objectName: "Title rule" });
+  // submitted by: names and roll numbers in two aligned columns
+  const team = [["Aditya Kumar", "6026620002"], ["Gourangi Tyagi", "6026620016"], ["Kashish Goyal", "6026620019"],
+    ["Manshuk Garg", "6026620022"]];
+  const lx = 1.75, cy = 4.3;
+  txt(s, "Submitted by", { x: lx, y: cy, w: 4.6, h: 0.4, fontSize: 18, bold: true, color: BLUE });
+  const none = { type: "none" };
+  s.addTable(team.map(([n, r]) => [
+    { text: n, options: { color: INK, border: [none, none, none, none] } },
+    { text: r, options: { color: INK, border: [none, none, none, none] } }]),
+  { x: lx, y: cy + 0.5, w: 4.6, colW: [2.5, 2.1], fontSize: 18, fontFace: THEME.bodyFontFace, rowH: 0.42,
+    margin: [0, 0, 0, 0], valign: "middle", autoPage: false, objectName: "Team" });
+  // submitted to
+  const rx = 7.55;
+  txt(s, "Submitted to", { x: rx, y: cy, w: 4.6, h: 0.4, fontSize: 18, bold: true, color: BLUE });
   txt(s, [
-    { text: "Manshuk Garg, Aditya Kumar, Gourangi Tyagi, Kashish Goyal", options: { breakLine: true, bold: true } },
-    { text: "Thapar Institute of Engineering and Technology, Patiala", options: { breakLine: true } },
-    { text: "28 November 2026" },
-  ], { x: MX, y: 5.35, w: 7.0, h: 1.2, fontSize: 15, color: "E6E9EE", paraSpaceAfter: 4 });
-  // layout of the function-block cell on a white card
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 7.75, y: 1.35, w: 5.0, h: 3.35, rectRadius: 0.08,
-    fill: { color: HEX.lt1 }, line: { color: HEX.lt1, width: 0 }, objectName: "Layout card" });
-  img(s, path.join(ASSETS, "layout_fb4_plain.png"), 7.95, 1.5, 4.6, 3.05, { center: true, middle: true,
-    alt: "Layout of the function-block cell pl_fb4", name: "Layout pl_fb4" });
-  txt(s, "Function-block cell pl_fb4: 20 transistors, 14.4 × 8.0 µm, generated layout",
-    { x: 7.75, y: 4.82, w: 5.0, h: 0.5, fontSize: 12, color: "AEB4BD" });
-  s.addNotes("Project: a 4-bit ALU in 180 nm CMOS built from our own optimized standard cells, plus two cells " +
-    "designed specifically for the ALU bit slice. The same ALU is compared in several versions, at transistor level " +
-    "and after automatic place and route, with one common measurement. Everything shown was run in the NIELIT " +
-    "ChipCraft lab with open-source tools; a live demonstration follows the slides.");
+    { text: "Dr. Arun Kumar Chatterjee", options: { bold: true, breakLine: true } },
+    { text: "Assistant Professor", options: { breakLine: true } },
+    { text: "Department of Electronics and Communication Engineering" },
+  ], { x: rx, y: cy + 0.5, w: 4.6, h: 1.6, fontSize: 18, color: INK, paraSpaceAfter: 6 });
+  s.addNotes("Our project is the design and performance analysis of a full-custom ALU using optimized standard " +
+    "cells: a 4-bit ALU in 180 nm CMOS built from our own optimized cell library, plus two cells designed " +
+    "specifically for the ALU bit. The same ALU is compared in several versions, at transistor level and after " +
+    "automatic place and route, with one common measurement. Everything was run in the NIELIT ChipCraft lab with " +
+    "open-source tools; a live demonstration follows the slides.");
 }
 
 // ======================================================================== 2 objectives and specification
@@ -217,7 +229,7 @@ pres.addSection({ title: "Introduction" });
     "Recent work improves single cells or the logic style of a whole ALU; few designs are compared after place and route");
   const cols = [
     ["Arithmetic cells", [
-      ["Hussain et al. 2022", "18T hybrid adder: PDP −67 % (16 nm)"],
+      ["Hussain et al. 2022", "18T hybrid adder: PDP −67 % (16 nm)"],
       ["Sadeghi et al. 2022", "TG adder with full-swing carry"],
       ["Arul, Kathirvelu 2024", "20T hybrid adder, 45 nm"],
       ["Yin et al. 2023", "PTL adder: −13.8 % power after layout"]]],
