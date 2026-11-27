@@ -1,48 +1,81 @@
 // Content of the project report. Every number is a result in results/lab/ (Steps 2, 5, 6) or
 // results/ngspice46_2026-11-16/ (Steps 3b, 3c; the lab runs give the same values).
-const { Paragraph, TextRun, AlignmentType, LineRuleType } = require("docx");
+const { Paragraph, TextRun, ImageRun, AlignmentType, LineRuleType, Table, TableRow, TableCell, WidthType, BorderStyle,
+  VerticalAlign } = require("docx");
+const fs = require("fs");
+const path = require("path");
+const LOGO = path.resolve(__dirname, "..", "figures", "logo", "thapar_logo.png");
 
 const title = "Design and Performance Analysis of a Full-Custom ALU Using Optimized Standard Cells";
-const team = ["Manshuk Garg", "Aditya Kumar", "Gourangi Tyagi", "Kashish Goyal"];
+const team = [["Aditya Kumar", "6026620002"], ["Gourangi Tyagi", "6026620016"], ["Kashish Goyal", "6026620019"],
+  ["Manshuk Garg", "6026620022"]];
+const SUP = { name: "Dr. Arun Kumar Chatterjee", desig: "Assistant Professor" };
+const DEPT = "Department of Electronics and Communication Engineering";
+const INST = "Thapar Institute of Engineering and Technology";
 const BLANK = "____________";
+const FONT = "Times New Roman";
+
+// table without borders, for names and roll numbers set in aligned columns
+const NONE = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+function plainTable(rows, widths, o = {}) {
+  const cellBorders = { top: NONE, bottom: NONE, left: NONE, right: NONE };
+  return new Table({
+    width: { size: widths.reduce((a, x) => a + x, 0), type: WidthType.DXA }, columnWidths: widths,
+    alignment: o.align || AlignmentType.CENTER,
+    borders: Object.assign({ insideHorizontal: NONE, insideVertical: NONE }, cellBorders),
+    rows: rows.map((r, ri) => new TableRow({ cantSplit: true, children: r.map((t, ci) => new TableCell({
+      width: { size: widths[ci], type: WidthType.DXA }, borders: cellBorders, verticalAlign: VerticalAlign.BOTTOM,
+      margins: { top: 0, bottom: 0, left: 60, right: 60 },
+      children: [new Paragraph({ alignment: AlignmentType.LEFT,
+        spacing: { before: 0, after: o.after === undefined ? 100 : o.after, line: 276, lineRule: LineRuleType.AUTO },
+        children: [new TextRun({ text: t, font: FONT, size: o.size || 24, bold: !!(o.header && ri === 0) })] })],
+    })) })),
+  });
+}
 
 function titlePage() {
   const T = (text, size, o = {}) => new Paragraph({ alignment: AlignmentType.CENTER,
     spacing: { before: o.before || 0, after: o.after || 0, line: o.line || 276, lineRule: LineRuleType.AUTO },
-    children: [new TextRun({ text, font: "Times New Roman", size, bold: o.bold, italics: o.italics, allCaps: o.caps })] });
+    children: [new TextRun({ text, font: FONT, size, bold: o.bold, italics: o.italics, allCaps: o.caps })] });
+  const logo = fs.readFileSync(LOGO), lw = 175, lh = Math.round(lw * logo.readUInt32BE(20) / logo.readUInt32BE(16));
   return [
-    T(title.toUpperCase(), 32, { bold: true, before: 1200, after: 360, line: 360 }),
-    T("A 4-bit ALU in 180 nm CMOS with PDP-optimized and ALU-specific standard cells", 24, { italics: true, after: 1300 }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 360 },
+      children: [new ImageRun({ type: "png", data: logo, transformation: { width: lw, height: lh },
+        altText: { title: "Logo", description: "Thapar Institute of Engineering and Technology", name: "Thapar logo" } })] }),
+    T(title.toUpperCase(), 32, { bold: true, after: 300, line: 360 }),
+    T("A 4-bit ALU in 180 nm CMOS with PDP-optimized and ALU-specific standard cells", 24, { italics: true, after: 640 }),
     T("Project Report", 28, { bold: true, after: 120 }),
     T("submitted in partial fulfilment of the requirements for the degree of", 24, { after: 60 }),
-    T("Master of Technology in VLSI Design", 26, { bold: true, after: 1100 }),
-    T("Submitted by", 24, { italics: true, after: 160 }),
-    ...team.map((n, i) => T(`${n}   (Roll No. ${BLANK})`, 24, { after: i === team.length - 1 ? 900 : 120 })),
-    T("Under the supervision of", 24, { italics: true, after: 160 }),
-    T(`${BLANK}${BLANK}`, 24, { after: 60 }),
-    T("(Name and designation of the supervisor)", 20, { italics: true, after: 1500 }),
-    T("Department of Electronics and Communication Engineering", 26, { bold: true, after: 80 }),
-    T("Thapar Institute of Engineering and Technology", 26, { bold: true, after: 80 }),
+    T("Master of Technology in VLSI Design", 26, { bold: true, after: 600 }),
+    T("Submitted by", 24, { bold: true, after: 200 }),
+    plainTable(team.map(([n, r]) => [n, "(" + r + ")"]), [2500, 1700]),
+    T("Submitted to", 24, { bold: true, before: 480, after: 200 }),
+    T(SUP.name, 24, { after: 60 }),
+    T(SUP.desig + ", " + DEPT, 24, { after: 800 }),
+    T(DEPT, 26, { bold: true, after: 80 }),
+    T(INST, 26, { bold: true, after: 80 }),
     T("Patiala 147004, Punjab, India", 24, { after: 240 }),
     T("November 2026", 24, { bold: true }),
   ];
 }
 
+const names = team.map(([n, r]) => `${n} (${r})`);
 const frontPages = [
   { id: "cert", title: "CERTIFICATE", toc: true, blocks: [
-    { k: "p", t: `This is to certify that the project report entitled “${title}” submitted by ${team[0]} (Roll No. ${BLANK}), ${team[1]} (Roll No. ${BLANK}), ${team[2]} (Roll No. ${BLANK}) and ${team[3]} (Roll No. ${BLANK}) to the Department of Electronics and Communication Engineering, Thapar Institute of Engineering and Technology, Patiala, is a record of the project work carried out by them under my supervision.` },
+    { k: "p", t: `This is to certify that the project report entitled “${title}” submitted by ${names[0]}, ${names[1]}, ${names[2]} and ${names[3]} to the ${DEPT}, ${INST}, Patiala, is a record of the project work carried out by them under my supervision.` },
     { k: "p", t: "\n\n\n", align: AlignmentType.LEFT },
-    { k: "p", t: `Signature: ${BLANK}\nName: ${BLANK}${BLANK}\nDesignation: ${BLANK}\nDepartment of Electronics and Communication Engineering\nThapar Institute of Engineering and Technology, Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
+    { k: "p", t: `Signature: ${BLANK}\n${SUP.name}\n${SUP.desig}\n${DEPT}\n${INST}, Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
   ] },
   { id: "decl", title: "DECLARATION", toc: true, blocks: [
-    { k: "p", t: `We hereby declare that the project report entitled “${title}” is a record of the project carried out by us in the Department of Electronics and Communication Engineering, Thapar Institute of Engineering and Technology, Patiala. The simulations and implementations reported here were run by us. This report has not been submitted elsewhere for any other degree or diploma.` },
-    { k: "p", t: "\n\n", align: AlignmentType.LEFT },
-    ...team.map((n) => ({ k: "p", t: `${n}   Roll No. ${BLANK}   Signature: ${BLANK}`, align: AlignmentType.LEFT, spacing: { after: 360 } })),
-    { k: "p", t: `Place: Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
+    { k: "p", t: `We hereby declare that the project report entitled “${title}” is a record of the project carried out by us in the ${DEPT}, ${INST}, Patiala, under the supervision of ${SUP.name}. The simulations and implementations reported here were run by us. This report has not been submitted elsewhere for any other degree or diploma.` },
+    { k: "p", t: "\n", align: AlignmentType.LEFT },
+    { k: "raw", items: [plainTable([["Name", "Roll No.", "Signature"], ...team.map(([n, r]) => [n, r, BLANK + "____"])],
+      [3000, 2300, 3000], { header: true, after: 420, align: AlignmentType.LEFT })] },
+    { k: "p", t: `\nPlace: Patiala\nDate: ${BLANK}`, align: AlignmentType.LEFT },
   ] },
   { id: "ack", title: "ACKNOWLEDGEMENT", toc: true, blocks: [
-    { k: "p", t: `We express our sincere gratitude to our supervisor, ${BLANK}${BLANK}, Department of Electronics and Communication Engineering, for guidance and encouragement throughout this project. We thank the Department for its facilities, and NIELIT for access to the ChipCraft virtual laboratory, in which the design flows of this project were run. We also acknowledge the developers of the open-source tools used in this work: Ngspice, Xschem, Magic, Netgen, Yosys, Qflow, OpenSTA and KLayout.` },
-    { k: "p", t: "\n" + team.join("\n"), align: AlignmentType.RIGHT },
+    { k: "p", t: `We express our sincere gratitude to our supervisor, ${SUP.name}, ${SUP.desig}, ${DEPT}, for guidance and encouragement throughout this project. We thank the Department for its facilities, and NIELIT for access to the ChipCraft virtual laboratory, in which the design flows of this project were run. We also acknowledge the developers of the open-source tools used in this work: Ngspice, Xschem, Magic, Netgen, Yosys, Qflow, OpenSTA and KLayout.` },
+    { k: "p", t: "\n" + team.map(([n]) => n).join("\n"), align: AlignmentType.LEFT, indent: { left: 6100 } },
   ] },
   { id: "abs", title: "ABSTRACT", toc: true, blocks: [
     { k: "p", t: "The arithmetic logic unit (ALU) is a central block of every processor datapath, and in a cell-based design its area, delay and energy are set by the standard cells from which it is built. This project designs a 4-bit ALU in 180 nm CMOS (TSMC 0.18 µm, 1.8 V) from a full-custom standard-cell library optimized for minimum power-delay product (PDP) and evaluates it after layout against ALUs built from the OSU 0.18 µm standard-cell library." },

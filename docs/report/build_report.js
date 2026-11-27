@@ -33,10 +33,19 @@ const cite = [];                     // citation keys in order of first use
 const fig = {}, tab = {}, eqn = {};  // label -> number string
 const toc = [];                      // {id, level, text}
 const lof = [], lot = [];
-// list-of-figures text: the caption up to its first ";" or ": ", without a closing parenthesis
+// list-of-figures text: the caption up to its first "; " or ": " outside parentheses, without a closing
+// parenthetical remark
 function shortCap(t) {
-  t = t.split(/; |: /)[0];
-  return t.replace(/ \((?![a-z]\))[^()]*\)$/, "");
+  let depth = 0, cut = t.length;
+  for (let i = 0; i < t.length - 1; i++) {
+    const ch = t[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    else if ((ch === ";" || ch === ":") && t[i + 1] === " " && depth === 0) { cut = i; break; }
+  }
+  t = t.slice(0, cut);
+  const m = t.match(/^(.*\S) \(([^()]*)\)$/);
+  return m && !/^[a-z]$/.test(m[2]) ? m[1] : t;
 }
 (function number() {
   let chap = "", nf = 0, nt = 0, ne = 0;
@@ -56,8 +65,8 @@ function shortCap(t) {
     }
     if (b.k === "refs") toc.push({ id: "refs", level: 1, text: "References" });
     if (b.k === "h2") toc.push({ id: "h2:" + b.n, level: 2, text: b.n + "  " + b.title });
-    if (b.k === "fig" || b.k === "hand") { nf += 1; fig[b.label] = chap + "." + nf; lof.push({ id: "fig:" + fig[b.label], text: `Fig. ${fig[b.label]}  ${shortCap(plain(b.caption))}` }); }
-    if (b.k === "table") { nt += 1; tab[b.label] = chap + "." + nt; lot.push({ id: "tab:" + tab[b.label], text: `Table ${tab[b.label]}  ${plain(b.caption)}` }); }
+    if (b.k === "fig" || b.k === "hand") { nf += 1; fig[b.label] = chap + "." + nf; lof.push({ id: "fig:" + fig[b.label], text: `Fig. ${fig[b.label]}\t${shortCap(plain(b.caption))}` }); }
+    if (b.k === "table") { nt += 1; tab[b.label] = chap + "." + nt; lot.push({ id: "tab:" + tab[b.label], text: `Table ${tab[b.label]}\t${plain(b.caption)}` }); }
     if (b.k === "eq" && b.label !== undefined) { ne += 1; eqn[b.label] = chap + "." + ne; }
     for (const key of ["t", "caption", "note", "title"]) scan(b[key]);
     for (const it of b.items || []) scan(it);
@@ -178,7 +187,9 @@ function table(b) {
     new Table({ width: { size: total, type: WidthType.DXA }, columnWidths: widths, alignment: AlignmentType.CENTER, rows }),
   ];
   out.push(b.note
-    ? new Paragraph({ alignment: AlignmentType.LEFT, spacing: { before: 60, after: 240, line: 240, lineRule: LineRuleType.AUTO }, children: runs(b.note, { size: 18 }) })
+    ? new Paragraph({ alignment: AlignmentType.LEFT, spacing: { before: 60, after: 240, line: 240, lineRule: LineRuleType.AUTO },
+        indent: { left: Math.max(0, Math.floor((TW - total) / 2)), right: Math.max(0, Math.floor((TW - total) / 2)) },
+        children: runs(b.note, { size: 18 }) })
     : new Paragraph({ spacing: { before: 0, after: 160 }, children: [] }));
   return out;
 }
@@ -205,11 +216,17 @@ function list(b) {
     alignment: AlignmentType.JUSTIFIED, spacing: Object.assign({ before: 0, after: 80 }, BODY), children: runs(it) }));
 }
 function tocLine(text, page, level, id) {
+  const list = level === 2.5;                     // list of figures or tables: hanging indent after the number
+  const stops = [{ type: TabStopType.RIGHT, position: TW, leader: LeaderType.DOT }];
+  if (list) stops.unshift({ type: TabStopType.LEFT, position: 1080 });
+  const parts = String(text).split("\t");
+  const kids = [];
+  parts.forEach((t, i) => { if (i) kids.push(new TextRun({ children: ["\t"], font: FONT })); kids.push(...runs(t, { bold: level === 1 && !/^Fig|^Table/.test(text) })); });
   return new Paragraph({
     spacing: { before: level === 1 ? 120 : 0, after: 40, line: 276, lineRule: LineRuleType.AUTO },
-    indent: { left: level === 2 ? 480 : 0, hanging: level === 2 ? 0 : 0 },
-    tabStops: [{ type: TabStopType.RIGHT, position: TW, leader: LeaderType.DOT }],
-    children: [...runs(text, { bold: level === 1 && !/^Fig|^Table/.test(text) }), new TextRun({ children: ["\t" + (pages[id] || "00")], font: FONT })],
+    indent: list ? { left: 1080, hanging: 1080, right: 360 } : { left: level === 2 ? 480 : 0, right: 360 },
+    tabStops: stops,
+    children: [...kids, new TextRun({ children: ["\t" + (pages[id] || "00")], font: FONT })],
   });
 }
 const heading = (text, o = {}) => new Paragraph({
@@ -263,6 +280,7 @@ function render(b) {
     case "code": return [...(b.title ? [P(b.title, { keepNext: true, run: { bold: true } })] : []), ...code(b)];
     case "list": return list(b);
     case "pagebreak": return [new Paragraph({ children: [new PageBreak()] })];
+    case "raw": return b.items;
     default: throw new Error("block " + b.k);
   }
 }
