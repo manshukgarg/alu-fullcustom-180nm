@@ -260,10 +260,10 @@ final Step 5 run (`results/lab/after_layout_comparison.md`):
   literature survey; the flow, waveform and reference slides can be switched back on with `FULL` in the builder), built by `docs/presentation/build_deck.js` from
   `docs/presentation/prepare_assets.py` and the lab screenshots in `docs/presentation/screens/`; every number
   is from `results/lab/`.
-* Project report (27 Nov): `docs/report/ALU_project_report.docx` and `.pdf` (A4, 56 pages): literature survey
-  of 17 papers from 2021–2026 (`docs/report/literature_survey.md` has their DOI links), six boxes for photos of
-  hand-drawn circuits (reference drawings: `docs/report/hand_drawing_reference_sheets.pdf`), white-background
-  waveforms and netlists in the appendices. Built by `bash docs/report/build.sh` from
+* Project report (27 Nov): `docs/report/ALU_project_report.docx` and `.pdf` (A4, 38 pages, under the 40-page
+  limit): seven chapters, literature survey of 17 papers from 2021–2026 (`docs/report/literature_survey.md` has
+  their DOI links), circuit figures drawn from the project schematics (`docs/report/prepare_circuit_figures.py`),
+  white-background waveforms and netlists in the appendices. Built by `bash docs/report/build.sh` from
   `docs/report/report_content.js`; blanks for the supervisor and the roll numbers.
 * Figures for the slides in `docs/figures/presentation/`: cell layouts
   (`docs/figures/render_layout.py`), schematics, result charts (`docs/figures/make_charts.py`)

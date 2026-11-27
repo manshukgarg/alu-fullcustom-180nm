@@ -33,6 +33,11 @@ const cite = [];                     // citation keys in order of first use
 const fig = {}, tab = {}, eqn = {};  // label -> number string
 const toc = [];                      // {id, level, text}
 const lof = [], lot = [];
+// list-of-figures text: the caption up to its first ";" or ": ", without a closing parenthesis
+function shortCap(t) {
+  t = t.split(/; |: /)[0];
+  return t.replace(/ \((?![a-z]\))[^()]*\)$/, "");
+}
 (function number() {
   let chap = "", nf = 0, nt = 0, ne = 0;
   const scan = (s) => {
@@ -51,7 +56,7 @@ const lof = [], lot = [];
     }
     if (b.k === "refs") toc.push({ id: "refs", level: 1, text: "References" });
     if (b.k === "h2") toc.push({ id: "h2:" + b.n, level: 2, text: b.n + "  " + b.title });
-    if (b.k === "fig" || b.k === "hand") { nf += 1; fig[b.label] = chap + "." + nf; lof.push({ id: "fig:" + fig[b.label], text: `Fig. ${fig[b.label]}  ${plain(b.caption)}` }); }
+    if (b.k === "fig" || b.k === "hand") { nf += 1; fig[b.label] = chap + "." + nf; lof.push({ id: "fig:" + fig[b.label], text: `Fig. ${fig[b.label]}  ${shortCap(plain(b.caption))}` }); }
     if (b.k === "table") { nt += 1; tab[b.label] = chap + "." + nt; lot.push({ id: "tab:" + tab[b.label], text: `Table ${tab[b.label]}  ${plain(b.caption)}` }); }
     if (b.k === "eq" && b.label !== undefined) { ne += 1; eqn[b.label] = chap + "." + ne; }
     for (const key of ["t", "caption", "note", "title"]) scan(b[key]);
@@ -160,7 +165,7 @@ function table(b) {
     children: String(text).split("|").map((line) => new Paragraph({ alignment: o.align || align[i], spacing: { line: 240, lineRule: LineRuleType.AUTO }, keepNext: !!o.keep,
       children: runs(line, { size, bold: o.head || o.bold, italics: o.italics }) })),
   });
-  const keepAll = b.rows.length <= 14, last = b.rows[b.rows.length - 1];
+  const keepAll = b.keep !== undefined ? b.keep : b.rows.length <= 14, last = b.rows[b.rows.length - 1];
   const rows = [new TableRow({ tableHeader: true, cantSplit: true, children: b.header.map((h, i) => cell(h, i, { head: true, align: AlignmentType.CENTER, keep: true })) })];
   for (const r of b.rows) {
     if (r.group) { rows.push(new TableRow({ cantSplit: true, children: [cell(r.group, 0, { span: widths.length, group: true, italics: true, align: AlignmentType.LEFT, keep: keepAll })] })); continue; }
@@ -226,7 +231,7 @@ for (const id of ["lof", "lot", "abbr"]) front2.push(tocLine({ lof: "LIST OF FIG
 for (const e of toc) front2.push(tocLine(e.text, null, e.level, e.id));
 front2.push(heading("LIST OF FIGURES", { pageBreakBefore: true, size: 28 }));
 for (const e of lof) front2.push(tocLine(e.text, null, 2.5, e.id));
-front2.push(heading("LIST OF TABLES", { pageBreakBefore: true, size: 28 }));
+front2.push(heading("LIST OF TABLES", { pageBreakBefore: false, before: 480, size: 28 }));
 for (const e of lot) front2.push(tocLine(e.text, null, 2.5, e.id));
 front2.push(heading("LIST OF ABBREVIATIONS", { pageBreakBefore: true, size: 28 }));
 front2.push(...table(Object.assign({ label: "__abbr" }, C.abbreviations)).slice(1));
@@ -242,7 +247,7 @@ function render(b) {
     case "refs": {
       const out = [heading("REFERENCES", { pageBreakBefore: true, size: 32, after: 360 })];
       cite.forEach((k, i) => out.push(new Paragraph({
-        alignment: AlignmentType.LEFT, spacing: { before: 0, after: 100, line: 276, lineRule: LineRuleType.AUTO },
+        alignment: AlignmentType.LEFT, spacing: { before: 0, after: 40, line: 276, lineRule: LineRuleType.AUTO },
         indent: { left: 600, hanging: 600 }, tabStops: [{ type: TabStopType.LEFT, position: 600 }],
         children: [new TextRun({ text: `[${i + 1}]\t`, font: FONT, size: 22 }), ...runs(C.refs[k], { size: 22 })] })));
       return out;

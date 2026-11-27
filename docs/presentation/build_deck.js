@@ -387,7 +387,7 @@ pres.addSection({ title: "Cell design" });
 pres.addSection({ title: "ALU" });
 {
   const s = content("ALU", "ALU bit slice",
-    "One FB4 and one CS per bit (44 transistors); a shared decoder of nine library cells sets the code lines");
+    "One FB4 and one CS per bit (44 transistors); a shared decoder of ten library cells sets the code lines");
   // bit slice
   const fx = 2.05, fy = 2.75, fw = 1.55, fh = 1.0, cx = 4.75, cy = 2.75, cw = 1.55, ch = 2.15;
   box(s, fx, fy, fw, fh, [{ text: "FB4", options: { bold: true, fontSize: 18, breakLine: true } },
@@ -424,7 +424,7 @@ pres.addSection({ title: "ALU" });
   });
   // chain of the 4-bit ALU
   const chainY = 5.55, chH = 0.78;
-  const blocks = [["Decoder", "9 cells"], ["bit 0", "FB4 + CS"], ["bit 1", "FB4 + CS"], ["bit 2", "FB4 + CS"],
+  const blocks = [["Decoder", "10 cells"], ["bit 0", "FB4 + CS"], ["bit 1", "FB4 + CS"], ["bit 2", "FB4 + CS"],
     ["bit 3", "FB4 + CS"], ["Flags", "C V Z N"]];
   const bwid = 0.98, bgap = 0.22;
   blocks.forEach(([h, d], i) => {
@@ -473,6 +473,53 @@ if (FULL) {
 
 // ======================================================================== 7 layout
 pres.addSection({ title: "Implementation and results" });
+// ---------------------------------------------------------------- Verilog to layout
+{
+  const s = content("Implementation and results", "From Verilog to layout",
+    "Seven ALUs from three Verilog descriptions and the proposed netlist, through one open-source flow");
+  table(s, ["Design", "Verilog description", "Cells", "Placed cells"], [
+    ["D3 beh", "behavioural (alu4.v)", "OSU018", "147"],
+    ["D3 slice", "bit-sliced (alu4_slice.v)", "OSU018", "104"],
+    ["D3 map", "hand-mapped netlist", "OSU018", "63"],
+    ["D4 beh", "behavioural (alu4.v)", "pl018", "198"],
+    ["D4 slice", "bit-sliced (alu4_slice.v)", "pl018", "110"],
+    ["D4 map", "hand-mapped netlist", "pl018", "94"],
+    { highlight: true, cells: ["P (proposed)", "FB4/CS netlist, 28 cells", "pl018", "55"] },
+  ], { x: MX, y: TOP, w: 5.9, colW: [1.35, 2.55, 0.95, 1.05], fontSize: 14, rowH: 0.4,
+    align: ["left", "left", "left", "center"] });
+  txt(s, [
+    { text: "beh: ", options: { bold: true } }, { text: "Yosys chooses the structure.", options: { breakLine: true } },
+    { text: "slice: ", options: { bold: true } }, { text: "one bit described and repeated four times.", options: { breakLine: true } },
+    { text: "map: ", options: { bold: true } }, { text: "library cells placed by hand (Yosys cannot infer the two-output full adder)." },
+  ], { x: MX, y: 5.35, w: 5.9, h: 1.1, fontSize: 13, color: MUTED });
+  const fx = 6.95, fw = W - MX - fx, fh = 0.62, fg = 0.16;
+  const steps = [
+    ["1  RTL check", "Icarus Verilog, self-checking bench: all 2048 input combinations"],
+    ["2  Synthesis", "Yosys maps the design onto the Liberty library (pl018 or OSU018)"],
+    ["3  Gate-level check", "the same bench on the synthesized netlist"],
+    ["4  Place and route", "Qflow: GrayWolf placement, Qrouter routing"],
+    ["5  Sign-off", "Netgen LVS, Magic DRC with the real cells, extraction"],
+    ["6  Post-layout test", "Ngspice: 229 transitions on the extracted netlist"],
+  ];
+  steps.forEach(([h, d], i) => {
+    const y = TOP + i * (fh + fg);
+    box(s, fx, y, fw, fh, [{ text: h, options: { bold: true, fontSize: 14, breakLine: true } },
+      { text: d, options: { fontSize: 12, color: MUTED } }], { align: "left", fill: i === 5 ? TINT : CARD,
+      line: i === 5 ? BLUE : RULE, extra: { objectName: "Flow step " + (i + 1) } });
+    if (i < steps.length - 1) arrow(s, fx + 0.35, y + fh + 0.01, fx + 0.35, y + fh + fg - 0.01, { width: 1.25 });
+  });
+  txt(s, "All seven: routed, LVS match, DRC 0, 229/229 correct after extraction",
+    { x: fx, y: TOP + 6 * (fh + fg) + 0.02, w: fw, h: 0.32, fontSize: 13, bold: true, color: BLUE });
+  s.addNotes("This is the automated part. We wrote the ALU in Verilog three ways: a behavioural description where " +
+    "Yosys decides the structure, a bit-sliced description, and a hand-mapped netlist that instantiates library " +
+    "cells directly. Each was implemented twice, with the OSU 0.18 micron cells of the Qflow kit (D3) and with our " +
+    "own library pl018 (D4); the proposed ALU P is a structural netlist of our 28 cells. Every design first passes " +
+    "an exhaustive self-checking Verilog test bench with Icarus Verilog, all 2048 input combinations, before and " +
+    "after synthesis. Qflow then places and routes it, Netgen and Magic check LVS and DRC, Magic extracts every " +
+    "transistor and parasitic capacitance, and the extracted netlist is simulated in Ngspice with the same 229-" +
+    "transition bench as the transistor-level ALUs. All seven designs pass every step.");
+}
+
 {
   const s = content("Implementation and results", "Layout: cells and routed ALU",
     "Generated cells, DRC-clean and LVS-matched; the proposed ALU placed and routed by Qflow with these cells");
