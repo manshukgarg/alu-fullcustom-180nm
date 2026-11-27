@@ -209,6 +209,58 @@ pres.addSection({ title: "Introduction" });
     "ChipCraft lab.");
 }
 
+// ======================================================================== 3 literature survey
+{
+  const s = content("Introduction", "Literature survey (2021–2026)",
+    "Recent work improves single cells or the logic style of a whole ALU; few designs are compared after place and route");
+  const cols = [
+    ["Arithmetic cells", [
+      ["Hussain et al. 2022", "18T hybrid adder: PDP −67 % (16 nm)"],
+      ["Sadeghi et al. 2022", "TG adder with full-swing carry"],
+      ["Arul, Kathirvelu 2024", "20T hybrid adder, 45 nm"],
+      ["Yin et al. 2023", "PTL adder: −13.8 % power after layout"]]],
+    ["ALU designs", [
+      ["Subbulakshmi et al. 2023", "GDI ALU, 65 nm: −91 % power"],
+      ["Jyothi et al. 2024", "adiabatic (ECRL) ALU"],
+      ["Kannan Nithin et al. 2024", "32-bit MUX-based ALU, 180 nm"],
+      ["Karapothula et al. 2026", "ALU at 180, 90 and 45 nm"]]],
+    ["Cell sizing and libraries", [
+      ["Chen et al. 2022", "65 nm ultralow-voltage library"],
+      ["Lim et al. 2023", "P/N ratio, cell height: −55 % energy"],
+      ["Cao, Guo 2024", "optimal P/N ratio under variation"]]],
+    ["Cell layout and open flows", [
+      ["Ren, Fojtik 2021", "NVCell: cell layout by learning"],
+      ["Lee et al. 2021", "SMT cell place and route, 7 nm"],
+      ["Nishizawa, Nakura 2023", "Libretto cell characterizer"],
+      ["Edwards et al. 2021", "OpenLane: RISC-V SoC, open flow"]]],
+  ];
+  const gw = 0.18, cw = (CW - 3 * gw) / 4, chh = 3.6;
+  cols.forEach(([head, items], i) => {
+    const x = MX + i * (cw + gw);
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: TOP, w: cw, h: chh, rectRadius: 0.06, fill: { color: CARD },
+      line: { color: RULE, width: 0.75 }, objectName: "Survey: " + head });
+    txt(s, head, { x: x + 0.15, y: TOP + 0.14, w: cw - 0.3, h: 0.42, fontSize: 16, bold: true, color: BLUE });
+    const runs = [];
+    items.forEach(([a, b], j) => {
+      runs.push({ text: a, options: { bold: true, breakLine: true } });
+      runs.push({ text: b, options: { color: MUTED, breakLine: j < items.length - 1 } });
+    });
+    txt(s, runs, { x: x + 0.15, y: TOP + 0.66, w: cw - 0.3, h: chh - 0.8, fontSize: 13, paraSpaceAfter: 5 });
+  });
+  box(s, MX, TOP + chh + 0.22, CW, 0.92, [
+    { text: "Gaps addressed here:  ", options: { bold: true, color: BLUE } },
+    { text: "cells evaluated alone, not in a routed datapath  ·  ALU logic and arithmetic in separate units  ·  open " +
+      "flows used only with the libraries of a process kit  →  FB4 and CS cells, the pl018 library, seven ALUs " +
+      "compared after layout" }],
+  { fill: TINT, line: BLUE, align: "left", extra: { fontSize: 14, objectName: "Research gaps" } });
+  s.addNotes("Seventeen papers from 2021 to 2026, in four groups; the report gives each with its full reference. " +
+    "Hybrid and transmission-gate adders keep improving the power-delay product of single cells, but at different " +
+    "nodes and loads, and mostly without layout. Recent ALUs use GDI, adiabatic or multiplexer-based logic, with " +
+    "arithmetic and logic in separate units. Library papers size the P/N ratio per cell, and layout generators and " +
+    "open characterizers now make a custom library usable in an open flow. Three gaps follow, and our three " +
+    "contributions answer them.");
+}
+
 // ======================================================================== 4 flow
 {
   const s = content("Introduction", "Design flow",
@@ -398,6 +450,25 @@ pres.addSection({ title: "ALU" });
     "library cells. Code columns are written C3 C2 C1 C0.");
 }
 
+// ======================================================================== waveforms
+{
+  const s = content("ALU", "Simulation waveforms",
+    "FB4 forms every function of A and B from its code lines; the ALU matches the reference model on all 32 vectors");
+  const L1 = img(s, path.join(ASSETS, "wave_fb4_slide.png"), MX, TOP, 5.9, 4.25, { center: true,
+    alt: "Ngspice waveforms of the FB4 cell for six operation codes", name: "FB4 waveforms" });
+  caption(s, "FB4 cell: code lines set for six operations; A and B step through 00, 01, 10, 11 in each window",
+    MX, L1.y + L1.h + 0.1, 5.9, { h: 0.5, align: "center" });
+  const R1 = img(s, path.join(ASSETS, "wave_alu_slide.png"), MX + 6.23, TOP, 5.9, 4.25, { center: true,
+    alt: "Ngspice function test of the proposed ALU: result and flags against expected values", name: "ALU waveforms" });
+  caption(s, "Proposed ALU, 32-vector function test: lines simulated, circles expected; flags = 8C + 4V + 2Z + N",
+    MX + 6.23, R1.y + R1.h + 0.1, 5.9, { h: 0.5, align: "center" });
+  s.addNotes("Ngspice transient simulations at 1.8 volt with the same drivers and FO4 loads as all measurements. " +
+    "Left: the FB4 cell; for each operation the four code lines are set, and P follows the code bit selected by A " +
+    "and B, for example A xor B for ADD and A and B for AND. Right: the complete proposed ALU at transistor level; " +
+    "for every one of the 32 vectors the simulated result and flags reach the expected value. The report appendix " +
+    "has these waveforms with the CS cell and the slowest transition, and the netlists.");
+}
+
 // ======================================================================== 7 layout
 pres.addSection({ title: "Implementation and results" });
 {
@@ -494,6 +565,7 @@ pres.addSection({ title: "Conclusion" });
     "Xilinx, 7 Series FPGAs Configurable Logic Block User Guide, UG474 (carry logic).",
     "MOSIS, Scalable CMOS (SCMOS) Design Rules, revision 8.",
     "R. T. Edwards, Qflow, Magic, Netgen and Qrouter, Open Circuit Design; C. Wolf, Yosys Open SYnthesis Suite; Ngspice; KLayout; Xschem.",
+    "Literature survey: seventeen papers from 2021 to 2026 (slide 3), with full references in the project report.",
   ];
   txt(s, refs.map((r, i) => ({ text: r, options: { bullet: { type: "number" }, breakLine: i < refs.length - 1 } })),
     { x: MX, y: 1.2, w: CW, h: 5.5, fontSize: 15, paraSpaceAfter: 10 });

@@ -21,3 +21,7 @@ step5_library/qflow_map/
 step5_library/qflow_fb/
 ALU4_180nm_LTspice.zip
 demo/out/
+docs/report/find.json
+docs/report/pages.json
+docs/paper/ALU4_180nm_paper.docx
+docs/paper/ALU4_180nm_paper.pdf
